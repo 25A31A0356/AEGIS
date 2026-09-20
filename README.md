@@ -599,7 +599,7 @@ erDiagram
 
     AEGIS_USER_PREFERENCES {
         string id PK
-        string user_id FK UK
+        string user_id FK
         json saved_locations
         json hazard_subscriptions
         boolean push_enabled
