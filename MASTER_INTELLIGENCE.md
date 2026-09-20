@@ -104,7 +104,7 @@ flowchart TB
     end
 
     %% Ingestion Connections
-    External_Sensors -->|HTTP Polling & Webhooks| Ingest_Pipeline
+    External_Sensors -->|"HTTP Polling & Webhooks"| Ingest_Pipeline
     Ingest_Pipeline --> Correlation_Engine
     Correlation_Engine --> DB
     Correlation_Engine --> Redis
@@ -116,16 +116,16 @@ flowchart TB
     DB <--> WS_Hub
 
     %% Backend to Web Connections
-    WS_Hub <==>|Bi-directional WebSockets (ws://)| Web_Portal
-    Backend_Core <==>|REST API (HTTPS / JSON / Bearer JWT)| Web_Portal
+    WS_Hub <-->|"Bi-directional WebSockets (WS)"| Web_Portal
+    Backend_Core <-->|"REST API (HTTPS / Bearer JWT)"| Web_Portal
 
     %% Backend to Mobile Connections
-    WS_Hub <==>|Bi-directional WebSockets (ws://)| Mobile_App
-    Backend_Core <==>|REST API (HTTPS / JSON / Idempotent)| Mobile_App
+    WS_Hub <-->|"Bi-directional WebSockets (WS)"| Mobile_App
+    Backend_Core <-->|"REST API (HTTPS / JSON)"| Mobile_App
 
     %% Direct Offline Connections
-    App_Offline -.->|Direct Cellular GSM SMS| Web_SOS
-    App_Offline -.->|Native Telephony Call (112/1070)| Web_SOS
+    App_Offline -.->|"Direct Cellular GSM SMS"| Web_SOS
+    App_Offline -.->|"Native Telephony Call (112 / 1070)"| Web_SOS
 ```
 
 ---
@@ -335,8 +335,8 @@ flowchart LR
     WS_Hub --> Strobe
     WS_Hub --> SMS_Intent
     WS_Hub --> Web_Ticker
-    Citizen_SOS -.->|No 4G Data| SMS_Intent
-    Citizen_SOS -.->|No 4G Data| Telephony
+    Citizen_SOS -.->|"No 4G Data"| SMS_Intent
+    Citizen_SOS -.->|"No 4G Data"| Telephony
 ```
 
 ---
