@@ -35,6 +35,7 @@ import {
   formatLastUpdated,
   recordSafeCheckIn,
   saveLocalSosIncident,
+  saveLocalCommunityReport,
   getLocalSosIncident,
   getCachedActivities,
   setCachedActivities,
@@ -695,73 +696,87 @@ class AegisApiServiceClass {
       input.idempotencyKey ||
       `idem-rep-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
+    const title = input.title || input.hazard || "Hazard Incident";
+    const description = (input as any).description || (input as any).details || input.hazard || "Community hazard observation";
+
     const payload = {
-      category: input.category,
-      hazard: input.hazard,
-      title: input.title || input.hazard,
-      description: (input as any).description || (input as any).details || input.hazard,
-      details: (input as any).details || (input as any).description || input.hazard,
-      severity: input.severity,
+      category: (input.category || "OTHER").toUpperCase(),
+      title,
+      description: description.length >= 5 ? description : `${description} reported by citizen`,
+      severity: (input.severity || "MODERATE").toUpperCase(),
       latitude: input.latitude ?? 17.6868,
       longitude: input.longitude ?? 83.2185,
-      accuracy: input.accuracy,
-      address: input.address,
-      image: input.image || input.imageUrl,
-      imageUrl: input.imageUrl || input.image,
-      idempotencyKey,
+      accuracy_meters: input.accuracy || 10.0,
+      location_name: input.address || "",
+      media_urls: input.imageUrl ? [input.imageUrl] : (input.image ? [input.image] : []),
+      idempotency_key: idempotencyKey,
     };
 
     try {
-      // 1. Try REST POST /api/v1/reports
-      const rawRes = (await apiCall("/api/v1/reports", {
+      const rawRes = await apiCall<any>("/api/v1/reports", {
         method: "POST",
         body: JSON.stringify(payload),
-      })) as Response;
+      });
 
-      const data = (typeof (rawRes as any)?.json === "function" ? await (rawRes as any).json() : rawRes) as any;
-      const serverReport = data?.data as AegisCommunityReport;
+      const parsedRes = (typeof (rawRes as any)?.json === "function" ? await (rawRes as any).json() : rawRes) as any;
+      const data = (parsedRes?.data || parsedRes) as any;
+      const reportId = data?.id || idempotencyKey;
+
+      const serverReport: AegisCommunityReport = {
+        id: reportId,
+        category: payload.category,
+        hazard: payload.title,
+        title: payload.title,
+        description: payload.description,
+        severity: payload.severity as any,
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        address: payload.location_name || "Live Location",
+        timestamp: data?.created_at || new Date().toISOString(),
+        upvotes: data?.upvotes || 0,
+        downvotes: data?.downvotes || 0,
+        status: data?.status || "ACTIVE",
+        verificationStatus: data?.verification_status || "UNVERIFIED_COMMUNITY",
+        isPending: false,
+      };
+
+      await saveLocalCommunityReport(serverReport);
 
       return {
         success: true,
         queued: false,
         message: "✓ Report registered with authoritative Aegis database",
-        reportId: serverReport?.id || data?.reportId,
+        reportId: serverReport.id,
         report: serverReport,
       };
     } catch (error) {
       console.warn("[AegisApi] Online Community Report failed, queueing offline:", error);
 
-      // Create optimistic pending report
       const pendingReport: AegisCommunityReport = {
         id: idempotencyKey,
-        category: payload.category || "otherHazard",
-        hazard: payload.hazard,
+        category: payload.category || "OTHER",
+        hazard: payload.title,
         title: payload.title,
-        description: payload.description || "Report pending synchronization...",
-        severity: (typeof payload.severity === "string" ? payload.severity.toUpperCase() : "MODERATE") as any,
-        location: {
-          latitude: payload.latitude,
-          longitude: payload.longitude,
-          accuracy: payload.accuracy,
-          address: payload.address || "Sector 04 • High Risk Basin Zone",
-        },
-        source: "COMMUNITY",
-        verificationStatus: "PENDING",
-        status: "pending_review",
-        imageUrl: payload.imageUrl,
-        upvotes: 1,
-        idempotencyKey,
+        description: payload.description,
+        severity: payload.severity as any,
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        address: payload.location_name || "Queued Offline Location",
+        timestamp: new Date().toISOString(),
+        upvotes: 0,
+        downvotes: 0,
+        status: "ACTIVE",
+        verificationStatus: "UNVERIFIED_COMMUNITY",
         isPending: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       };
 
+      await saveLocalCommunityReport(pendingReport);
       await queueOfflineAction("community_report", payload as unknown as Record<string, unknown>);
 
       return {
         success: true,
         queued: true,
-        message: "✓ Report saved locally (will submit to central database when connected)",
+        message: "✓ Report stored offline in device vault. Displays 'OFFLINE — SYNC PENDING'. Transmits on reconnect.",
         reportId: idempotencyKey,
         report: pendingReport,
       };
@@ -847,7 +862,8 @@ class AegisApiServiceClass {
         body: JSON.stringify(payload),
       });
 
-      const resData = (rawRes?.data || rawRes) as any;
+      const parsedRes = (typeof (rawRes as any)?.json === "function" ? await (rawRes as any).json() : rawRes) as any;
+      const resData = (parsedRes?.data || parsedRes) as any;
       const sosId = resData?.id || resData?.sos_id || idempotencyKey;
 
       const incident: SosIncident = {
@@ -935,7 +951,6 @@ class AegisApiServiceClass {
         displayState: "OFFLINE — SYNC PENDING",
       };
     }
-  }
   }
 
   /**

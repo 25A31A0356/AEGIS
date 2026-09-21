@@ -10,29 +10,26 @@ import { ApiClient } from './apiClient';
 export type RealtimeConnectionStatus = 'LIVE' | 'RECONNECTING' | 'OFFLINE';
 
 export interface RealtimeEvent<T = any> {
-  id: string;
-  type:
-    | 'REPORT_CREATED'
-    | 'REPORT_UPDATED'
-    | 'ALERT_UPDATED'
-    | 'SOS_DISPATCHED'
-    | 'WEATHER_TELEMETRY_UPDATED'
-    | 'SYSTEM_HEARTBEAT'
-    | 'SOS_CREATED'
-    | 'SOS_UPDATED'
-    | 'SOS_ACKNOWLEDGED'
-    | 'SOS_OFFERED'
-    | 'SOS_ACCEPTED'
-    | 'SOS_RESPONDER_ASSIGNED'
-    | 'SOS_RESPONDER_MOVING'
-    | 'SOS_LOCATION_UPDATED'
-    | 'SOS_ON_SITE'
-    | 'SOS_RESOLVED'
-    | 'SOS_CANCELLED'
-    | 'SAFE_REPORTED'
-    | string;
+  id?: string;
+  event_type?: string;
+  entity_type?: string;
+  entity_id?: string;
   timestamp: string;
-  data: T;
+  version?: number;
+  actor?: {
+    id: string;
+    role: string;
+  };
+  location?: {
+    latitude: number;
+    longitude: number;
+    accuracy?: number;
+  };
+  payload?: Record<string, unknown>;
+  type: string;
+  data?: T;
+  source?: string;
+  correlationId?: string;
 }
 
 export type RealtimeEventHandler<T = any> = (event: RealtimeEvent<T>) => void;
