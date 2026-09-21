@@ -335,11 +335,7 @@ async function runSecurityTestSuite() {
 
   RealtimeHub.stopHeartbeat();
 
-  if (failed > 0) {
-    process.exitCode = 1;
-  } else {
-    process.exitCode = 0;
-  }
+  process.exit(failed > 0 ? 1 : 0);
 }
 
 runSecurityTestSuite().catch((err) => {

@@ -210,11 +210,7 @@ async function runComprehensiveVerification() {
 
   RealtimeHub.stopHeartbeat();
 
-  if (passedTests < totalTests) {
-    process.exitCode = 1;
-  } else {
-    process.exitCode = 0;
-  }
+  process.exit(passedTests < totalTests ? 1 : 0);
 }
 
 runComprehensiveVerification().catch((err) => {

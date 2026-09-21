@@ -22,6 +22,8 @@ export interface CandidateResponder {
   gps_freshness_score: number;
   workload_score: number;
   is_gps_fresh: boolean;
+  gps_freshness_status?: 'FRESH' | 'RECENT' | 'STALE' | 'EXPIRED' | 'UNKNOWN';
+  gps_age_seconds?: number;
   matched_skills: string[];
   selection_rationale: string;
 }
@@ -195,6 +197,26 @@ export const DispatchControlModal: React.FC<DispatchControlModalProps> = ({
                         <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                           {cand.role}
                         </span>
+                        {cand.gps_freshness_status === 'FRESH' && (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                            GPS LIVE ({Math.round(cand.gps_age_seconds ?? 0)}s)
+                          </span>
+                        )}
+                        {cand.gps_freshness_status === 'RECENT' && (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-300 border border-cyan-500/30">
+                            GPS RECENT ({Math.round((cand.gps_age_seconds ?? 0) / 60)}m)
+                          </span>
+                        )}
+                        {cand.gps_freshness_status === 'STALE' && (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                            GPS STALE ({Math.round((cand.gps_age_seconds ?? 0) / 60)}m)
+                          </span>
+                        )}
+                        {(cand.gps_freshness_status === 'EXPIRED' || cand.gps_freshness_status === 'UNKNOWN') && (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-950/80 text-red-800 dark:text-red-300 border border-red-500/30">
+                            GPS EXPIRED
+                          </span>
+                        )}
                       </div>
                       <div className="text-right font-mono text-xs">
                         <span className="font-extrabold text-sky-600 dark:text-sky-400">

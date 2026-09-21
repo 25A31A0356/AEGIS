@@ -87,16 +87,17 @@ class SOSMatchingEngine:
             return 0.5, ["BASIC_COMMUNITY_RESPONDER"]
 
     @classmethod
-    def evaluate_gps_freshness(cls, last_location_time: Optional[datetime], now: datetime) -> tuple[float, bool]:
+    def evaluate_gps_freshness(cls, last_location_time: Optional[datetime], now: datetime) -> tuple[float, bool, str, float]:
         """
-        Calculates GPS freshness score and staleness badge.
-        Fresh (< 2 min): 1.0
-        Recent (2 - 10 min): 0.75
-        Stale (10 - 30 min): 0.40
-        Expired (> 30 min): 0.05
+        Calculates GPS freshness score, staleness badge, threshold status, and age in seconds.
+        FRESH (< 2 min): 1.0
+        RECENT (2 - 10 min): 0.75
+        STALE (10 - 30 min): 0.40
+        EXPIRED (> 30 min): 0.05
+        UNKNOWN (missing): 0.05
         """
         if not last_location_time:
-            return 0.05, False
+            return 0.05, False, "UNKNOWN", 999999.0
 
         # Normalize naive/aware datetimes across SQLite and PostgreSQL
         t_loc = last_location_time
@@ -106,18 +107,16 @@ class SOSMatchingEngine:
         elif t_loc.tzinfo is not None and t_now.tzinfo is None:
             t_now = t_now.replace(tzinfo=t_loc.tzinfo)
 
-        age_seconds = (t_now - t_loc).total_seconds()
-        if age_seconds < 0:
-            age_seconds = 0
+        age_seconds = max(0.0, (t_now - t_loc).total_seconds())
 
         if age_seconds <= 120:
-            return 1.0, True
+            return 1.0, True, "FRESH", age_seconds
         elif age_seconds <= 600:
-            return 0.75, True
+            return 0.75, True, "RECENT", age_seconds
         elif age_seconds <= 1800:
-            return 0.40, False
+            return 0.40, False, "STALE", age_seconds
         else:
-            return 0.05, False
+            return 0.05, False, "EXPIRED", age_seconds
 
     @classmethod
     async def find_eligible_responders(
@@ -194,7 +193,7 @@ class SOSMatchingEngine:
             s_cap, matched_skills = cls.evaluate_capability_match(sos.emergency_type, user_obj.role, user_caps)
 
             # 3. GPS Freshness Score (0.0 to 1.0)
-            s_fresh, is_gps_fresh = cls.evaluate_gps_freshness(pref_obj.last_location_time, now)
+            s_fresh, is_gps_fresh, gps_freshness_status, age_sec = cls.evaluate_gps_freshness(pref_obj.last_location_time, now)
 
             # 4. Workload Score (0.0 to 1.0)
             s_work = max(0.0, 1.0 - (float(active_count) / float(max_assignments)))
@@ -223,6 +222,8 @@ class SOSMatchingEngine:
                 "s_fresh": round(s_fresh, 3),
                 "s_work": round(s_work, 3),
                 "is_gps_fresh": is_gps_fresh,
+                "gps_freshness_status": gps_freshness_status,
+                "gps_age_seconds": round(age_sec, 1),
                 "matched_skills": matched_skills,
                 "vehicle_type": getattr(pref_obj, "vehicle_type", "MOTORCYCLE") or "MOTORCYCLE",
                 "active_workload": active_count,
@@ -259,10 +260,11 @@ class SOSMatchingEngine:
             )
             existing_candidate = existing_candidate_res.scalars().first()
 
+            age_str = f"{int(cand['gps_age_seconds'])}s" if cand['gps_age_seconds'] < 60 else f"{int(cand['gps_age_seconds'] / 60)}m"
             rationale = (
                 f"Score: {cand['score']:.4f} | Dist: {cand['distance_km']}km | "
                 f"Skills: {', '.join(cand['matched_skills'])} | "
-                f"GPS Fresh: {cand['is_gps_fresh']} | Workload: {cand['active_workload']}"
+                f"GPS: {cand['gps_freshness_status']} ({age_str} ago) | Workload: {cand['active_workload']}"
             )
             cand["selection_rationale"] = rationale
 
