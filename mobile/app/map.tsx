@@ -50,6 +50,7 @@ export default function MapScreen() {
   const { allReports } = useAegisCommunityReports();
   const { activeIncident, assignedIncident } = useAegisSosResponder();
   const [sosMarkers, setSosMarkers] = useState<SosMapMarker[]>([]);
+  const [backendFacilities, setBackendFacilities] = useState<any[]>([]);
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(false);
   const [locationModalVisible, setLocationModalVisible] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string>(new Date().toISOString());
@@ -61,6 +62,14 @@ export default function MapScreen() {
       const res = await AegisApiService.getSosMapMarkers();
       if (res.data) {
         setSosMarkers(res.data);
+      }
+      try {
+        const facRes = await AegisApiService.getEmergencyFacilities();
+        if (facRes.data && Array.isArray(facRes.data)) {
+          setBackendFacilities(facRes.data);
+        }
+      } catch (err) {
+        console.warn("[MapScreen] Facilities query error:", err);
       }
       setLastSyncTime(new Date().toISOString());
     } catch (e) {

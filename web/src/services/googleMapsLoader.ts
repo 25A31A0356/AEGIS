@@ -29,10 +29,15 @@ class GoogleMapsLoaderService {
    * Resolves browser-restricted Google Maps API key from environment variable
    */
   private resolveApiKey(): string {
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
-      return (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string) || '';
+    try {
+      const env = (import.meta as any).env || {};
+      return (env.VITE_GOOGLE_MAPS_API_KEY as string) || '';
+    } catch {
+      if (typeof process !== 'undefined' && process.env) {
+        return (process.env.VITE_GOOGLE_MAPS_API_KEY as string) || '';
+      }
+      return '';
     }
-    return '';
   }
 
   public getApiKey(): string {

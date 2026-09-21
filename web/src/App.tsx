@@ -4,6 +4,7 @@ import { LocationProvider } from './context/LocationContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { SOSProvider } from './context/SOSContext';
 import { ProfileProvider } from './context/ProfileContext';
+import { AuthProvider } from './context/AuthContext';
 
 // Global Layout Shell & Common Components
 import {
@@ -18,6 +19,8 @@ import {
 import { SearchModal } from './components/layout/SearchModal';
 import { NotificationDrawer } from './components/layout/NotificationDrawer';
 import { UserProfileModal } from './components/profile/UserProfileModal';
+import { AuthModal } from './components/auth/AuthModal';
+import { AIDecisionSupportModal } from './components/ai/AIDecisionSupportModal';
 
 // Pages
 import { DashboardPage } from './pages/DashboardPage';
@@ -35,6 +38,8 @@ export const App: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState<boolean>(false);
   const [selectedHazardId, setSelectedHazardId] = useState<string | null>(null);
   const [selectedSOSId, setSelectedSOSId] = useState<string | null>(null);
   const [initialHazardCategory, setInitialHazardCategory] = useState<string | undefined>(undefined);
@@ -151,7 +156,8 @@ export const App: React.FC = () => {
   };
 
   return (
-    <DataProvider>
+    <AuthProvider>
+      <DataProvider>
       <LocationProvider>
         <NotificationProvider>
           <SOSProvider>
@@ -191,6 +197,7 @@ export const App: React.FC = () => {
                 <div className="flex-1 flex flex-col min-w-0">
                   {/* Top Header */}
                   <Header
+                    onOpenAuth={() => setIsAuthModalOpen(true)}
                     onOpenSearch={() => setIsSearchOpen(true)}
                     onOpenProfile={() => setIsProfileOpen(true)}
                     onToggleMobileSidebar={() => setIsMobileSidebarOpen(true)}
@@ -203,6 +210,7 @@ export const App: React.FC = () => {
                   <main className="flex-1 p-4 sm:p-6 lg:p-8">
                     {(activeTab === 'homepage' || activeTab === 'dashboard') && (
                       <DashboardPage
+                        onOpenAIModal={() => setIsAIModalOpen(true)}
                         onNavigate={navigateToTab}
                         onSelectHazardById={handleSelectHazardFromTickerOrSearch}
                         onFilterHazardsCategory={handleFilterHazardsCategory}
@@ -279,11 +287,24 @@ export const App: React.FC = () => {
 
                 {/* Data Provider Inspector & Mode Switcher Modal */}
                 <DataModeModal />
+
+                {/* Active Role & Bearer Token Credential Switcher */}
+                <AuthModal
+                  isOpen={isAuthModalOpen}
+                  onClose={() => setIsAuthModalOpen(false)}
+                />
+
+                {/* AI Decision Support & Official Audit Modal */}
+                <AIDecisionSupportModal
+                  isOpen={isAIModalOpen}
+                  onClose={() => setIsAIModalOpen(false)}
+                />
               </div>
             </ProfileProvider>
           </SOSProvider>
         </NotificationProvider>
       </LocationProvider>
-    </DataProvider>
+      </DataProvider>
+    </AuthProvider>
   );
 };

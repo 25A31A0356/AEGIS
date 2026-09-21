@@ -1,3 +1,4 @@
+import { AegisApiService } from "./aegis-api";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -82,6 +83,10 @@ export async function getDevicePushToken(): Promise<string | null> {
     if (!granted) return null;
 
     const token = await Notifications.getExpoPushTokenAsync();
+    if (token && token.data) {
+      // Register with authoritative backend push notification service
+      void AegisApiService.registerDevicePushToken(token.data, Platform.OS);
+    }
     return token.data;
   } catch {
     // In local dev without EAS config, getExpoPushTokenAsync may fail gracefully

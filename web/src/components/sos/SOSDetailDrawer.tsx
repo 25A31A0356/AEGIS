@@ -17,6 +17,7 @@ interface SOSDetailDrawerProps {
   onClose: () => void;
   onUpdateStatus: (id: string, newStatus: SOSTriageStatus, notes?: string) => void;
   onSimulateRoute: (beacon: SOSBeacon) => void;
+  onOpenDispatchControl?: (beacon: SOSBeacon) => void;
   initialRole?: 'citizen' | 'responder' | 'admin';
 }
 
@@ -25,6 +26,7 @@ export const SOSDetailDrawer: React.FC<SOSDetailDrawerProps> = ({
   onClose,
   onUpdateStatus,
   onSimulateRoute,
+  onOpenDispatchControl,
   initialRole = 'responder',
 }) => {
   const [operatorNote, setOperatorNote] = useState('');
@@ -178,6 +180,15 @@ export const SOSDetailDrawer: React.FC<SOSDetailDrawerProps> = ({
                 <div>Status: <strong className="text-blue-700 dark:text-blue-400 uppercase">{beacon.triageStatus.replace(/_/g, ' ')}</strong></div>
                 <div>Timestamp: <strong>{new Date(beacon.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} IST</strong></div>
               </div>
+                {onOpenDispatchControl && (
+                  <button
+                    onClick={() => onOpenDispatchControl(beacon)}
+                    className="col-span-2 py-2.5 px-3 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer mt-1"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    <span>Ranked Responder Match & Dispatch</span>
+                  </button>
+                )}
             </div>
           )}
 
@@ -212,6 +223,15 @@ export const SOSDetailDrawer: React.FC<SOSDetailDrawerProps> = ({
                   <span className="text-xs font-extrabold text-sky-900 dark:text-sky-300">{beacon.assignedUnit.distanceKm} km</span>
                 </div>
               </div>
+                {onOpenDispatchControl && (
+                  <button
+                    onClick={() => onOpenDispatchControl(beacon)}
+                    className="col-span-2 py-2.5 px-3 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer mt-1"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    <span>Ranked Responder Match & Dispatch</span>
+                  </button>
+                )}
             </div>
           )}
 
@@ -277,6 +297,15 @@ export const SOSDetailDrawer: React.FC<SOSDetailDrawerProps> = ({
                   Mark Resolved
                 </button>
               </div>
+                {onOpenDispatchControl && (
+                  <button
+                    onClick={() => onOpenDispatchControl(beacon)}
+                    className="col-span-2 py-2.5 px-3 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer mt-1"
+                  >
+                    <Navigation className="w-3.5 h-3.5" />
+                    <span>Ranked Responder Match & Dispatch</span>
+                  </button>
+                )}
             </div>
           )}
 

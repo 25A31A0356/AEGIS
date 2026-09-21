@@ -98,7 +98,15 @@ class SOSMatchingEngine:
         if not last_location_time:
             return 0.05, False
 
-        age_seconds = (now - last_location_time).total_seconds()
+        # Normalize naive/aware datetimes across SQLite and PostgreSQL
+        t_loc = last_location_time
+        t_now = now
+        if t_loc.tzinfo is None and t_now.tzinfo is not None:
+            t_loc = t_loc.replace(tzinfo=t_now.tzinfo)
+        elif t_loc.tzinfo is not None and t_now.tzinfo is None:
+            t_now = t_now.replace(tzinfo=t_loc.tzinfo)
+
+        age_seconds = (t_now - t_loc).total_seconds()
         if age_seconds < 0:
             age_seconds = 0
 

@@ -134,8 +134,12 @@ export class ApiClient {
   ): Promise<ApiResult<T>> {
     let endpointPath = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     const base = this.getBaseUrl();
-    if (base.endsWith('/api/v1') && endpointPath.startsWith('/v1/')) {
-      endpointPath = endpointPath.replace(/^\/v1/, '');
+    if (base.endsWith('/api/v1')) {
+      if (endpointPath.startsWith('/api/v1/')) {
+        endpointPath = endpointPath.replace(/^\/api\/v1/, '');
+      } else if (endpointPath.startsWith('/v1/')) {
+        endpointPath = endpointPath.replace(/^\/v1/, '');
+      }
     }
     let url = `${base}${endpointPath}`;
 

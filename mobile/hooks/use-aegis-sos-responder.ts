@@ -80,28 +80,32 @@ export function useAegisSosResponder() {
   // 2. Real-Time SSE Listener for SOS Events
   useEffect(() => {
     const unsubscribe = AegisRealtime.onEvent((event) => {
-      if (!event.type.startsWith("sos.")) return;
+      const typeStr = (event.type || "").toLowerCase();
+      if (!typeStr.includes("sos") && !typeStr.includes("responder")) return;
 
       const data = event.data;
       if (!data) return;
 
-      switch (event.type) {
-        case "sos.created": {
+      const evType = (event.type || "").toUpperCase().replace(/\./g, "_");
+      const sosId = data.sos_id || data.sosId || data.id;
+
+      switch (evType) {
+        case "SOS_CREATED": {
           const inc = data as SosIncident;
-          // If we created it, update active incident
           if (activeIncident && activeIncident.id === inc.id) {
             setActiveIncident(inc);
           } else if (isNearbyResponderEnabled) {
-            // Check if eligible nearby offer
             void refreshOffers();
           }
           break;
         }
 
-        case "sos.offered":
-        case "sos.updated": {
-          if (activeIncident && data.sosId === activeIncident.id) {
-            setActiveIncident((prev) => (prev ? { ...prev, ...data } : null));
+        case "SOS_OFFERED":
+        case "RESPONDER_MATCHING":
+        case "SOS_UPDATED":
+        case "SOS_STATUS_UPDATED": {
+          if (activeIncident && sosId === activeIncident.id) {
+            setActiveIncident((prev) => (prev ? { ...prev, ...data, status: data.status || prev.status } : null));
           }
           if (isNearbyResponderEnabled) {
             void refreshOffers();
@@ -109,16 +113,19 @@ export function useAegisSosResponder() {
           break;
         }
 
-        case "sos.accepted": {
-          const { sosId, assignedResponder, route, status } = data;
+        case "SOS_ACCEPTED":
+        case "RESPONDER_ASSIGNED": {
+          const assignedResponder = data.assigned_responder || data.assignedResponder;
+          const route = data.route;
+          const status = data.status || "RESPONDER_EN_ROUTE";
           if (activeIncident && activeIncident.id === sosId) {
             setActiveIncident((prev) =>
               prev
                 ? {
                     ...prev,
-                    assignedResponder,
-                    route,
-                    status: status || "RESPONDER_EN_ROUTE",
+                    assignedResponder: assignedResponder || prev.assignedResponder,
+                    route: route || prev.route,
+                    status: status,
                     updatedAt: new Date().toISOString(),
                   }
                 : null
@@ -129,20 +136,25 @@ export function useAegisSosResponder() {
               prev
                 ? {
                     ...prev,
-                    assignedResponder,
-                    route,
-                    status: status || "RESPONDER_EN_ROUTE",
+                    assignedResponder: assignedResponder || prev.assignedResponder,
+                    route: route || prev.route,
+                    status: status,
                   }
                 : null
             );
           }
-          // Remove from candidate offers if claimed
           setIncomingOffers((prev) => prev.filter((o) => o.sosId !== sosId));
           break;
         }
 
-        case "sos.location_updated": {
-          const { sosId, role, coords, distanceKm, etaMinutes, status } = data;
+        case "SOS_LOCATION_UPDATED":
+        case "RESPONDER_LOCATION_UPDATED": {
+          const role = data.role || "responder";
+          const coords = data.coords || { latitude: data.latitude || data.lat, longitude: data.longitude || data.lon || data.lng };
+          const distanceKm = data.distance_km ?? data.distanceKm;
+          const etaMinutes = data.eta_minutes ?? data.etaMinutes;
+          const status = data.status;
+
           if (activeIncident && activeIncident.id === sosId) {
             setActiveIncident((prev) => {
               if (!prev) return null;
@@ -177,8 +189,8 @@ export function useAegisSosResponder() {
           break;
         }
 
-        case "sos.on_site": {
-          const { sosId } = data;
+        case "SOS_ON_SITE":
+        case "RESPONDER_ON_SITE": {
           if (activeIncident && activeIncident.id === sosId) {
             setActiveIncident((prev) => (prev ? { ...prev, status: "ON_SITE" } : null));
           }
@@ -188,10 +200,9 @@ export function useAegisSosResponder() {
           break;
         }
 
-        case "sos.resolved":
-        case "sos.cancelled":
-        case "sos.expired": {
-          const { sosId } = data;
+        case "SOS_RESOLVED":
+        case "SOS_CANCELLED":
+        case "SOS_EXPIRED": {
           if (activeIncident && activeIncident.id === sosId) {
             setActiveIncident(null);
           }

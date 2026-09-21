@@ -49,6 +49,7 @@ class RealtimeServiceSingleton {
   private pollingTimer: any = null;
   private lastEventTime: number = Date.now();
   private isExplicitlyClosed = false;
+  private processedEventIds = new Set<string>();
 
   constructor() {
     // Auto-connect if in browser environment
@@ -89,7 +90,8 @@ class RealtimeServiceSingleton {
     }
 
     const baseUrl = ApiClient.getBaseUrl();
-    const sseUrl = `${baseUrl}/v1/events`;
+    const cleanBase = baseUrl.endsWith('/api/v1') ? baseUrl : `${baseUrl.replace(/\/+$/, '')}/api/v1`;
+    const sseUrl = `${cleanBase}/events`;
 
     try {
       this.setStatus(this.reconnectAttempts > 0 ? 'RECONNECTING' : 'OFFLINE');
@@ -205,6 +207,15 @@ class RealtimeServiceSingleton {
    */
   private handleIncomingEvent(event: RealtimeEvent): void {
     this.lastEventTime = Date.now();
+    const evtId = event.id || (event as any).event_id;
+    if (evtId) {
+      if (this.processedEventIds.has(evtId)) return;
+      this.processedEventIds.add(evtId);
+      if (this.processedEventIds.size > 500) {
+        const first = this.processedEventIds.values().next().value;
+        if (first) this.processedEventIds.delete(first);
+      }
+    }
     if (this.status !== 'LIVE') {
       this.setStatus('LIVE');
     }

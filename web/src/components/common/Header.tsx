@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Shield,
   Bell,
   Globe,
   Menu,
@@ -11,11 +12,13 @@ import {
 } from 'lucide-react';
 import { useNotifications } from '../../context/NotificationContext';
 import { useProfile } from '../../context/ProfileContext';
+import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../i18n/useTranslation';
 import { AGIES_TOKENS } from '../../theme/tokens';
 import { DataStatusIndicator } from './DataStatusIndicator';
 
 interface HeaderProps {
+  onOpenAuth?: () => void;
   onOpenNotifications?: () => void;
   onOpenProfile?: () => void;
   onOpenSearch?: () => void;
@@ -23,6 +26,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  onOpenAuth,
   onOpenNotifications,
   onOpenProfile,
   onOpenSearch,
@@ -30,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { unreadCount, setIsDrawerOpen } = useNotifications();
   const { profile, colorScheme, setColorScheme } = useProfile();
+  const { user } = useAuth();
   const { t, language, setLanguage, availableLanguages } = useTranslation();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [greetingKey, setGreetingKey] = useState<'header.greetingMorning' | 'header.greetingAfternoon' | 'header.greetingEvening'>('header.greetingAfternoon');
@@ -81,6 +86,19 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right: Search, Language, Theme Toggle, Data Mode Indicator, Notifications, Profile */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Active Auth Role Badge */}
+          <button
+            onClick={onOpenAuth}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EDFAFC] dark:bg-[#0E2235] hover:bg-[#D4F4F8] dark:hover:bg-[#132E47] border border-[#AEEBF0] dark:border-[#1E3A52] text-xs font-mono transition-colors cursor-pointer"
+            title="Switch Role or Manage Auth Bearer Token"
+          >
+            <Shield className="w-3.5 h-3.5 text-[#075B8A] dark:text-[#18C3D0]" />
+            <span className="font-bold text-[10px] text-[#075B8A] dark:text-[#18C3D0] uppercase tracking-wide">
+              {user?.role || 'CITIZEN'}
+            </span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          </button>
+
           {/* Real-time Data Mode Status Indicator (LIVE vs DEMO) */}
           <DataStatusIndicator />
 

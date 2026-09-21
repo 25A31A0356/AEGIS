@@ -12,11 +12,13 @@ interface DashboardPageProps {
   onNavigate: (tab: string) => void;
   onSelectHazardById?: (id: string) => void;
   onFilterHazardsCategory?: (category: string) => void;
+  onOpenAIModal?: () => void;
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({
   onNavigate,
   onSelectHazardById,
+  onOpenAIModal,
 }) => {
   const [hazards, setHazards] = useState<HazardItem[]>(() => HazardService.getAllHazards());
   const [activeModalHazard, setActiveModalHazard] = useState<HazardItem | null>(null);
@@ -42,6 +44,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     <div className="max-w-[1720px] mx-auto space-y-6 font-sans select-none pb-8">
       {/* 1. Homepage Greeting, Subtitle, LIVE Status & Location Switcher */}
       <HomepageHeader />
+
+      {/* AI Decision Support & Official Human-in-the-Loop Hub Trigger */}
+      {onOpenAIModal && (
+        <div className="flex items-center justify-end">
+          <button
+            onClick={onOpenAIModal}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-purple-100 hover:bg-purple-200 dark:bg-purple-950/60 dark:hover:bg-purple-900/80 border border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-200 text-xs font-bold transition-all shadow-xs cursor-pointer"
+          >
+            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+            <span>AI Decision Support & Official Review Hub</span>
+          </button>
+        </div>
+      )}
 
       {/* 2. Top Grid: Main Weather Card (Left) + Risk Score & Recent Alerts (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">

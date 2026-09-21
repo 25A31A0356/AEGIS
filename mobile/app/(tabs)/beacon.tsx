@@ -24,6 +24,7 @@ import { useAppPreferences } from "@/lib/app-preferences";
 import { AegisApiService } from "@/lib/services/aegis-api";
 import { getResponsibleLocation } from "@/lib/services/aegis-location";
 import { DEFAULT_USER_LOCATION } from "@/lib/navigation-data";
+import { getLocalSosState, OfflineSosState } from "@/lib/services/aegis-cache";
 import { useAegisSosResponder } from "@/hooks/use-aegis-sos-responder";
 import { NearbySosRequestModal } from "@/components/NearbySosRequestModal";
 
@@ -426,6 +427,27 @@ export default function BeaconScreen() {
           </Text>
         </Pressable>
       </View>
+
+      {/* Offline SOS Waiting For Network Banner */}
+      {offlineSosState && !offlineSosState.isConfirmed && (
+        <View style={[styles.activeResponderBanner, { backgroundColor: "#FEF3C7", borderColor: "#F59E0B" }]}>
+          <View style={styles.activeResponderHeader}>
+            <View style={[styles.responderTag, { backgroundColor: "#D97706" }]}>
+              <IconSymbol name="antenna.radiowaves.left.and.right" size={14} color="#FFFFFF" />
+              <Text style={styles.responderTagText}>OFFLINE SOS QUEUED</Text>
+            </View>
+            <Text style={[styles.responderEta, { color: "#B45309" }]}>
+              Waiting for Network
+            </Text>
+          </View>
+          <Text style={[styles.responderDest, { color: "#92400E", fontWeight: "700" }]}>
+            Emergency request saved and waiting for network.
+          </Text>
+          <Text style={{ fontSize: 11, color: "#B45309", marginTop: 2 }}>
+            Idempotency Key: {offlineSosState.idempotencyKey.substring(0, 18)}...
+          </Text>
+        </View>
+      )}
 
       {/* Active Responder En Route Mode Banner (if user accepted an offer) */}
       {assignedIncident && (

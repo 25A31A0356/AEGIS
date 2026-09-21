@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
-    "test": "npx tsx scripts/verify_all_functionality.ts && npx tsx scripts/verify_production_security.ts && npx tsx scripts/verify_realtime_sync.ts && npx tsx scripts/verify_sos_lifecycle.ts && npx tsx scripts/verify_unified_sos_maps.ts",
+    "test": "node ./node_modules/jiti/bin/jiti.js scripts/verify_all_functionality.ts && node ./node_modules/jiti/bin/jiti.js scripts/verify_production_security.ts && node ./node_modules/jiti/bin/jiti.js scripts/verify_realtime_sync.ts && node ./node_modules/jiti/bin/jiti.js scripts/verify_sos_lifecycle.ts && node ./node_modules/jiti/bin/jiti.js scripts/verify_unified_sos_maps.ts",
     "preview": "vite preview"
   },
   "dependencies": {

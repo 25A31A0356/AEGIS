@@ -185,6 +185,13 @@ class SOSCancelRequest(BaseModel):
     reason: Optional[str] = Field(default="Cancelled by requester")
 
 
+class AssignResponderRequest(BaseModel):
+    responder_user_id: Optional[str] = Field(default=None, description="Target responder ID or None for auto-dispatch")
+    responder_id: Optional[str] = Field(default=None, description="Alias for responder_user_id")
+    vehicle_type: Optional[str] = Field(default="MOTORCYCLE")
+    notes: Optional[str] = Field(default="Dispatched by Command Center operator")
+
+
 class SOSResponderProfileRequest(BaseModel):
     is_responder_opted_in: bool = Field(default=True)
     is_available: bool = Field(default=True)
@@ -259,6 +266,210 @@ def _mask_phone(phone: str) -> str:
     if not phone or len(phone) < 4:
         return "CONFIDENTIAL"
     return f"{phone[:3]} ***** {phone[-2:]}" if len(phone) >= 7 else f"***{phone[-2:]}"
+
+
+@router.get("/{sos_id}/candidates", response_model=ApiResponse[List[Dict[str, Any]]])
+async def get_sos_candidates(
+    sos_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user)
+):
+    """
+    Returns ranked eligible candidate responders for an SOS signal with explainable selection rationale.
+    """
+    res = await db.execute(select(SOSSignal).where(SOSSignal.id == sos_id))
+    sos = res.scalars().first()
+    if not sos:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SOS incident not found.")
+
+    candidates = await SOSMatchingEngine.find_eligible_responders(db, sos)
+    
+    enriched: List[Dict[str, Any]] = []
+    for c in candidates:
+        u_res = await db.execute(select(User).where(User.id == c["user_id"]))
+        u = u_res.scalars().first()
+        enriched.append({
+            "user_id": c["user_id"],
+            "name": (getattr(u, "full_name", None) or getattr(u, "name", None) or f"Responder #{c['user_id'][:6]}"),
+            "phone_masked": _mask_phone(getattr(u, "phone", "") or ""),
+            "role": getattr(u, "role", "volunteer") if u else "volunteer",
+            "distance_km": c.get("distance_km", 0.0),
+            "composite_score": c.get("composite_score", 0.0),
+            "proximity_score": c.get("proximity_score", 0.0),
+            "capability_score": c.get("capability_score", 0.0),
+            "gps_freshness_score": c.get("gps_freshness_score", 0.0),
+            "workload_score": c.get("workload_score", 0.0),
+            "is_gps_fresh": c.get("is_gps_fresh", True),
+            "matched_skills": c.get("matched_skills", []),
+            "selection_rationale": c.get("selection_rationale", "")
+        })
+
+    return ApiResponse(
+        success=True,
+        data=enriched,
+        freshness=FreshnessMetadata(status="fresh", age_seconds=0)
+    )
+
+
+@router.post("/{sos_id}/assign-responder", response_model=ApiResponse[SOSResponseSchema])
+@router.post("/{sos_id}/dispatch", response_model=ApiResponse[SOSResponseSchema])
+async def assign_responder_to_sos(
+    sos_id: str,
+    payload: Optional[AssignResponderRequest] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user),
+    x_aegis_user_id: Optional[str] = Header(default=None, alias="X-Aegis-User-Id")
+):
+    """
+    Operator assigns a specific responder to an SOS incident.
+    """
+    res = await db.execute(select(SOSSignal).where(SOSSignal.id == sos_id))
+    sos = res.scalars().first()
+    if not sos:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SOS incident not found.")
+
+    operator_id = (current_user.id if current_user else None) or x_aegis_user_id or "COMMAND_CENTER"
+    responder_id = (payload.responder_user_id if payload and payload.responder_user_id else None) or (payload.responder_id if payload and payload.responder_id else None)
+
+    if not responder_id:
+        candidates = await SOSMatchingEngine.find_eligible_responders(db, sos)
+        if candidates:
+            responder_id = candidates[0]["user_id"]
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No eligible nearby responders available to assign."
+            )
+
+    pref_res = await db.execute(select(UserPreference).where(UserPreference.user_id == responder_id))
+    pref = pref_res.scalars().first()
+    resp_lat = (pref.last_known_lat if pref and pref.last_known_lat else None) or (sos.latitude - 0.015)
+    resp_lon = (pref.last_known_lng if pref and pref.last_known_lng else None) or (sos.longitude - 0.015)
+    vtype = payload.vehicle_type if (payload and payload.vehicle_type) else (getattr(pref, "vehicle_type", "MOTORCYCLE") or "MOTORCYCLE")
+
+    route_calc = await SOSRoutingEngine.calculate_route(
+        from_lat=resp_lat,
+        from_lon=resp_lon,
+        to_lat=sos.latitude,
+        to_lon=sos.longitude,
+        vehicle_type=vtype
+    )
+
+    sos.accepted_by = responder_id
+    sos.accepted_at = utc_now()
+    await SOSStateMachine.transition(
+        db=db,
+        sos=sos,
+        target_state=SOSState.RESPONDER_ASSIGNED.value,
+        changed_by_user_id=operator_id,
+        reason=payload.notes if payload else "Assigned by Command Center operator"
+    )
+
+    existing_assigns = await db.execute(
+        select(SOSAssignment).where(and_(SOSAssignment.sos_id == sos.id, SOSAssignment.status == "ACTIVE"))
+    )
+    for old_a in existing_assigns.scalars().all():
+        old_a.status = "REASSIGNED"
+
+    assignment = SOSAssignment(
+        sos_id=sos.id,
+        responder_user_id=responder_id,
+        status="ACTIVE",
+        assigned_at=utc_now(),
+        route_geometry=route_calc.get("geometry", {}),
+        distance_meters=route_calc.get("distance_meters", 0.0),
+        eta_seconds=route_calc.get("eta_seconds", 0),
+        last_responder_lat=resp_lat,
+        last_responder_lon=resp_lon,
+        last_responder_update=utc_now(),
+        speed_kmh=getattr(pref, "speed_kmh", 0.0) if pref else 0.0,
+        heading_degrees=getattr(pref, "heading_degrees", 0.0) if pref else 0.0,
+        is_stale_gps=False
+    )
+    db.add(assignment)
+    await db.commit()
+    await db.refresh(sos)
+
+    await NotificationService.broadcast_sos_event(
+        event_name="RESPONDER_ASSIGNED",
+        sos=sos,
+        extra_data={
+            "responder_id": responder_id,
+            "assigned_by": operator_id,
+            "distance_meters": assignment.distance_meters,
+            "eta_seconds": assignment.eta_seconds,
+            "route": assignment.route_geometry
+        }
+    )
+
+    return ApiResponse(
+        success=True,
+        data=_build_sos_response(sos, is_authorized=True),
+        freshness=FreshnessMetadata(status="fresh", age_seconds=0)
+    )
+
+
+@router.get("/{sos_id}/route", response_model=ApiResponse[Dict[str, Any]])
+async def get_sos_route(
+    sos_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user)
+):
+    """
+    Returns the authoritative vehicle-aware route, geometry, distance, and ETA calculated by SOSRoutingEngine.
+    """
+    res = await db.execute(select(SOSSignal).where(SOSSignal.id == sos_id))
+    sos = res.scalars().first()
+    if not sos:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SOS incident not found.")
+
+    assign_res = await db.execute(
+        select(SOSAssignment).where(and_(SOSAssignment.sos_id == sos.id, SOSAssignment.status == "ACTIVE"))
+    )
+    assignment = assign_res.scalars().first()
+
+    if assignment and assignment.route_geometry:
+        return ApiResponse(
+            success=True,
+            data={
+                "sos_id": sos.id,
+                "responder_id": assignment.responder_user_id,
+                "distance_meters": assignment.distance_meters,
+                "distance_km": round(assignment.distance_meters / 1000.0, 2) if assignment.distance_meters else 0.0,
+                "eta_seconds": assignment.eta_seconds,
+                "eta_minutes": round(assignment.eta_seconds / 60.0, 1) if assignment.eta_seconds else 0.0,
+                "origin": [assignment.last_responder_lat, assignment.last_responder_lon],
+                "destination": [sos.latitude, sos.longitude],
+                "geometry": assignment.route_geometry,
+                "is_stale_gps": assignment.is_stale_gps
+            },
+            freshness=FreshnessMetadata(status="fresh", age_seconds=0)
+        )
+
+    route_calc = await SOSRoutingEngine.calculate_route(
+        from_lat=sos.latitude - 0.02,
+        from_lon=sos.longitude - 0.02,
+        to_lat=sos.latitude,
+        to_lon=sos.longitude,
+        vehicle_type="MOTORCYCLE"
+    )
+
+    return ApiResponse(
+        success=True,
+        data={
+            "sos_id": sos.id,
+            "responder_id": None,
+            "distance_meters": route_calc.get("distance_meters", 0.0),
+            "distance_km": round(route_calc.get("distance_meters", 0.0) / 1000.0, 2),
+            "eta_seconds": route_calc.get("eta_seconds", 0),
+            "eta_minutes": round(route_calc.get("eta_seconds", 0) / 60.0, 1),
+            "origin": [sos.latitude - 0.02, sos.longitude - 0.02],
+            "destination": [sos.latitude, sos.longitude],
+            "geometry": route_calc.get("geometry", {}),
+            "is_stale_gps": False
+        },
+        freshness=FreshnessMetadata(status="fresh", age_seconds=0)
+    )
 
 
 def _build_safe_response(safe: SafeEvent) -> SafeResponseSchema:

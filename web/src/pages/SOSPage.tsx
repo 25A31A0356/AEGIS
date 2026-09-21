@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SOSTriageCard } from '../components/sos/SOSTriageCard';
 import { SOSDetailDrawer } from '../components/sos/SOSDetailDrawer';
+import { DispatchControlModal } from '../components/dispatch/DispatchControlModal';
 import { SOSRouteSimulator } from '../components/sos/SOSRouteSimulator';
 import { GoogleSOSMap } from '../components/map/GoogleSOSMap';
 import { useSOS } from '../context/SOSContext';
@@ -50,6 +51,8 @@ export const SOSPage: React.FC<SOSPageProps> = ({ preSelectedSOSId }) => {
   const [triageFilter, setTriageFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
+  const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
+  const [beaconForDispatch, setBeaconForDispatch] = useState<any>(null);
 
   useEffect(() => {
     HazardService.fetchLiveHazards().then(setHazards).catch(console.error);
@@ -429,7 +432,22 @@ export const SOSPage: React.FC<SOSPageProps> = ({ preSelectedSOSId }) => {
         onClose={() => setIsDetailDrawerOpen(false)}
         onUpdateStatus={(id, st, notes) => updateBeaconTriage(id, st, notes)}
         onSimulateRoute={(b) => triggerEmergencyRouteSimulation(b)}
+        onOpenDispatchControl={(b) => {
+          setBeaconForDispatch(b);
+          setIsDispatchModalOpen(true);
+        }}
       />
+      {/* Central Dispatch Operations Modal */}
+      {isDispatchModalOpen && beaconForDispatch && (
+        <DispatchControlModal
+          beacon={beaconForDispatch}
+          isOpen={isDispatchModalOpen}
+          onClose={() => setIsDispatchModalOpen(false)}
+          onDispatchSuccess={() => {
+            refreshBeacons();
+          }}
+        />
+      )}
     </div>
   );
 };

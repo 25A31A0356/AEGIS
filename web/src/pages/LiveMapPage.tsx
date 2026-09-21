@@ -81,7 +81,7 @@ export const LiveMapPage: React.FC<LiveMapPageProps> = ({
         lat: center[0],
         lng: center[1],
         radius_km: 250,
-        layers: 'hazards,reports,sos_beacons,responders,shelters,safe_events'
+        layers: 'hazards,reports,sos_beacons,responders,shelters,facilities,safe_events'
       }, { skipCache: true, timeoutMs: 4000 });
 
       if (res && res.features) {

@@ -185,6 +185,25 @@ const createShelterIcon = () => {
   });
 };
 
+// 3b. Emergency Medical & Civil Defense Facility Icon
+const createFacilityIcon = (category: string = 'hospital') => {
+  const isHospital = category.toLowerCase().includes('hospital') || category.toLowerCase().includes('medical');
+  const isFire = category.toLowerCase().includes('fire');
+  const emoji = isHospital ? '🏥' : isFire ? '🚒' : '🏢';
+  const color = isHospital ? '#059669' : isFire ? '#DC2626' : '#2563EB';
+  return L.divIcon({
+    className: 'agies-facility-pin',
+    html: `
+      <div class="w-6 h-6 rounded-lg border-2 border-white shadow-md flex items-center justify-center text-white text-[11px]" style="background-color: ${color};">
+        ${emoji}
+      </div>
+    `,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
+  });
+};
+
 // 4. Hazard & Community Report Marker Icon
 const createHazardPinIcon = (type: string, severity: string) => {
   let color = '#EA4335';
@@ -537,6 +556,26 @@ export const InteractiveLocationMap: React.FC<InteractiveLocationMapProps> = ({
                       <strong className="text-emerald-800 block font-bold mb-0.5">🏠 {feat.title}</strong>
                       <div className="text-slate-600 text-[11px]">Capacity: {feat.capacity || 1000} persons</div>
                       <div className="text-slate-500 text-[10px] mt-1">Location: {feat.district}, {feat.state}</div>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            }
+
+            // 3b. Emergency Facilities (Hospitals, Fire, Civil Defense)
+            if (feat.layer === 'facilities') {
+              return (
+                <Marker
+                  key={feat.id}
+                  position={feat.coordinates}
+                  icon={createFacilityIcon(feat.category)}
+                >
+                  <Popup>
+                    <div className="p-2 max-w-xs font-sans text-xs">
+                      <strong className="text-emerald-800 dark:text-emerald-400 block font-bold mb-0.5">{feat.title}</strong>
+                      <div className="text-slate-600 dark:text-slate-300 text-[11px] font-mono capitalize">Type: {feat.category}</div>
+                      <div className="text-slate-500 dark:text-slate-400 text-[10px] mt-1">{feat.district || 'Sector'}, {feat.state || 'India'}</div>
+                      {feat.status && <div className="text-[10px] font-bold font-mono text-emerald-600 mt-0.5">Status: {feat.status}</div>}
                     </div>
                   </Popup>
                 </Marker>

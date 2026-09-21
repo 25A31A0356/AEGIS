@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { HazardFilterBar } from '../components/hazards/HazardFilterBar';
 import { HazardCard } from '../components/hazards/HazardCard';
 import { HazardDetailModal } from '../components/hazards/HazardDetailModal';
+import { AlertManagementModal } from '../components/hazards/AlertManagementModal';
 import { HazardService, HazardFilterOptions } from '../services/hazardService';
 import { HazardItem } from '../types/hazard';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Radio } from 'lucide-react';
 
 interface HazardsPageProps {
   onNavigate: (tab: string) => void;
@@ -26,6 +27,7 @@ export const HazardsPage: React.FC<HazardsPageProps> = ({
   });
 
   const [activeModalHazard, setActiveModalHazard] = useState<HazardItem | null>(null);
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
   useEffect(() => {
     if (preSelectedHazardId) {
@@ -76,6 +78,17 @@ export const HazardsPage: React.FC<HazardsPageProps> = ({
           </p>
         </div>
 
+        {/* Publish Official Alert Button */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsAlertModalOpen(true)}
+            className="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-xl font-bold font-mono text-xs flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+          >
+            <Radio className="w-3.5 h-3.5 animate-pulse" />
+            <span>Publish Official Advisory</span>
+          </button>
+        </div>
+
         {/* Quick Tally Chips */}
         <div className="flex items-center gap-2 font-mono text-xs">
           <span className="bg-red-100 text-red-700 px-2.5 py-1 rounded-lg font-bold">
@@ -120,6 +133,17 @@ export const HazardsPage: React.FC<HazardsPageProps> = ({
         hazard={activeModalHazard}
         onClose={() => setActiveModalHazard(null)}
         onViewOnMap={() => onNavigate('live-map')}
+      />
+      {/* Official Alert Advisory Creation Modal */}
+      <AlertManagementModal
+        isOpen={isAlertModalOpen}
+        onClose={() => setIsAlertModalOpen(false)}
+        onAlertCreated={() => {
+          HazardService.fetchLiveHazards().then(() => {
+            setHazardsList(HazardService.filterHazards(filters));
+            setMetrics(HazardService.getMetricsSummary());
+          });
+        }}
       />
     </div>
   );

@@ -73,7 +73,8 @@ class AegisRealtimeClient {
     this.setStatus("RECONNECTING");
 
     const baseUrl = getApiBaseUrl();
-    const endpoint = `${baseUrl}/api/v1/realtime`;
+    const rootUrl = baseUrl.replace(/\/api\/v1\/?$/, "").replace(/\/api\/?$/, "").replace(/\/+$/, "");
+    const endpoint = `${rootUrl}/api/v1/realtime`;
 
     // 1. Browser / Web EventSource Support
     if (typeof window !== "undefined" && typeof (window as any).EventSource !== "undefined") {

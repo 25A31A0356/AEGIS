@@ -124,6 +124,7 @@ def _map_alert_to_schema(a: AlertRecord) -> AlertItemSchema:
 
 
 @router.get("", response_model=ApiResponse[List[AlertItemSchema]], dependencies=[Depends(rate_limit_check)])
+@router.get("/", response_model=ApiResponse[List[AlertItemSchema]], dependencies=[Depends(rate_limit_check)])
 async def get_alerts(
     category: Optional[str] = Query(default=None, description="Category/Hazard type filter"),
     type: Optional[str] = Query(default=None, description="Synonym for category"),
@@ -224,6 +225,7 @@ async def get_alert_by_id(
 
 
 @router.post("", response_model=ApiResponse[AlertItemSchema])
+@router.post("/", response_model=ApiResponse[AlertItemSchema])
 async def create_alert(
     payload: AlertCreateRequest,
     db: AsyncSession = Depends(get_db),

@@ -7,7 +7,6 @@
 import { ApiClient } from './apiClient';
 import { RealtimeService, RealtimeEvent } from './realtimeService';
 import { SOSBeacon, SOSTriageStatus } from '../types/sos';
-import { DEMO_SOS_BEACONS } from '../data/demoSOS';
 
 const STORAGE_KEY = 'aegis_user_sos_beacons_v3';
 
@@ -221,15 +220,15 @@ export class SOSService {
     if (!beacon) return undefined;
 
     // Determine target endpoint based on new status
-    let endpoint = `/v1/sos/${id}/acknowledge`;
+    let endpoint = `/sos/${id}/acknowledge`;
     if (newStatus === 'dispatching' || newStatus === 'ACCEPTED' || newStatus === 'RESPONDER_EN_ROUTE') {
-      endpoint = `/v1/sos/${id}/dispatch`;
+      endpoint = `/sos/${id}/dispatch`;
     } else if (newStatus === 'on_scene' || newStatus === 'ON_SITE') {
-      endpoint = `/v1/sos/${id}/on-site`;
+      endpoint = `/sos/${id}/arrive`;
     } else if (newStatus === 'resolved' || newStatus === 'RESOLVED') {
-      endpoint = `/v1/sos/${id}/resolve`;
+      endpoint = `/sos/${id}/resolve`;
     } else if (newStatus === 'cancelled' || newStatus === 'CANCELLED') {
-      endpoint = `/v1/sos/${id}/cancel`;
+      endpoint = `/sos/${id}/cancel`;
     }
 
     try {
