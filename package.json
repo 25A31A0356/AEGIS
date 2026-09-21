@@ -1,0 +1,35 @@
+{
+  "name": "aegis-monorepo",
+  "version": "1.0.0",
+  "description": "AEGIS Disaster Management & Emergency Response - Unified Monorepo",
+  "private": true,
+  "workspaces": [
+    "web",
+    "mobile"
+  ],
+  "scripts": {
+    "start:backend": "python -m uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port 8000 --reload",
+    "start:web": "npm --prefix web run dev",
+    "start:mobile": "npm --prefix mobile run dev",
+    "start:all": "python start_all.py",
+    "dev": "python start_all.py",
+    "status": "python scripts/check_status.py",
+    "test:e2e": "npx tsx scripts/verify_e2e_mobile_web_sync.ts",
+    "verify": "npx tsx scripts/verify_e2e_mobile_web_sync.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  },
+  "keywords": [
+    "aegis",
+    "emergency-response",
+    "disaster-management",
+    "monorepo",
+    "fastapi",
+    "react",
+    "react-native",
+    "expo"
+  ]
+}
