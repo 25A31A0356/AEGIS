@@ -247,3 +247,29 @@ async def verify_client_credentials(
             message="Client verified successfully for AEGIS Central Gateway." if is_valid else "Invalid client application credentials."
         )
     )
+
+
+@router.get("/me", response_model=ApiResponse[Dict[str, Any]])
+async def get_current_user_profile(
+    current_user: User = Depends(require_authenticated_user)
+):
+    """
+    Returns current authenticated user profile, active role, and system permissions.
+    """
+    return ApiResponse(
+        success=True,
+        data={
+            "id": current_user.id,
+            "email": current_user.email,
+            "full_name": current_user.full_name,
+            "role": current_user.role,
+            "is_active": current_user.is_active,
+            "permissions": {
+                "is_admin": current_user.role in ("admin",),
+                "is_official": current_user.role in ("admin", "official"),
+                "is_operator": current_user.role in ("admin", "official", "operator"),
+                "is_responder": current_user.role in ("admin", "official", "operator", "responder", "sdrf_officer", "ndrf_officer"),
+                "is_citizen": True
+            }
+        }
+    )

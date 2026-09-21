@@ -297,6 +297,7 @@ class SOSResponderCandidate(Base):
     distance_km: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     offered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     responded_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    selection_rationale: Mapped[Optional[str]] = mapped_column(Text, default="", nullable=True)
 
     __table_args__ = (
         Index("ix_sos_candidate_unique", "sos_id", "responder_user_id", unique=True),
@@ -674,3 +675,120 @@ class NotificationDeliveryRecord(Base):
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+
+class Device(Base):
+    """
+    Physical hardware device registration.
+    Tracks OS version, hardware vendor, app version, and links to push tokens.
+    """
+    __tablename__ = "aegis_devices"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    device_id: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    user_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("aegis_users.id", ondelete="SET NULL"), nullable=True, index=True)
+    platform: Mapped[str] = mapped_column(String(20), default="ANDROID", nullable=False)  # ANDROID, IOS, WEB
+    os_version: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    app_version: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    device_model: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, index=True)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+
+class ReportEvidence(Base):
+    """
+    Verified multimedia evidence attached to citizen and responder incident reports.
+    Enforces secure hash auditing, size bounds, and MIME safety.
+    """
+    __tablename__ = "aegis_report_evidence"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    report_id: Mapped[str] = mapped_column(String(36), ForeignKey("aegis_incident_reports.id", ondelete="CASCADE"), nullable=False, index=True)
+    uploader_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    media_type: Mapped[str] = mapped_column(String(30), default="PHOTO", nullable=False)  # PHOTO, VIDEO, AUDIO, DOCUMENT
+    file_url: Mapped[str] = mapped_column(String(1024), nullable=False)
+    file_size_bytes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(100), default="image/jpeg", nullable=False)
+    sha256_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
+    verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    metadata_json: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
+class ReportVerification(Base):
+    """
+    Immutable audit log for operator verification reviews of incident reports.
+    Records operator decisions, verified severity adjustments, and rationale.
+    """
+    __tablename__ = "aegis_report_verifications"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    report_id: Mapped[str] = mapped_column(String(36), ForeignKey("aegis_incident_reports.id", ondelete="CASCADE"), nullable=False, index=True)
+    operator_id: Mapped[str] = mapped_column(String(36), ForeignKey("aegis_users.id", ondelete="CASCADE"), nullable=False, index=True)
+    verification_status: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # VERIFIED, REJECTED, UNDER_REVIEW
+    verified_severity: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    operator_notes: Mapped[Optional[str]] = mapped_column(Text, default="", nullable=True)
+    rejection_reason: Mapped[Optional[str]] = mapped_column(String(255), default="", nullable=True)
+    confidence_score: Mapped[float] = mapped_column(Float, default=1.0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)
+
+
+class EmergencyFacility(Base):
+    """
+    Critical emergency response infrastructure and medical facilities.
+    Supports Hospitals, Fire Stations, Police Headquarters, Relief Shelters, and NDRF Bases.
+    """
+    __tablename__ = "aegis_emergency_facilities"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    facility_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # HOSPITAL, FIRE_STATION, POLICE_STATION, RELIEF_CAMP, NDRF_BASE, DISASTER_HQ
+    latitude: Mapped[float] = mapped_column(Float, nullable=False, index=True)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False, index=True)
+    address: Mapped[Optional[str]] = mapped_column(String(255), default="", nullable=True)
+    city: Mapped[Optional[str]] = mapped_column(String(100), default="", nullable=True)
+    district: Mapped[Optional[str]] = mapped_column(String(100), default="", nullable=True, index=True)
+    state: Mapped[Optional[str]] = mapped_column(String(100), default="", nullable=True, index=True)
+    contact_phone: Mapped[Optional[str]] = mapped_column(String(50), default="", nullable=True)
+    capacity: Mapped[int] = mapped_column(Integer, default=100, nullable=False)
+    current_occupancy: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    operational_status: Mapped[str] = mapped_column(String(50), default="OPERATIONAL", nullable=False, index=True)  # OPERATIONAL, COMPROMISED, EVACUATED, OFFLINE
+    amenities: Mapped[List[str]] = mapped_column(JSON, default=list, nullable=False)  # ["ICU", "TRAUMA_CENTER", "POWER_BACKUP", "OXYGEN"]
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, index=True)
+    metadata_json: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    __table_args__ = (
+        Index("idx_facility_geo", "latitude", "longitude"),
+        Index("idx_facility_type_status", "facility_type", "operational_status"),
+    )
+
+
+class AIDecisionAudit(Base):
+    """
+    Authoritative audit record for all AI-assisted disaster intelligence tasks.
+    Enforces human oversight guardrails: records task, model provider, input hash,
+    confidence score, and official human authorization state.
+    """
+    __tablename__ = "aegis_ai_decision_audits"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    request_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    model_provider: Mapped[str] = mapped_column(String(100), default="gemini-1.5-flash", nullable=False)
+    task_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # CLASSIFICATION, RISK_ASSESSMENT, SUMMARIZATION, HAZARD_EXTRACTION, RESOURCE_RECOMMENDATION
+    input_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    input_context: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    output_payload: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, default=1.0, nullable=False)
+    
+    # Human Authorization Guardrail
+    authorization_status: Mapped[str] = mapped_column(String(50), default="NOT_REQUIRED", nullable=False, index=True)  # PENDING_OFFICIAL_REVIEW, AUTHORIZED_OFFICIAL, REJECTED, NOT_REQUIRED
+    authorized_by_user_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    authorized_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    authorization_notes: Mapped[Optional[str]] = mapped_column(Text, default="", nullable=True)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)

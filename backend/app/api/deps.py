@@ -64,13 +64,58 @@ async def require_authenticated_user(
     return user
 
 
+get_current_active_user = require_authenticated_user
+
+
+async def require_citizen_or_above(
+    user: User = Depends(require_authenticated_user)
+) -> User:
+    return user
+
+
+async def require_responder_or_above(
+    user: User = Depends(require_authenticated_user)
+) -> User:
+    allowed_roles = ("responder", "sdrf_officer", "ndrf_officer", "operator", "official", "admin")
+    if user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to emergency responders and operational personnel."
+        )
+    return user
+
+
+async def require_operator_or_above(
+    user: User = Depends(require_authenticated_user)
+) -> User:
+    allowed_roles = ("operator", "official", "admin")
+    if user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to command center operators and disaster officials."
+        )
+    return user
+
+
+async def require_official_or_above(
+    user: User = Depends(require_authenticated_user)
+) -> User:
+    allowed_roles = ("official", "admin")
+    if user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to authorized disaster management officials."
+        )
+    return user
+
+
 async def require_admin_role(
     user: User = Depends(require_authenticated_user)
 ) -> User:
     if user.role not in ("admin", "official"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access restricted to administrative and disaster response personnel."
+            detail="Access restricted to administrative personnel."
         )
     return user
 

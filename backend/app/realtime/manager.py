@@ -296,6 +296,47 @@ class EventBroker:
     """
     _sequence_counter: int = 0
 
+    @classmethod
+    def format_event(
+        cls,
+        event_type: str,
+        data: Dict[str, Any],
+        event_id: Optional[str] = None,
+        entity_id: Optional[str] = None,
+        entity_type: Optional[str] = None,
+        actor_id: Optional[str] = None,
+        channel: str = "all",
+        category: str = "GENERAL"
+    ) -> Dict[str, Any]:
+        eid = event_id or f"evt_{uuid.uuid4().hex}"
+        now_iso = datetime.now(timezone.utc).isoformat()
+        sanitized = cls.sanitize_payload(data)
+        ent_id = entity_id or str(sanitized.get("id") or sanitized.get("sos_id") or "")
+        ent_type = entity_type or category or "GENERAL"
+        act_id = actor_id or str(data.get("user_id") or "system")
+
+        return {
+            "id": eid,
+            "event_id": eid,
+            "version": EVENT_SCHEMA_VERSION,
+            "event": event_type,
+            "event_type": event_type,
+            "entity_id": ent_id,
+            "entity_type": ent_type,
+            "actor_id": act_id,
+            "category": category,
+            "channel": channel,
+            "timestamp": now_iso,
+            "sequence": 1,
+            "data": sanitized,
+            "payload": sanitized,
+            "metadata": {
+                "producer": "aegis-unified-core",
+                "environment": "production"
+            }
+        }
+
+
     @staticmethod
     def sanitize_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         """Strictly redacts private user fields before public streaming."""
@@ -327,15 +368,25 @@ class EventBroker:
 
         # Build standardized v1.0.0 envelope
         sanitized_data = cls.sanitize_payload(data)
+        entity_id = str(sanitized_data.get("id") or sanitized_data.get("sos_id") or sanitized_data.get("report_id") or sanitized_data.get("alert_id") or "")
+        entity_type = category or "GENERAL"
+        actor_id = str(data.get("user_id") or data.get("requester_user_id") or data.get("actor_id") or "system")
+
         event_packet = {
             "id": event_id,
+            "event_id": event_id,
             "version": EVENT_SCHEMA_VERSION,
             "event": event_type,
+            "event_type": event_type,
+            "entity_id": entity_id,
+            "entity_type": entity_type,
+            "actor_id": actor_id,
             "category": category,
             "channel": channel,
             "timestamp": now_iso,
             "sequence": cls._sequence_counter,
             "data": sanitized_data,
+            "payload": sanitized_data,
             "metadata": {
                 "producer": "aegis-unified-core",
                 "environment": "production"
@@ -375,3 +426,8 @@ class EventBroker:
 
         logger.info(f"Broadcasted real-time event '{event_type}' (id={event_id}) on channel '{channel}' to Web & App.")
         return event_packet
+
+
+# Authoritative aliases
+RealtimeEventManager = EventBroker
+EventPublisher = EventBroker

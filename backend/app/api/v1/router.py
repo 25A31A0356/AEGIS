@@ -36,6 +36,7 @@ from backend.app.api.v1.shelters import router as shelters_router
 from backend.app.api.v1.sas_grid import router as sas_grid_router
 from backend.app.api.v1.safe_plan import router as safe_plan_router
 from backend.app.api.v1.notifications import router as notifications_router
+from backend.app.api.v1.facilities import router as facilities_router
 
 api_router = APIRouter()
 
@@ -77,4 +78,5 @@ api_router.include_router(shelters_router)
 api_router.include_router(sas_grid_router)
 api_router.include_router(safe_plan_router)
 api_router.include_router(notifications_router)
+api_router.include_router(facilities_router)
 

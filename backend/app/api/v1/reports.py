@@ -17,7 +17,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, func, or_, and_
 
 from backend.app.database.session import get_db
-from backend.app.database.models import IncidentReport, ReportVote, ActivityEvent, User, utc_now
+import hashlib
+from backend.app.database.models import IncidentReport, ReportVote, ActivityEvent, ReportEvidence, ReportVerification, User, utc_now
 from backend.app.schemas.common import ApiResponse, FreshnessMetadata, ProvenanceMetadata
 from backend.app.providers.adapters.geographic import GeographicLocationProvider
 from backend.app.ingestion.deduplicator import EventDeduplicator
@@ -253,7 +254,9 @@ async def create_community_report(
             m_type = "PHOTO"
 
     # 4. Create IncidentReport record
+    new_report_id = str(uuid.uuid4())
     report = IncidentReport(
+        id=new_report_id,
         user_id=user_id,
         anonymous_reporter_id=payload.anonymous_reporter_id,
         reporter_name=payload.reporter_name or (current_user.full_name if current_user else "Citizen Observer"),
@@ -286,6 +289,20 @@ async def create_community_report(
     )
 
     db.add(report)
+    if payload.media_urls:
+        for m_url in payload.media_urls:
+            evidence = ReportEvidence(
+                report_id=report.id,
+                uploader_id=user_id,
+                media_type=payload.media_type or "PHOTO",
+                file_url=m_url,
+                file_size_bytes=0,
+                mime_type="video/mp4" if (payload.media_type == "VIDEO" or m_url.endswith((".mp4", ".mov"))) else "image/jpeg",
+                is_verified=False,
+                metadata_json={"source": "citizen_report_submission"},
+                created_at=now
+            )
+            db.add(evidence)
     await db.commit()
     await db.refresh(report)
 
@@ -458,6 +475,17 @@ async def verify_community_report(
             report.operator_notes = payload.operator_notes
     report.updated_at = now
 
+    ver_log = ReportVerification(
+        report_id=report.id,
+        operator_id=user_id if user_id and len(user_id) == 36 else "00000000-0000-0000-0000-000000000000",
+        verification_status="VERIFIED",
+        verified_severity=report.severity,
+        operator_notes=payload.operator_notes if payload else "Verified by operator command.",
+        confidence_score=1.0,
+        created_at=now
+    )
+    db.add(ver_log)
+
     await db.commit()
     await db.refresh(report)
 
@@ -514,6 +542,18 @@ async def reject_community_report(
     if payload.operator_notes:
         report.operator_notes = payload.operator_notes
     report.updated_at = now
+
+    rej_log = ReportVerification(
+        report_id=report.id,
+        operator_id=user_id if user_id and len(user_id) == 36 else "00000000-0000-0000-0000-000000000000",
+        verification_status="REJECTED",
+        verified_severity=report.severity,
+        rejection_reason=payload.rejection_reason,
+        operator_notes=payload.operator_notes or "",
+        confidence_score=0.0,
+        created_at=now
+    )
+    db.add(rej_log)
 
     await db.commit()
     await db.refresh(report)
@@ -749,7 +789,8 @@ class MediaUploadResponse(BaseModel):
     filename: str
     content_type: str
     size_bytes: int
-    media_type: str  # PHOTO or VIDEO
+    media_type: str
+    sha256_hash: Optional[str] = None  # PHOTO or VIDEO
 
 
 @router.post("/upload-media", response_model=ApiResponse[MediaUploadResponse], dependencies=[Depends(rate_limit_check)])
@@ -781,6 +822,7 @@ async def upload_report_media(
 
     contents = await file.read()
     size_bytes = len(contents)
+    sha256_hash = hashlib.sha256(contents).hexdigest()
 
     if size_bytes == 0:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
@@ -815,7 +857,8 @@ async def upload_report_media(
             filename=unique_filename,
             content_type=content_type or ("video/mp4" if is_video else "image/jpeg"),
             size_bytes=size_bytes,
-            media_type=media_label
+            media_type=media_label,
+            sha256_hash=sha256_hash
         ),
         freshness=FreshnessMetadata(status="fresh", age_seconds=0),
         provenance=ProvenanceMetadata(

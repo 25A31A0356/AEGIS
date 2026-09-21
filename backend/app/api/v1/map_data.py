@@ -14,7 +14,7 @@ from backend.app.database.session import get_db
 from backend.app.database.models import (
     NormalizedObservation, AlertRecord, IncidentReport,
     SOSSignal, SOSAssignment, SOSLocationUpdate, UserPreference,
-    User, SafeZone, SafeEvent, utc_now
+    User, SafeZone, SafeEvent, EmergencyFacility, utc_now
 )
 from backend.app.schemas.common import ApiResponse, FreshnessMetadata, ProvenanceMetadata
 from backend.app.ingestion.deduplicator import EventDeduplicator
@@ -51,7 +51,7 @@ class GeoJSONFeatureCollection(BaseModel):
 
 @router.get("", response_model=ApiResponse[GeoJSONFeatureCollection], dependencies=[Depends(rate_limit_check)])
 async def get_unified_map_data(
-    layers: Optional[str] = Query(default="all", description="Comma-separated layers: hazards,reports,sos_beacons,responders,shelters,road_hazards,safe_events,all"),
+    layers: Optional[str] = Query(default="all", description="Comma-separated layers: hazards,reports,sos_beacons,responders,shelters,facilities,road_hazards,safe_events,all"),
     category: Optional[str] = Query(default="ALL", description="Category / hazard type filter"),
     status: Optional[str] = Query(default=None, description="Status filter (e.g. TRIGGERED, RESPONDER_ASSIGNED, RESPONDER_EN_ROUTE, ON_SITE, ACTIVE, etc.)"),
     severity: Optional[str] = Query(default=None, description="Severity filter (e.g. CRITICAL, HIGH, MODERATE, LOW)"),
@@ -127,7 +127,8 @@ async def get_unified_map_data(
         "responders": 0,
         "shelters": 0,
         "road_hazards": 0,
-        "safe_events": 0
+        "safe_events": 0,
+        "facilities": 0
     }
     now = utc_now()
 
@@ -417,6 +418,37 @@ async def get_unified_map_data(
                     }
                 ))
                 layer_counts["safe_events"] += 1
+
+
+    # 7. LAYER: Emergency Facilities & Critical Infrastructure
+    if include_all or "facilities" in req_layers:
+        fac_query = select(EmergencyFacility).where(EmergencyFacility.is_active == True).limit(150)
+        fac_res = await db.execute(fac_query)
+        for f in fac_res.scalars().all():
+            if in_bounds(f.latitude, f.longitude):
+                features.append(GeoJSONFeature(
+                    id=f"facility_{f.id}",
+                    geometry=GeoJSONGeometry(type="Point", coordinates=[f.longitude, f.latitude]),
+                    properties={
+                        "layer": "facilities",
+                        "entity_id": f.id,
+                        "name": f.name,
+                        "title": f.name,
+                        "facility_type": f.facility_type,
+                        "category": f.facility_type,
+                        "severity": "LOW",
+                        "operational_status": f.operational_status,
+                        "capacity": f.capacity,
+                        "current_occupancy": f.current_occupancy,
+                        "amenities": f.amenities or [],
+                        "contact_phone": f.contact_phone or "",
+                        "city": f.city or "",
+                        "district": f.district or "",
+                        "state": f.state or "",
+                        "icon": f"facility_{f.facility_type.lower()}"
+                    }
+                ))
+                layer_counts["facilities"] = layer_counts.get("facilities", 0) + 1
 
     # Server-Side Grid Clustering Summary if requested
     clustering_summary = None

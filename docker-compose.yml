@@ -1,0 +1,96 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: aegis_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: aegis_db
+      POSTGRES_USER: aegis_user
+      POSTGRES_PASSWORD: aegis_secure_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - aegis_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegis_user -d aegis_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aegis_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: aegis_redis
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - aegis_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aegis_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aegis_backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+      HOST: "0.0.0.0"
+      PORT: "8000"
+      DATABASE_URL: postgresql+asyncpg://aegis_user:aegis_secure_password_2026@postgres:5432/aegis_db
+      DATABASE_SYNC_URL: postgresql://aegis_user:aegis_secure_password_2026@postgres:5432/aegis_db
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: aegis_jwt_super_secret_signing_key_production_2026
+      AEGIS_SECRET_KEY: MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=
+      ENCRYPTION_KEY: MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=
+      ENABLE_BACKGROUND_SCHEDULER: "true"
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "alembic upgrade head && uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --workers 2"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - aegis_network
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: aegis_web_command_center
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    networks:
+      - aegis_network
+
+volumes:
+  aegis_pgdata:
+  aegis_redisdata:
+
+networks:
+  aegis_network:
+    driver: bridge

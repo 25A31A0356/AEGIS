@@ -15,6 +15,7 @@ from backend.app.core.config import settings
 from backend.app.database.session import init_db, get_db
 from backend.app.scheduler.job_scheduler import start_scheduler, stop_scheduler, sync_scheduler_jobs
 from backend.app.api.v1.router import api_router
+from backend.app.api.v1.trpc_compat import router as trpc_router
 from backend.app.api.v1.health import check_overall_health
 from backend.app.core.exceptions import AegisCoreException
 from backend.app.utils.logger import logger
@@ -178,6 +179,9 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # Also mount on /api for seamless backward compatibility with existing frontend
 app.include_router(api_router, prefix="/api")
+
+# Mount tRPC compatibility router for mobile/web client bridges
+app.include_router(trpc_router, prefix="/api")
 
 
 @app.get("/")

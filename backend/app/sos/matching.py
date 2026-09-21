@@ -251,18 +251,27 @@ class SOSMatchingEngine:
             )
             existing_candidate = existing_candidate_res.scalars().first()
 
+            rationale = (
+                f"Score: {cand['score']:.4f} | Dist: {cand['distance_km']}km | "
+                f"Skills: {', '.join(cand['matched_skills'])} | "
+                f"GPS Fresh: {cand['is_gps_fresh']} | Workload: {cand['active_workload']}"
+            )
+            cand["selection_rationale"] = rationale
+
             if not existing_candidate:
                 new_cand = SOSResponderCandidate(
                     sos_id=sos.id,
                     responder_user_id=cand["user_id"],
                     status="OFFERED",
                     distance_km=cand["distance_km"],
+                    selection_rationale=rationale,
                     offered_at=utc_now()
                 )
                 db.add(new_cand)
             else:
                 existing_candidate.status = "OFFERED"
                 existing_candidate.distance_km = cand["distance_km"]
+                existing_candidate.selection_rationale = rationale
                 existing_candidate.offered_at = utc_now()
 
         await db.commit()
