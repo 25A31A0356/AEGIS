@@ -498,81 +498,9 @@ class LocationServiceClass {
     return Math.round(R * c * 10) / 10;
   }
 
-  getNearbyActivity(center: [number, number]): NearbyActivityItem[] {
-    const [cLat, cLng] = center;
-
-    return [
-      {
-        id: 'act-1',
-        hazardType: 'Heavy Rain',
-        title: 'Intense Convective Cloudburst & Waterlogging',
-        locationName: 'Subway & Lowland Sector (East)',
-        distanceKm: this.calculateDistanceKm(center, [cLat + 0.04, cLng + 0.03]),
-        timestamp: '4 mins ago',
-        severity: 'Critical',
-        coordinates: [cLat + 0.04, cLng + 0.03],
-        source: 'IMD Doppler Radar DWR-04',
-        status: 'Active Red Alert',
-        recommendedAction: 'Avoid low-lying subways. Do not drive through standing water.',
-        safetyGuideSlug: 'floods',
-      },
-      {
-        id: 'act-2',
-        hazardType: 'Lightning',
-        title: 'Multiple Cloud-to-Ground Lightning Strikes',
-        locationName: 'North Ridge & Industrial Belt',
-        distanceKm: this.calculateDistanceKm(center, [cLat + 0.075, cLng + 0.055]),
-        timestamp: '12 mins ago',
-        severity: 'Warning',
-        coordinates: [cLat + 0.075, cLng + 0.055],
-        source: 'Ground Electrostatic Sensor Array',
-        status: 'Severe Activity',
-        recommendedAction: 'Stay indoors away from open fields, high trees, and metal towers.',
-        safetyGuideSlug: 'floods',
-      },
-      {
-        id: 'act-3',
-        hazardType: 'Road Blockage',
-        title: 'Tree Fall & Power Cable Snapping',
-        locationName: 'Main Arterial Highway (KM 14)',
-        distanceKm: this.calculateDistanceKm(center, [cLat - 0.03, cLng + 0.02]),
-        timestamp: '25 mins ago',
-        severity: 'Warning',
-        coordinates: [cLat - 0.03, cLng + 0.02],
-        source: 'Traffic Command & Citizen Report #482',
-        status: 'Traffic Diverted',
-        recommendedAction: 'Use Western Bypass diversion route.',
-        safetyGuideSlug: 'cyclones',
-      },
-      {
-        id: 'act-4',
-        hazardType: 'Flood',
-        title: 'River Basin Riverbank Crest Level Rising',
-        locationName: 'Downstream Catchment Zone',
-        distanceKm: this.calculateDistanceKm(center, [cLat + 0.09, cLng - 0.05]),
-        timestamp: '42 mins ago',
-        severity: 'Critical',
-        coordinates: [cLat + 0.09, cLng - 0.05],
-        source: 'Central Water Commission (CWC)',
-        status: 'Breach Watch',
-        recommendedAction: 'Evacuate riverbank settlements to designated safe shelters.',
-        safetyGuideSlug: 'floods',
-      },
-      {
-        id: 'act-5',
-        hazardType: 'Cyclone',
-        title: 'Squally Gale Winds (75-85 km/h gusts)',
-        locationName: 'Coastal Embankment Sector',
-        distanceKm: this.calculateDistanceKm(center, [cLat - 0.08, cLng - 0.07]),
-        timestamp: '1 hr ago',
-        severity: 'Critical',
-        coordinates: [cLat - 0.08, cLng - 0.07],
-        source: 'IMD Coastal Telemetry',
-        status: 'Cyclone Warning',
-        recommendedAction: 'Secure roof sheets. Fishermen warned against deep sea venture.',
-        safetyGuideSlug: 'cyclones',
-      },
-    ];
+  getNearbyActivity(_center: [number, number]): NearbyActivityItem[] {
+    // Zero Fake Production Data Policy: Return empty array when no live incident reports in sector
+    return [];
   }
 }
 

@@ -1,8 +1,9 @@
 /**
  * AEGIS Map Service - GIS & Technical Layers Abstraction
- * Handles Google Maps tile providers (Satellite Hybrid, Standard Roadmap, Terrain),
+ * Handles Google Maps & OSM tile providers (Satellite Hybrid, Standard Roadmap, Terrain),
  * radar precipitation reflectivity contours, lightning strike telemetry, and evacuation shelters
  * via the Aegis Software API (/api/map/events, /api/map/layers).
+ * Strict Zero Fake Production Data Policy: Empty arrays returned when telemetry is inactive.
  */
 
 import { ApiClient } from './apiClient';
@@ -64,7 +65,7 @@ export interface MapEventPoint {
 }
 
 class MapServiceClass {
-  // Google Maps standard, satellite hybrid, and terrain tile layers
+  // Tile layer providers
   private providers: Record<string, MapTileProvider> = {
     streets: {
       id: 'streets',
@@ -98,20 +99,25 @@ class MapServiceClass {
       subdomains: ['0', '1', '2', '3'],
       maxZoom: 18,
     },
+    osm: {
+      id: 'osm',
+      name: 'OpenStreetMap Standard',
+      url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19,
+    },
   };
 
-  /**
-   * Returns tile layer configuration for a given layer style
-   */
-  getTileProvider(layerStyle: 'satellite' | 'streets' | 'terrain' | 'dark' = 'streets'): MapTileProvider {
-    if (layerStyle === 'satellite') return this.providers.satellite;
-    if (layerStyle === 'terrain') return this.providers.terrain;
-    if (layerStyle === 'dark') return this.providers.dark;
-    return this.providers.streets;
+  getTileProvider(layerType: string = 'streets'): MapTileProvider {
+    return this.providers[layerType] || this.providers.streets;
+  }
+
+  getAvailableTileProviders(): MapTileProvider[] {
+    return Object.values(this.providers);
   }
 
   /**
-   * Fetch active map GIS event pins from Aegis Software API (/api/map/events)
+   * Fetch active emergency points from Aegis API (/api/map/events)
    */
   async fetchMapEvents(lat?: number, lng?: number): Promise<MapEventPoint[]> {
     try {
@@ -119,13 +125,13 @@ class MapServiceClass {
         lat: lat ? Number(lat.toFixed(4)) : undefined,
         lng: lng ? Number(lng.toFixed(4)) : undefined,
       });
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         return data;
       }
     } catch (e) {
-      console.warn('[MapService] Failed to fetch /api/map/events:', e);
+      console.warn('[MapService] /api/map/events unavailable:', e);
     }
-    return this.getFallbackMapEvents(lat, lng);
+    return [];
   }
 
   /**
@@ -141,173 +147,46 @@ class MapServiceClass {
         return data;
       }
     } catch (e) {
-      console.warn('[MapService] Failed to fetch /api/map/layers:', e);
+      console.warn('[MapService] /api/map/layers unavailable:', e);
     }
 
-    const cLat = lat || 19.0760;
-    const cLng = lng || 72.8777;
     return {
       radar: {
-        cells: this.getRadarStormCells([cLat, cLng]),
+        cells: [],
       },
       lightning: {
-        strikes: this.getRegionalLightningStrikes([cLat, cLng]),
+        strikes: [],
       },
-      shelters: this.getFallbackShelters([cLat, cLng]),
+      shelters: [],
     };
   }
 
-  /**
-   * Generates Doppler radar storm clusters around the active coordinates
-   */
-  getRadarStormCells(center: [number, number]): RadarStormCell[] {
-    const [lat, lng] = center;
-    return [
-      {
-        id: 'cell-heavy-1',
-        center: [lat + 0.08, lng + 0.06],
-        intensity: 'heavy',
-        radiusMeters: 9000,
-        dbz: 54,
-        movementHeading: 'ENE (65°)',
-        speedKmh: 28,
-      },
-      {
-        id: 'cell-mod-1',
-        center: [lat + 0.04, lng + 0.03],
-        intensity: 'moderate',
-        radiusMeters: 18000,
-        dbz: 42,
-        movementHeading: 'ENE (60°)',
-        speedKmh: 26,
-      },
-      {
-        id: 'cell-light-1',
-        center: [lat - 0.02, lng - 0.04],
-        intensity: 'light',
-        radiusMeters: 28000,
-        dbz: 26,
-        movementHeading: 'NE (50°)',
-        speedKmh: 22,
-      },
-      {
-        id: 'cell-mod-2',
-        center: [lat - 0.09, lng + 0.12],
-        intensity: 'moderate',
-        radiusMeters: 14000,
-        dbz: 38,
-        movementHeading: 'E (85°)',
-        speedKmh: 31,
-      },
-    ];
+  getRadarStormCells(_center?: [number, number]): RadarStormCell[] {
+    return [];
   }
 
-  /**
-   * Returns active lightning flash strikes in the region
-   */
-  getRegionalLightningStrikes(center: [number, number]): LightningStrike[] {
-    const [lat, lng] = center;
-    return [
-      {
-        id: 'lt-1',
-        coordinates: [lat + 0.075, lng + 0.055],
-        timestamp: '1 min ago',
-        peakCurrentKa: -42,
-        type: 'cloud-to-ground',
-      },
-      {
-        id: 'lt-2',
-        coordinates: [lat + 0.09, lng + 0.07],
-        timestamp: '2 min ago',
-        peakCurrentKa: 31,
-        type: 'cloud-to-ground',
-      },
-      {
-        id: 'lt-3',
-        coordinates: [lat + 0.03, lng + 0.04],
-        timestamp: '3 min ago',
-        peakCurrentKa: -18,
-        type: 'intra-cloud',
-      },
-      {
-        id: 'lt-4',
-        coordinates: [lat - 0.085, lng + 0.11],
-        timestamp: '5 min ago',
-        peakCurrentKa: -55,
-        type: 'cloud-to-ground',
-      },
-    ];
+  getRegionalLightningStrikes(_center?: [number, number]): LightningStrike[] {
+    return [];
   }
 
-  getFallbackShelters(center: [number, number]): EvacuationShelter[] {
-    const [lat, lng] = center;
-    return [
-      {
-        id: 'sh-1',
-        name: 'District Multi-Purpose Cyclone Shelter',
-        coordinates: [lat - 0.02, lng + 0.04],
-        capacity: 1500,
-        occupancy: 320,
-        status: 'open',
-      },
-      {
-        id: 'sh-2',
-        name: 'Municipal Relief & Medical Center',
-        coordinates: [lat + 0.05, lng - 0.03],
-        capacity: 2000,
-        occupancy: 850,
-        status: 'open',
-      },
-    ];
-  }
-
-  getFallbackMapEvents(lat?: number, lng?: number): MapEventPoint[] {
-    const cLat = lat || 19.0760;
-    const cLng = lng || 72.8777;
-    return [
-      {
-        id: 'evt-1',
-        type: 'Flood',
-        title: 'Lowland Inundation Cluster',
-        coordinates: [cLat + 0.04, cLng + 0.03],
-        severity: 'Critical',
-        status: 'Active Red Alert',
-        radiusMeters: 4500,
-      },
-      {
-        id: 'evt-2',
-        type: 'Lightning',
-        title: 'Severe Lightning Zone',
-        coordinates: [cLat + 0.075, cLng + 0.055],
-        severity: 'Warning',
-        status: 'Active Discharge',
-        radiusMeters: 2500,
-      },
-      {
-        id: 'evt-3',
-        type: 'Road Blockage',
-        title: 'Highway Obstruction & Tree Fall',
-        coordinates: [cLat - 0.03, cLng + 0.02],
-        severity: 'Warning',
-        status: 'Diversion in Place',
-        radiusMeters: 1000,
-      },
-    ];
-  }
-
-  /**
-   * Returns color code corresponding to radar intensity
-   */
-  getRadarIntensityColor(intensity: 'light' | 'moderate' | 'heavy'): { fill: string; stroke: string } {
+  getRadarIntensityColor(intensity: 'light' | 'moderate' | 'heavy' | string): { fill: string; stroke: string } {
     switch (intensity) {
       case 'heavy':
-        return { fill: '#E94B68', stroke: '#B82842' }; // Red/Crimson
+        return { fill: '#DC2626', stroke: '#991B1B' };
       case 'moderate':
-        return { fill: '#F4C84A', stroke: '#C89618' }; // Yellow/Orange
+        return { fill: '#F59E0B', stroke: '#D97706' };
       case 'light':
       default:
-        return { fill: '#45C79A', stroke: '#289870' }; // Green/Cyan
+        return { fill: '#3B82F6', stroke: '#2563EB' };
     }
+  }
+
+  getDbzColor(dbz: number): string {
+    if (dbz >= 50) return '#DC2626';
+    if (dbz >= 40) return '#F97316';
+    if (dbz >= 30) return '#FBBF24';
+    if (dbz >= 20) return '#34D399';
+    return '#60A5FA';
   }
 }
 
