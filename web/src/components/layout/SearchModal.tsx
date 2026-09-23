@@ -88,7 +88,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       ).slice(0, 4)
     : DEMO_STATES.slice(0, 4);
 
-  // Filter Real Active SOS Beacons (Zero fake beacons)
+  // Filter Real Active SOS Beacons
   const matchingSOS = q
     ? realBeacons.filter(
         (b) =>
@@ -110,42 +110,42 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     : [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-[#075B8A]/60 dark:bg-black/80 backdrop-blur-xs animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div
-        className="w-full max-w-2xl bg-white dark:bg-[#071828] rounded-[24px] shadow-float border border-[#DCEBED] dark:border-[#1E3347] overflow-hidden flex flex-col max-h-[80vh]"
+        className="w-full max-w-2xl bg-white dark:bg-[#111111] rounded-[24px] shadow-2xl border border-slate-200 dark:border-[#27272a] overflow-hidden flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="flex items-center px-5 py-4 border-b border-[#DCEBED] dark:border-[#1E3347] bg-[#F4F8FA] dark:bg-[#0B1E30]">
-          <Search className="w-5 h-5 text-[#075B8A] dark:text-[#18C3D0] mr-3 shrink-0" />
+        <div className="flex items-center px-5 py-4 border-b border-slate-200 dark:border-[#27272a] bg-slate-50 dark:bg-[#0a0a0c]">
+          <Search className="w-5 h-5 text-slate-500 dark:text-slate-400 mr-3 shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search hazards, 780+ Indian districts, states, SOS IDs, or shelters..."
-            className="w-full bg-transparent text-xs sm:text-sm text-[#18364A] dark:text-slate-100 placeholder:text-[#708696] dark:placeholder:text-slate-500 focus:outline-none font-sans"
+            className="w-full bg-transparent text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none font-sans"
           />
           {query && (
-            <button onClick={() => setQuery('')} className="p-1 text-[#708696] hover:text-[#18364A] dark:hover:text-white">
+            <button onClick={() => setQuery('')} className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white">
               <X className="w-4 h-4" />
             </button>
           )}
           <button
             onClick={onClose}
-            className="ml-2 text-[10px] font-mono bg-white dark:bg-[#071828] hover:bg-[#EEF5F8] dark:hover:bg-[#0B1E30] text-[#708696] dark:text-slate-400 px-2 py-1 rounded-lg border border-[#DCEBED] dark:border-[#1E3347]"
+            className="ml-2 text-[10px] font-mono bg-white dark:bg-[#18181b] hover:bg-slate-100 dark:hover:bg-[#27272a] text-slate-600 dark:text-slate-400 px-2 py-1 rounded-lg border border-slate-200 dark:border-[#27272a]"
           >
             ESC
           </button>
         </div>
 
         {/* Results List */}
-        <div className="overflow-y-auto p-4 space-y-5 divide-y divide-[#DCEBED]/60 dark:divide-[#1E3347]/60">
-          {/* District Search Results across 780+ Districts */}
+        <div className="overflow-y-auto p-4 space-y-5 divide-y divide-slate-100 dark:divide-[#27272a]">
+          {/* District Search Results */}
           {matchedDistricts.length > 0 && (
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#708696] dark:text-slate-400 font-mono mb-2 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[#075B8A] dark:text-[#18C3D0]" />
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono mb-2 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 <span>Pan-India Districts ({matchedDistricts.length})</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -155,19 +155,19 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                     onClick={() => {
                       selectLocationItem(item);
                       onClose();
-                      onNavigate('homepage');
+                      onNavigate('home');
                     }}
-                    className="p-3 rounded-2xl hover:bg-[#F4F8FA] dark:hover:bg-[#0B1E30] border border-[#DCEBED] dark:border-[#1E3347] hover:border-[#18C3D0] cursor-pointer flex items-center justify-between group transition-all"
+                    className="p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-[#18181b] border border-slate-200 dark:border-[#27272a] cursor-pointer flex items-center justify-between group transition-all"
                   >
                     <div>
-                      <div className="text-xs font-bold text-[#18364A] dark:text-slate-100 group-hover:text-[#075B8A] dark:group-hover:text-[#18C3D0]">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:underline">
                         {item.name}
                       </div>
-                      <div className="text-[10px] text-[#708696] dark:text-slate-400 font-mono">
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                         {item.stateName} ({item.stateId})
                       </div>
                     </div>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full font-bold uppercase bg-[#EDFAFC] dark:bg-[#075B8A]/30 text-[#075B8A] dark:text-[#18C3D0]">
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full font-bold uppercase bg-slate-100 dark:bg-[#27272a] text-slate-800 dark:text-slate-200">
                       {item.riskLevel}
                     </span>
                   </div>
@@ -179,8 +179,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           {/* Hazards Section */}
           {matchingHazards.length > 0 && (
             <div className="pt-4">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#708696] dark:text-slate-400 font-mono mb-2 flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-[#F4C84A]" />
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono mb-2 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                 <span>Active Hazards & Advisories ({matchingHazards.length})</span>
               </div>
               <div className="space-y-1.5">
@@ -190,158 +190,51 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                     onClick={() => {
                       onClose();
                       if (onSelectHazard) onSelectHazard(item.id);
-                      onNavigate('hazards');
+                      onNavigate('maps');
                     }}
-                    className="p-3 rounded-2xl hover:bg-[#F4F8FA] dark:hover:bg-[#0B1E30] border border-transparent hover:border-[#18C3D0] cursor-pointer flex items-center justify-between group transition-all"
+                    className="p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-[#18181b] border border-transparent hover:border-slate-300 dark:hover:border-[#3f3f46] cursor-pointer flex items-center justify-between group transition-all"
                   >
                     <div className="flex items-start gap-3">
                       <span
                         className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${
                           item.severity === 'critical'
-                            ? 'bg-[#E94B68] animate-pulse'
+                            ? 'bg-red-500 animate-pulse'
                             : item.severity === 'warning'
-                            ? 'bg-[#F4C84A]'
-                            : 'bg-[#18C3D0]'
+                            ? 'bg-amber-500'
+                            : 'bg-emerald-500'
                         }`}
                       />
                       <div>
-                        <div className="text-xs font-bold text-[#18364A] dark:text-slate-100 group-hover:text-[#075B8A] dark:group-hover:text-[#18C3D0] transition-colors">
+                        <div className="text-xs font-bold text-slate-900 dark:text-white group-hover:underline">
                           {item.title}
                         </div>
-                        <div className="text-[10.5px] text-[#708696] dark:text-slate-400 flex items-center gap-2 mt-0.5 font-mono">
+                        <div className="text-[10.5px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5 font-mono">
                           <span>{item.location.state} • {item.location.district}</span>
                           <span>•</span>
-                          <span className="bg-[#EDFAFC] dark:bg-[#075B8A]/30 text-[#075B8A] dark:text-[#18C3D0] px-1.5 py-0.5 rounded text-[9px] font-bold">
+                          <span className="bg-slate-100 dark:bg-[#18181b] text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded text-[9px] font-bold">
                             {item.categoryName}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-[#708696] dark:text-slate-400 group-hover:text-[#075B8A] dark:group-hover:text-[#18C3D0] transition-transform group-hover:translate-x-1" />
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* States & Urban Centers Section */}
-          {matchingStates.length > 0 && (
-            <div className="pt-4">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#708696] dark:text-slate-400 font-mono mb-2 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[#075B8A] dark:text-[#18C3D0]" />
-                <span>States & Monitored Regions ({matchingStates.length})</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {matchingStates.map((st) => (
-                  <div
-                    key={st.id}
-                    onClick={() => {
-                      setSelectedStateById(st.id);
-                      onClose();
-                      onNavigate('homepage');
-                    }}
-                    className="p-3 rounded-2xl hover:bg-[#F4F8FA] dark:hover:bg-[#0B1E30] border border-[#DCEBED] dark:border-[#1E3347] hover:border-[#18C3D0] cursor-pointer flex items-center justify-between group transition-colors"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-[#18364A] dark:text-slate-100 group-hover:text-[#075B8A] dark:group-hover:text-[#18C3D0]">
-                        {st.name} ({st.id})
-                      </div>
-                      <div className="text-[10px] text-[#708696] dark:text-slate-400 font-mono">
-                        Capital: {st.capital} • {st.populationCrores} Cr Pop
-                      </div>
-                    </div>
-                    <span
-                      className={`text-[9px] font-mono px-2 py-0.5 rounded-full font-bold uppercase border ${
-                        st.riskLevel === 'critical'
-                          ? 'bg-[#FEF1F3] dark:bg-red-950/40 text-[#E94B68] border-[#FDC8D1] dark:border-red-800'
-                          : st.riskLevel === 'warning'
-                          ? 'bg-[#FFFBF0] dark:bg-amber-950/40 text-[#B78809] dark:text-amber-400 border-[#FDE8A4] dark:border-amber-800'
-                          : 'bg-[#EFFCF6] dark:bg-emerald-950/40 text-[#1E8A63] dark:text-emerald-400 border-[#B7F1DC] dark:border-emerald-800'
-                      }`}
-                    >
-                      {st.riskLevel}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Real SOS Distress Beacons (0 Fake Beacons) */}
-          {matchingSOS.length > 0 && (
-            <div className="pt-4">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#708696] dark:text-slate-400 font-mono mb-2 flex items-center gap-1.5">
-                <PhoneCall className="w-3.5 h-3.5 text-[#E94B68]" />
-                <span>Live Emergency SOS Beacons ({matchingSOS.length})</span>
-              </div>
-              <div className="space-y-1.5">
-                {matchingSOS.map((sos) => (
-                  <div
-                    key={sos.id}
-                    onClick={() => {
-                      if (onSelectSOS) onSelectSOS(sos.id);
-                      onClose();
-                      onNavigate('sos');
-                    }}
-                    className="p-3 rounded-2xl hover:bg-[#FEF1F3]/40 dark:hover:bg-red-950/20 border border-[#DCEBED] dark:border-[#1E3347] hover:border-[#E94B68] cursor-pointer flex items-center justify-between group transition-colors"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-[#18364A] dark:text-slate-100 flex items-center gap-2">
-                        <span className="font-mono text-[#E94B68] bg-[#FEF1F3] dark:bg-red-950/40 border border-[#FDC8D1] dark:border-red-800 px-1.5 py-0.5 rounded text-[9px] font-bold">
-                          {sos.id}
-                        </span>
-                        <span>{sos.emergencyTitle}</span>
-                      </div>
-                      <div className="text-[10.5px] text-[#708696] dark:text-slate-400 mt-0.5 font-mono">
-                        {sos.locationName} • Triage: {sos.triageStatus.toUpperCase()}
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-[#708696] dark:text-slate-400 group-hover:text-[#E94B68]" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Shelters */}
-          {matchingShelters.length > 0 && (
-            <div className="pt-4">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#708696] dark:text-slate-400 font-mono mb-2 flex items-center gap-1.5">
-                <Building className="w-3.5 h-3.5 text-[#075B8A] dark:text-[#18C3D0]" />
-                <span>Evacuation Shelters & Relief Camps</span>
-              </div>
-              <div className="space-y-1.5">
-                {matchingShelters.map((sh) => (
-                  <div
-                    key={sh.id}
-                    onClick={() => {
-                      onClose();
-                      onNavigate('live-map');
-                    }}
-                    className="p-3 rounded-2xl hover:bg-[#F4F8FA] dark:hover:bg-[#0B1E30] border border-[#DCEBED] dark:border-[#1E3347] cursor-pointer flex items-center justify-between"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-[#18364A] dark:text-slate-100">{sh.name}</div>
-                      <div className="text-[10px] text-[#708696] dark:text-slate-400 font-mono">
-                        {sh.district}, {sh.state} • Cap: {sh.capacityPersons}
-                      </div>
-                    </div>
-                    <span className="text-[9px] font-mono bg-[#EDFAFC] dark:bg-[#075B8A]/30 text-[#075B8A] dark:text-[#18C3D0] border border-[#AEEBF0] dark:border-[#1E3347] px-2 py-0.5 rounded-full font-bold">
-                      {sh.type}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          
         </div>
 
         {/* Modal Footer */}
-        <div className="px-5 py-3 bg-[#F4F8FA] dark:bg-[#0B1E30] border-t border-[#DCEBED] dark:border-[#1E3347] text-[10px] text-[#708696] dark:text-slate-400 flex items-center justify-between font-mono">
+        <div className="px-5 py-3 bg-slate-50 dark:bg-[#0a0a0c] border-t border-slate-200 dark:border-[#27272a] text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between font-mono">
           <span>Navigate with ↵ or click item</span>
-          <span>Pan-India Grid: 28 States • 8 UTs • 780+ Districts • Google Maps GIS</span>
+          <span>Pan-India Grid: 28 States • 8 UTs • 780+ Districts</span>
         </div>
       </div>
     </div>
   );
 };
+
+export default SearchModal;

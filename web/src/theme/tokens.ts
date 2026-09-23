@@ -1,10 +1,10 @@
 /**
- * AGIES ALERT - Design Tokens & Global Style Constants
+ * AEGIS ALERT - Design Tokens & Global Style Constants
  * Unified source of truth for branding, hazard scales, and layout metrics.
  */
 
-export const AGIES_TOKENS = {
-  name: 'AGIES ALERT',
+export const AEGIS_TOKENS = {
+  name: 'AEGIS ALERT',
   subtitle: 'MULTI-HAZARD EARLY WARNING SYSTEM',
   shortSubtitle: 'MULTI-HAZARD EARLY WARNING',
   region: 'INDIA REGION',
@@ -85,4 +85,4 @@ export const AGIES_TOKENS = {
   },
 } as const;
 
-export type HazardSeverityKey = keyof typeof AGIES_TOKENS.hazardLevels;
+export type HazardSeverityKey = keyof typeof AEGIS_TOKENS.hazardLevels;

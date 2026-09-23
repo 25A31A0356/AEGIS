@@ -130,7 +130,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       const locResult: LocationSearchResult = {
         id: 'user-current-gps',
-        name: result.address.cityName,
+        name: result.address.formattedVillage || result.address.cityName,
         stateName: result.address.stateName,
         district: result.address.district,
         stateId: result.address.stateId,
@@ -138,6 +138,10 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         riskScore: 74,
         riskLevel: 'High',
         weatherSnippet: 'Live GPS Telemetry Active',
+        village: result.address.village,
+        subdistrict: result.address.subdistrict,
+        formattedVillage: result.address.formattedVillage,
+        isVillageLevel: result.address.isVillageLevel ?? Boolean(result.address.village),
       };
 
       setSelectedLocation(locResult);

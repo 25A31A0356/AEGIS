@@ -7,7 +7,7 @@
 import { ApiClient } from './apiClient';
 import { CitizenReport, ReportMediaItem, ReportHazardType, ReportSeverity, ReportStatus } from '../types/report';
 
-const STORAGE_KEY = 'agies_citizen_reports';
+const STORAGE_KEY = 'aegis_citizen_reports';
 
 export const INITIAL_DEMO_REPORTS: CitizenReport[] = [];
 
@@ -134,7 +134,7 @@ export class ReportService {
       console.warn('[ReportService] Central API report submission failed, persisting locally:', err);
     }
 
-    const reportId = `AGIES-REP-${Math.floor(100000 + Math.random() * 900000)}`;
+    const reportId = `AEGIS-REP-${Math.floor(100000 + Math.random() * 900000)}`;
     const newReport: CitizenReport = {
       ...payload,
       id: reportId,

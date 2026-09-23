@@ -24,7 +24,8 @@ interface ProfileContextType {
 }
 
 const STORAGE_KEY = 'aegis_user_emergency_profile';
-const PREFS_KEY = 'aegis_user_app_preferences';
+const THEME_KEY = 'aegis-theme';
+const LANG_KEY = 'aegis-lang';
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
@@ -40,15 +41,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           familyContacts: parsed.familyContacts || DEFAULT_FAMILY_CONTACTS,
         };
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
     return DEFAULT_EMERGENCY_PROFILE;
   });
 
   const [language, setLanguageState] = useState<string>(() => {
     try {
-      const saved = localStorage.getItem(`${PREFS_KEY}_lang`);
+      const saved = localStorage.getItem(LANG_KEY);
       if (saved) return saved;
     } catch {}
     return 'en';
@@ -56,16 +55,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const [colorScheme, setColorSchemeState] = useState<'light' | 'dark'>(() => {
     try {
-      const savedTheme = localStorage.getItem(`${PREFS_KEY}_theme`) || localStorage.getItem('aegis_user_theme');
-      if (savedTheme === 'dark' || savedTheme === 'light') {
-        return savedTheme;
-      }
-      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === 'dark' || saved === 'light') {
+        return saved;
       }
     } catch {}
-    return 'light';
+    return 'dark';
   });
+
   const [notificationsEnabled, setNotificationsEnabledState] = useState<boolean>(true);
   const [liveLocationEnabled, setLiveLocationEnabledState] = useState<boolean>(true);
 
@@ -76,32 +73,38 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } catch {}
   }, [profile]);
 
-  // Sync colorScheme class to documentElement and body
+  // Global Unified Theme Sync
   useEffect(() => {
     if (typeof document !== 'undefined') {
+      const root = document.documentElement;
+      const body = document.body;
+
       if (colorScheme === 'dark') {
-        document.documentElement.classList.add('dark');
-        document.body.classList.add('dark');
+        root.classList.add('dark');
+        root.classList.remove('light');
+        body.classList.add('dark');
+        body.classList.remove('light');
       } else {
-        document.documentElement.classList.remove('dark');
-        document.body.classList.remove('dark');
+        root.classList.remove('dark');
+        root.classList.add('light');
+        body.classList.remove('dark');
+        body.classList.add('light');
       }
+      try {
+        localStorage.setItem(THEME_KEY, colorScheme);
+      } catch {}
     }
   }, [colorScheme]);
 
   const setLanguage = (lang: string) => {
     setLanguageState(lang);
     try {
-      localStorage.setItem(`${PREFS_KEY}_lang`, lang);
+      localStorage.setItem(LANG_KEY, lang);
     } catch {}
   };
 
   const setColorScheme = (scheme: 'light' | 'dark') => {
     setColorSchemeState(scheme);
-    try {
-      localStorage.setItem(`${PREFS_KEY}_theme`, scheme);
-      localStorage.setItem('aegis_user_theme', scheme);
-    } catch {}
   };
 
   const setNotificationsEnabled = (enabled: boolean) => {
@@ -122,7 +125,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addFamilyContact = (contact: Omit<FamilyContact, 'id'>) => {
     const newContact: FamilyContact = {
       ...contact,
-      id: `fam-${Date.now()}`,
+      id: 'fam-' + Date.now(),
     };
     setProfile((prev) => ({
       ...prev,
@@ -147,12 +150,13 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const resetToDefaults = () => {
     setProfile(DEFAULT_EMERGENCY_PROFILE);
     setLanguageState('en');
-    setColorSchemeState('light');
+    setColorSchemeState('dark');
     setNotificationsEnabledState(true);
     setLiveLocationEnabledState(true);
     try {
       localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(`${PREFS_KEY}_lang`);
+      localStorage.removeItem(LANG_KEY);
+      localStorage.setItem(THEME_KEY, 'dark');
     } catch {}
   };
 

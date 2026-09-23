@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, BellRing } from 'lucide-react';
+import React, { useState } from 'react';
+import { useLocation } from '../../context/LocationContext';
 import { HazardService } from '../../services/hazardService';
 import { HazardItem } from '../../types/hazard';
 
@@ -8,66 +8,102 @@ interface AlertTickerProps {
 }
 
 export const AlertTicker: React.FC<AlertTickerProps> = ({ onSelectHazard }) => {
+  const { selectedLocation, weather } = useLocation();
+  const [isDismissed, setIsDismissed] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [hazards, setHazards] = useState<HazardItem[]>(() => HazardService.getAllHazards());
 
-  useEffect(() => {
+  React.useEffect(() => {
     HazardService.fetchLiveHazards().then(setHazards).catch(console.error);
-
-    const unsubscribe = HazardService.subscribe(() => {
-      setHazards(HazardService.getAllHazards());
-    });
-    return unsubscribe;
+    return HazardService.subscribe(() => setHazards(HazardService.getAllHazards()));
   }, []);
 
-  const activeBulletins = hazards.filter(
-    (h) => h.severity === 'critical' || h.severity === 'warning' || h.severity === 'moderate'
-  );
+  if (isDismissed) return null;
 
-  const displayList = activeBulletins.length > 0 ? activeBulletins : hazards.slice(0, 5);
+  const criticalAlert = hazards.find((a: HazardItem) => a.severity === 'critical' || a.severity === 'warning') || hazards[0];
+  const alertTitle = criticalAlert?.title || 'Severe Flood Inundation & Gale Wind Advisory in Effect';
+  const alertDistrict = criticalAlert?.location?.district || selectedLocation?.name || weather?.cityName || 'Regional Sector';
+  const alertSeverity = (criticalAlert?.severity || 'critical').toUpperCase();
+  const alertId = criticalAlert?.id || 'hazard-active-banner';
+
+  const handleAudioTTS = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if ('speechSynthesis' in window) {
+      if (isAudioPlaying) {
+        window.speechSynthesis.cancel();
+        setIsAudioPlaying(false);
+        return;
+      }
+      const textToRead = `Emergency Advisory for ${alertDistrict}. ${alertTitle}. Please take immediate precautions.`;
+      const utterance = new SpeechSynthesisUtterance(textToRead);
+      utterance.rate = 1.0;
+      utterance.onend = () => setIsAudioPlaying(false);
+      utterance.onerror = () => setIsAudioPlaying(false);
+      window.speechSynthesis.speak(utterance);
+      setIsAudioPlaying(true);
+    }
+  };
 
   return (
-    <div className="bg-[#075B8A] border-b border-[#0B6E9E] text-white text-xs py-2 px-4 flex items-center shadow-inner relative z-10 select-none">
-      {/* Lead Tag */}
-      <div className="flex items-center gap-1.5 bg-[#E94B68] text-white px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase shrink-0 shadow-sm mr-3">
-        <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-        <BellRing className="w-3 h-3" />
-        <span>LIVE ALERTS</span>
-      </div>
+    <div className="bg-gradient-to-r from-red-950 via-rose-950 to-slate-950 border-b border-red-500/30 text-white px-4 py-2.5 transition-all">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs sm:text-sm">
+        <div 
+          onClick={() => onSelectHazard && onSelectHazard(alertId)}
+          className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer group"
+        >
+          <span className="flex h-2.5 w-2.5 relative shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+          </span>
+          
+          <div className="inline-flex items-center gap-1.5 shrink-0">
+            <span className="px-2 py-0.5 rounded bg-red-600/80 text-white text-[10px] font-bold tracking-wider uppercase font-mono">
+              {alertSeverity} CAP ADVISORY
+            </span>
+          </div>
 
-      {/* Marquee Content */}
-      <div className="ticker-wrap flex-1 overflow-hidden">
-        <div className="ticker-move flex items-center gap-8">
-          {displayList.concat(displayList).map((item, idx) => (
-            <div
-              key={`${item.id}-${idx}`}
-              onClick={() => onSelectHazard && onSelectHazard(item.id)}
-              className="inline-flex items-center gap-2 cursor-pointer text-[#D3E8F4] hover:text-white transition-colors group"
-            >
-              <span
-                className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                  item.severity === 'critical'
-                    ? 'bg-[#E94B68] text-white'
-                    : item.severity === 'warning'
-                    ? 'bg-[#F4C84A] text-[#18364A]'
-                    : 'bg-[#18C3D0] text-[#075B8A]'
-                }`}
-              >
-                {item.nature.toUpperCase()}
-              </span>
-              <span className="font-bold text-white">[{item.location.state}]</span>
-              <span className="text-[#D3E8F4] group-hover:underline">{item.title}</span>
-              <span className="text-white/40">•</span>
-              <span className="text-xs text-[#A7D7E8]">{item.source.agency}</span>
-              <ChevronRight className="w-3 h-3 text-[#18C3D0] group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          ))}
+          <p className="truncate font-medium text-slate-100 group-hover:text-red-200 transition-colors">
+            <span className="font-bold text-red-300">[{alertDistrict}]: </span>
+            {alertTitle}
+          </p>
         </div>
-      </div>
 
-      {/* Real-time telemetry feed indicator */}
-      <div className="hidden lg:flex items-center gap-2 text-[10px] text-[#A7D7E8] font-mono pl-3 border-l border-white/20 shrink-0">
-        <span className="w-2 h-2 rounded-full bg-[#45C79A] animate-pulse" />
-        <span>TELEMETRY: ACTIVE</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleAudioTTS}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+              isAudioPlaying 
+                ? 'bg-red-600 text-white border-red-400 animate-pulse' 
+                : 'bg-red-950/60 hover:bg-red-900/60 text-red-200 border-red-500/40'
+            }`}
+            title="Listen to official audio broadcast (TTS)"
+            aria-label="Text-to-speech audio readout"
+          >
+            <span className="material-symbols-outlined text-sm">
+              {isAudioPlaying ? 'volume_up' : 'volume_mute'}
+            </span>
+            <span className="hidden md:inline text-[11px] font-mono">
+              {isAudioPlaying ? 'Broadcasting...' : 'Audio TTS'}
+            </span>
+          </button>
+
+          <button
+            onClick={() => onSelectHazard && onSelectHazard(alertId)}
+            className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-red-300 hover:text-white transition-colors underline decoration-red-400 underline-offset-4"
+          >
+            <span>View Advisory Details</span>
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
+
+          <button
+            onClick={() => setIsDismissed(true)}
+            className="p-1 rounded-md text-red-300/70 hover:text-white hover:bg-red-900/40 transition-colors"
+            title="Dismiss banner"
+            aria-label="Dismiss banner"
+          >
+            <span className="material-symbols-outlined text-base">close</span>
+          </button>
+        </div>
       </div>
     </div>
   );

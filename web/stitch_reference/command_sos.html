@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-primary-fixed": "#131b2e", "on-error-container": "#93000a", "surface-container": "#e5eeff", "error-container": "#ffdad6", "primary-container": "#131b2e", "surface-variant": "#d3e4fe", "surface-dim": "#cbdbf5", "on-primary": "#ffffff", "inverse-primary": "#bec6e0", "primary-fixed-dim": "#bec6e0", "surface-container-lowest": "#ffffff", "secondary-container": "#5bb8fe", "primary": "#000000", "on-tertiary-fixed": "#001e2c", "outline": "#76777d", "secondary-fixed-dim": "#93ccff", "on-secondary-fixed-variant": "#004b73", "background": "#f8f9ff", "surface-bright": "#f8f9ff", "inverse-surface": "#213145", "secondary-fixed": "#cce5ff", "on-surface": "#0b1c30", "tertiary": "#000000", "outline-variant": "#c6c6cd", "on-tertiary-container": "#008ebf", "primary-fixed": "#dae2fd", "tertiary-container": "#001e2c", "surface-container-highest": "#d3e4fe", "tertiary-fixed": "#c4e7ff", "on-error": "#ffffff", "surface-container-low": "#eff4ff", "surface": "#f8f9ff", "surface-tint": "#565e74", "on-secondary-fixed": "#001d31", "on-primary-fixed-variant": "#3f465c", "on-primary-container": "#7c839b", "tertiary-fixed-dim": "#7bd0ff", "surface-container-high": "#dce9ff", "inverse-on-surface": "#eaf1ff", "error": "#ba1a1a", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "on-background": "#0b1c30", "on-surface-variant": "#45464d", "secondary": "#006398", "on-secondary": "#ffffff", "on-tertiary-fixed-variant": "#004c69" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-sm": "0.5rem", "margin-tablet": "1.5rem", "margin-desktop": "2rem", "gutter-desktop": "1.5rem", "space-md": "1rem", "space-xs": "0.25rem", "margin": "1rem", "space-xl": "2rem", "gutter": "1rem", "space-lg": "1.5rem" }, fontFamily: { "body-sm": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "tabular-metric": ["Inter"], "label-lg": ["Inter"], "headline-xl": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-md": ["Inter"], "headline-xl-mobile": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"] }, fontSize: { "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }], "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }], "tabular-metric": ["24px", { "lineHeight": "28px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "headline-xl-mobile": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "800" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }] } } } };</script></head><body class="bg-background font-body-md text-body-md text-on-background min-h-screen"><header class="fixed top-0 left-0 right-0 w-full z-50 bg-surface/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="bg-error text-on-error px-margin-desktop py-space-xs flex items-center justify-between font-label-md text-label-md shadow-inner"><div class="flex items-center gap-space-sm overflow-hidden text-ellipsis whitespace-nowrap"><span class="material-symbols-outlined text-[18px] animate-pulse">warning</span><span class="font-label-lg text-label-lg uppercase tracking-wider font-bold text-on-error">Active Advisory:</span><span>Flash Flood Watch in Southern Districts. Water levels rising along Musi River basin. Monitor real-time telemetry.</span><a class="underline font-semibold hover:text-surface-container ml-space-xs inline-flex items-center gap-0.5" data-path="alert-center" href="#">View Advisory Details <span class="material-symbols-outlined text-[14px]">arrow_forward</span></a></div><button aria-label="Dismiss alert" class="flex items-center justify-center p-0.5 hover:bg-on-error-container/20 rounded text-on-error transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button></div><div class="h-28 w-full px-margin-desktop flex flex-col justify-between pt-space-xs pb-space-sm"><div class="flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><img alt="Aegis Alert Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U8KVywuwP6MGi061yDxnzC6OcZEfbwVRnAW9AzGhum4pLjudqiihu6PtskXLwqfQLjkt8XwhwqIN84Ystq0u48gCWZuUOFWXMl72EgJPcCWgkx6sLxLAC1My-Yqee4VJfqewEIKnepd9fZIprhn0olldKCYKDCFv3s1zm2v5ayLapf4RGBJQHFVXUgqPI1lQICK9zq7GwuvaIaF5s2gfXx61YZSSnxZFc7j7NTqV0V6u6b_zk7972S-ko"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-bold tracking-tight text-on-surface">Aegis Alert</span><span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Tactical Command Suite</span></div></div><div class="hidden xl:flex items-center gap-space-xs"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-full text-label-sm font-label-sm"><span class="material-symbols-outlined text-secondary text-[16px]">location_on</span><span class="font-semibold text-on-surface">Hyderabad, Telangana</span></div><div class="flex items-center gap-space-xs bg-surface-container-high px-space-sm py-1 rounded-full text-label-sm font-label-sm font-semibold text-secondary"><span class="h-2 w-2 rounded-full bg-secondary animate-pulse"></span><span>KAGGLE CLOUD SYNC: ACTIVE (Private 100GB)</span></div><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-full text-label-sm font-label-sm font-medium text-on-surface-variant"><span class="h-2 w-2 rounded-full bg-secondary"></span><span>MOBILE SYNC: CONNECTED (Peer-to-Peer)</span></div></div><div class="flex items-center gap-space-md"><button aria-label="Emergency Broadcast Notifications" class="relative p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-full"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-error"></span></span></button><button aria-label="Toggle Dark/Light Mode" class="p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-full"><span class="material-symbols-outlined text-[20px]">light_mode</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjCv16UlcLOXvOyfG8MuluLu9OC8t_lqsOgkUSNxeCJJ4-22hkdG3oA_u4JZ-QPbD2fl-obdUFwo24Mxcitu1r5UewyagtKWsXGGAaHSXozeTujOp-yggN43eLhK8nogRbcORGhMtFLEP-h71J2huLiprHKdB10ooysr2tVJVhzH-CSoNGMsmoay_s1jPb3bZQyI7dFwyYXFWQ6T8woiwrPk2WaV_mZG0frGSXlnIwRVfXgOQ4y6CH"/><div class="hidden 2xl:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Officer Sarah Jenkins</span><span class="font-label-sm text-label-sm text-on-surface-variant">Tactical Commander</span></div></div></div></div><div class="flex items-center justify-between pt-space-xs overflow-x-auto"><nav class="flex items-center gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-semibold rounded-lg"><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="dashboard" href="#">Home / Dashboard</a><a aria-current="page" class="px-space-sm py-1 transition-colors whitespace-nowrap bg-surface-container-high text-on-surface font-semibold rounded-lg" data-path="tactical-command" href="#">Tactical Command</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="live-map" href="#">Live Map</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="kaggle-private-store" href="#">Kaggle Private Store</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="ai-emergency-triage" href="#">AI Emergency Triage</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="predictions" href="#">Predictions</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="alert-center" href="#">Alert Center</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="safety-hub" href="#">Safety Hub</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="report-incident" href="#">Report Incident</a></nav><div class="hidden lg:flex items-center gap-space-xs font-label-sm text-label-sm text-secondary bg-surface-container-low px-space-sm py-0.5 rounded"><span class="h-2 w-2 rounded-full bg-secondary animate-pulse"></span><span>TELEMETRY (0.4s)</span></div></div></div></header><main class="w-full pt-28 bg-background min-h-[calc(100vh-280px)]"><div class="flex flex-col w-full">
+<!-- TOP TACTICAL COMMAND STATUS STRIP -->
+<section class="w-full px-margin-desktop py-space-md">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest shadow-md p-space-md flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-space-md">
+<div class="flex flex-wrap items-center gap-space-md">
+<!-- SYSTEM STATE PILL -->
+<div class="flex items-center gap-space-sm bg-error px-space-md py-space-xs rounded-lg shadow-sm text-on-error">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-surface-bright opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-surface-bright"></span>
+</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-error opacity-90">Tactical Status</span>
+<span class="font-headline-sm text-headline-sm font-bold leading-tight">CODE RED / DISPATCH ACTIVE</span>
+</div>
+</div>
+<!-- TELEMETRY NODES STRIP -->
+<div class="flex flex-wrap items-center gap-space-xs text-on-surface">
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-1.5 rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">smartphone</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Field Agents (App)</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">1,842 Synced (P2P Mesh)</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-1.5 rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">terminal</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Console Link</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">HYD-CMD-PRIMARY (99.98%)</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-1.5 rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">cloud_sync</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Kaggle Backup Store</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Syncing Batch #1042</span>
+</div>
+</div>
+</div>
+</div>
+<!-- RAPID EMERGENCY PROTOCOL ACTIONS -->
+<div class="flex flex-wrap items-center gap-space-xs">
+<button class="flex items-center gap-space-xs bg-error hover:bg-error/90 text-on-error px-space-md py-2.5 rounded-lg font-label-lg text-label-lg shadow-md transition-transform active:scale-95" id="broadcastSosBtn">
+<span class="material-symbols-outlined text-[18px]">fmd_bad</span>
+<span>BROADCAST SOS ALERT</span>
+</button>
+<button class="flex items-center gap-space-xs bg-secondary hover:bg-secondary/90 text-on-secondary px-space-md py-2.5 rounded-lg font-label-lg text-label-lg shadow-md transition-transform active:scale-95" id="bulkSafepingBtn">
+<span class="material-symbols-outlined text-[18px]">cell_tower</span>
+<span>SEND BULK SAFEPING</span>
+</button>
+<button class="flex items-center gap-space-xs bg-surface-container-high hover:bg-surface-container text-on-surface px-space-md py-2.5 rounded-lg font-label-lg text-label-lg shadow-sm transition-colors" id="audioSirenBtn">
+<span class="material-symbols-outlined text-[18px] text-error">volume_up</span>
+<span id="sirenBtnText">TRIGGER AUDIO SIREN</span>
+</button>
+<button class="flex items-center gap-space-xs bg-primary-container text-on-primary hover:bg-primary-container/90 px-space-md py-2.5 rounded-lg font-label-lg text-label-lg shadow-md transition-transform active:scale-95" id="dispatchRescueBtn">
+<span class="material-symbols-outlined text-[18px] text-secondary-container">flight_takeoff</span>
+<span>DISPATCH RAPID RESCUE</span>
+</button>
+</div>
+</div>
+</section>
+<!-- MAIN OPERATIONAL GRID -->
+<div class="w-full px-margin-desktop grid grid-cols-1 xl:grid-cols-12 gap-gutter-desktop pb-space-xl">
+<!-- LEFT COLUMN: LIVE EMERGENCY BEACONS & ACOUSTIC MONITOR (SPAN 5) -->
+<div class="xl:col-span-5 flex flex-col gap-space-md">
+<!-- BEACON FEED CONTROLS -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md p-space-md">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-error"></span>
+</span>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Emergency SOS Beacon Stream</h2>
+</div>
+<span class="bg-error-container text-on-error-container font-label-sm text-label-sm px-space-sm py-0.5 rounded-full font-bold">
+            3 UNRESOLVED
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          P2P audio beacon uplink active via citizen smartphones and emergency mesh channels. Triage classification verified by automated neural audio classifier.
+        </p>
+</div>
+<!-- SOS CARD 1: VEHICLE WATER RESCUE (CRITICAL) -->
+<article class="relative overflow-hidden bg-surface-container-lowest rounded-xl shadow-md p-space-md space-y-space-sm" id="beaconCard-1">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-error"></div>
+<div class="flex items-start justify-between gap-space-sm pl-space-xs">
+<div>
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="bg-error text-on-error font-label-sm text-label-sm px-space-xs py-0.5 rounded font-bold uppercase">
+                TRIAGE 1 • IMMEDIATE
+              </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">
+                Beacon #SOS-9104
+              </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+                • 1m 24s ago
+              </span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface pt-1">
+              TRAPPED IN VEHICLE — RISING WATER LEVEL
+            </h3>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-0.5 text-error font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[16px]">battery_1_bar</span>
+<span>12%</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Phone Audio Active</span>
+</div>
+</div>
+<!-- ACOUSTIC WAVEFORM VISUALIZER -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-1.5">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-error animate-pulse">graphic_eq</span>
+              Acoustic Triage: Emergency Horn / Splashing Sounds (94.2% Conf.)
+            </span>
+<span class="text-secondary font-semibold">Decibels: 88 dB SPL</span>
+</div>
+<div class="flex items-end justify-between h-8 gap-0.5 px-1">
+<div class="w-1 bg-error rounded-full h-3 animate-pulse"></div>
+<div class="w-1 bg-error rounded-full h-5"></div>
+<div class="w-1 bg-error rounded-full h-7 animate-pulse"></div>
+<div class="w-1 bg-secondary rounded-full h-4"></div>
+<div class="w-1 bg-error rounded-full h-8 animate-pulse"></div>
+<div class="w-1 bg-error rounded-full h-6"></div>
+<div class="w-1 bg-secondary rounded-full h-5"></div>
+<div class="w-1 bg-error rounded-full h-7"></div>
+<div class="w-1 bg-error rounded-full h-3"></div>
+<div class="w-1 bg-error rounded-full h-8 animate-pulse"></div>
+<div class="w-1 bg-secondary rounded-full h-6"></div>
+<div class="w-1 bg-error rounded-full h-5"></div>
+<div class="w-1 bg-error rounded-full h-8"></div>
+<div class="w-1 bg-error rounded-full h-4"></div>
+<div class="w-1 bg-secondary rounded-full h-7 animate-pulse"></div>
+<div class="w-1 bg-error rounded-full h-8"></div>
+<div class="w-1 bg-error rounded-full h-6"></div>
+<div class="w-1 bg-error rounded-full h-4"></div>
+<div class="w-1 bg-secondary rounded-full h-5"></div>
+<div class="w-1 bg-error rounded-full h-7 animate-pulse"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs text-on-surface font-label-sm text-label-sm pl-space-xs">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">pin_drop</span>
+<span class="font-semibold">17.3616° N, 78.4747° E</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">location_city</span>
+<span>Old City Causeway, Bridge Span 4</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">person</span>
+<span>K. Venkat (3 Occupants, 1 Infant)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">call</span>
+<span>+91 94401-20984</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1 border-t border-surface-variant/30">
+<button class="bg-primary text-on-primary hover:bg-on-surface px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="acknowledgeSos('beaconCard-1')">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+            Acknowledge Beacon
+          </button>
+<button class="bg-secondary text-on-secondary hover:bg-secondary/90 px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="dispatchDrone('Drone Unit #04', 'Old City Causeway')">
+<span class="material-symbols-outlined text-[16px]">drone</span>
+            Assign Rescue Drone Unit #04
+          </button>
+<a class="bg-surface-container text-on-surface hover:bg-surface-container-high px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm transition-colors flex items-center gap-1" href="tel:+919440000100">
+<span class="material-symbols-outlined text-[16px] text-error">phone_in_talk</span>
+            Direct Dial NDRF Sector 03
+          </a>
+</div>
+</article>
+<!-- SOS CARD 2: CARDIAC EMERGENCY (HIGH PRIORITY) -->
+<article class="relative overflow-hidden bg-surface-container-lowest rounded-xl shadow-md p-space-md space-y-space-sm" id="beaconCard-2">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-error"></div>
+<div class="flex items-start justify-between gap-space-sm pl-space-xs">
+<div>
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="bg-error text-on-error font-label-sm text-label-sm px-space-xs py-0.5 rounded font-bold uppercase">
+                TRIAGE 1 • MEDICAL
+              </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">
+                Beacon #SOS-9102
+              </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+                • 4m 10s ago
+              </span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface pt-1">
+              CARDIAC EMERGENCY — CUT OFF BY FLOODWATER
+            </h3>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-0.5 text-secondary font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[16px]">battery_4_bar</span>
+<span>64%</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Wearable ECG Active</span>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-error">ecg_heart</span>
+              Smartwatch Telemetry: Heart Rate 148 BPM, SpO2 87%
+            </span>
+<span class="text-error font-bold">Arrhythmia Flagged</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 88%;"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs text-on-surface font-label-sm text-label-sm pl-space-xs">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">pin_drop</span>
+<span class="font-semibold">17.3850° N, 78.4867° E</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">home</span>
+<span>Chaderghat, House #44B (2nd Floor)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">person</span>
+<span>Rameshwar Rao (68 yrs)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">call</span>
+<span>+91 98850-11223</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1">
+<button class="bg-primary text-on-primary hover:bg-on-surface px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="acknowledgeSos('beaconCard-2')">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+            Acknowledge Beacon
+          </button>
+<button class="bg-secondary text-on-secondary hover:bg-secondary/90 px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="pushSafePing('Rameshwar Rao', '+91 98850-11223')">
+<span class="material-symbols-outlined text-[16px]">send_to_mobile</span>
+            Push SafePing Response
+          </button>
+<button class="bg-surface-container text-on-surface hover:bg-surface-container-high px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="dispatchRescueUnit('Amphibious MedBoat-02', 'Chaderghat')">
+<span class="material-symbols-outlined text-[16px] text-secondary">sailing</span>
+            Deploy Med-Boat 02
+          </button>
+</div>
+</article>
+<!-- SOS CARD 3: STRUCTURAL COLLAPSE -->
+<article class="relative overflow-hidden bg-surface-container-lowest rounded-xl shadow-md p-space-md space-y-space-sm" id="beaconCard-3">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-secondary-container"></div>
+<div class="flex items-start justify-between gap-space-sm pl-space-xs">
+<div>
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-space-xs py-0.5 rounded font-bold uppercase">
+                TRIAGE 2 • RESCUE SQUAD
+              </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">
+                Beacon #SOS-9098
+              </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+                • 11m ago
+              </span>
+</div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface pt-1">
+              STRUCTURAL COLLAPSE — RESIDENTIAL PERIMETER WALL
+            </h3>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-0.5 text-secondary font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[16px]">battery_3_bar</span>
+<span>45%</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cell Tower Triangulated</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant pl-space-xs">
+          Compound wall collapsed onto low-lying access corridor. 4 citizens trapped in utility shelter. No injuries currently reported, but drainage backflow threatens foundation.
+        </p>
+<div class="grid grid-cols-2 gap-space-xs text-on-surface font-label-sm text-label-sm pl-space-xs">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">pin_drop</span>
+<span class="font-semibold">17.3502° N, 78.4988° E</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">location_on</span>
+<span>Malakpet Gunj East Lane</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1">
+<button class="bg-primary text-on-primary hover:bg-on-surface px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="acknowledgeSos('beaconCard-3')">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+            Acknowledge Beacon
+          </button>
+<button class="bg-secondary text-on-secondary hover:bg-secondary/90 px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm shadow-sm transition-colors flex items-center gap-1" onclick="dispatchRescueUnit('Urban Search Squad #07', 'Malakpet Gunj')">
+<span class="material-symbols-outlined text-[16px]">engineering</span>
+            Route Urban Search Squad #07
+          </button>
+</div>
+</article>
+<!-- REAL-TIME SAFEPING & FAMILY SAFETY NETWORK -->
+<section class="bg-surface-container-lowest rounded-xl shadow-md p-space-md space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">diversity_1</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">SafePing Family Network</h3>
+</div>
+<button class="bg-secondary hover:bg-secondary/90 text-on-secondary font-label-sm text-label-sm px-space-sm py-1 rounded-lg flex items-center gap-1 shadow-sm transition-transform active:scale-95" id="sendFamilyPingBtn">
+<span class="material-symbols-outlined text-[14px]">send</span>
+            Ping Family Circle
+          </button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Automated check-ins for operational command staff dependents located in hazard sectors.
+        </p>
+<div class="space-y-space-xs">
+<!-- FAMILY CARD 1 -->
+<div class="flex items-center justify-between p-space-sm bg-surface-container rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="h-2.5 w-2.5 rounded-full bg-secondary"></span>
+<div>
+<p class="font-label-md text-label-md font-bold text-on-surface">Sarah Jenkins (Mother)</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Banjara Hills Residence • Battery: 91%</p>
+</div>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-lowest px-space-sm py-0.5 rounded-full text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check</span>
+              Marked Safe (12m ago)
+            </div>
+</div>
+<!-- FAMILY CARD 2 -->
+<div class="flex items-center justify-between p-space-sm bg-surface-container rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="h-2.5 w-2.5 rounded-full bg-error animate-pulse"></span>
+<div>
+<p class="font-label-md text-label-md font-bold text-on-surface">David Jenkins (Son)</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">University Sector 4 • In Flood Watch Area</p>
+</div>
+</div>
+<button class="flex items-center gap-1 bg-error text-on-error px-space-sm py-0.5 rounded-full font-label-sm text-label-sm font-semibold hover:bg-error/90 transition-colors" onclick="pingSingle('David Jenkins')">
+<span class="material-symbols-outlined text-[14px]">notifications_active</span>
+              Pending SafePing (Re-request)
+            </button>
+</div>
+<!-- FAMILY CARD 3 -->
+<div class="flex items-center justify-between p-space-sm bg-surface-container rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="h-2.5 w-2.5 rounded-full bg-secondary"></span>
+<div>
+<p class="font-label-md text-label-md font-bold text-on-surface">Elena Vance (Colleague / Dep. Officer)</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Lal Bahadur Stadium Relief Base</p>
+</div>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-lowest px-space-sm py-0.5 rounded-full text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+              At Safe Shelter #02
+            </div>
+</div>
+</div>
+</section>
+<!-- TECHNICAL SYNC & STORAGE PROTOCOL WIDGET -->
+<section class="bg-surface-container-lowest rounded-xl shadow-md p-space-md space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">database</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Technical Sync &amp; Kaggle Store Engine</h3>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container text-secondary font-semibold px-space-xs py-0.5 rounded">
+            TLS 1.3 / AES-256
+          </span>
+</div>
+<div class="grid grid-cols-3 gap-space-xs text-center">
+<div class="bg-surface-container p-space-xs rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">WebSocket Latency</span>
+<span class="font-tabular-metric text-tabular-metric font-bold text-secondary">14ms</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant block">Bi-directional active</span>
+</div>
+<div class="bg-surface-container p-space-xs rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">IndexedDB Buffer</span>
+<span class="font-tabular-metric text-tabular-metric font-bold text-on-surface">4.8MB</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant block">12,480 events cached</span>
+</div>
+<div class="bg-surface-container p-space-xs rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Kaggle Sync Queue</span>
+<span class="font-tabular-metric text-tabular-metric font-bold text-secondary">100 GB</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant block">Batch commit 3s ago</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Auto-commit pipeline: <strong>KAGGLE_PRIVATE_REPOS/disaster-telemetry-v3</strong></span>
+</div>
+<button class="text-secondary hover:underline font-label-sm text-label-sm font-semibold flex items-center gap-0.5" onclick="forceSync()">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+            Force Commit
+          </button>
+</div>
+</section>
+</div>
+<!-- RIGHT COLUMN: TACTICAL LIVE MAP & INCIDENT TRACKER (SPAN 7) -->
+<div class="xl:col-span-7 flex flex-col gap-space-md">
+<!-- TACTICAL LIVE SITUATION MAP DISPLAY -->
+<section class="bg-surface-container-lowest rounded-xl shadow-md p-space-md flex flex-col gap-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-xs">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">map</span>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Tactical Live Situation Map (Hyderabad Sector)</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Telemetry feed aggregating sensor hydrologic floats, high-ground muster shelters, and deployed NDRF assets.
+            </p>
+</div>
+<!-- MAP VIEW TOGGLE HUD -->
+<div class="flex items-center gap-1 bg-surface-container p-1 rounded-lg">
+<button class="px-space-sm py-1 bg-surface-container-lowest text-on-surface rounded font-label-sm text-label-sm font-semibold shadow-sm">
+              Vector / Satellite
+            </button>
+<button class="px-space-sm py-1 text-on-surface-variant hover:text-on-surface rounded font-label-sm text-label-sm">
+              Hydrology Overlay
+            </button>
+<button class="px-space-sm py-1 text-on-surface-variant hover:text-on-surface rounded font-label-sm text-label-sm">
+              Drone Trajectories
+            </button>
+</div>
+</div>
+<!-- GIS MAP CONTAINER -->
+<div class="relative w-full h-80 rounded-xl overflow-hidden shadow-inner">
+<div class="w-full h-full bg-cover bg-center" data-location="Hyderabad, India" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuApezoO3eDSI3snRlrjxiI2BTZLaVzkaXAj3I3_TWctk33G-WI2kwYkTIp0G1m32ObeZF285D39PGkqoGH_aGbO0CA3zMhzQghaXwy6FdmFv67xDEmre6W7WTPfb1kPxo2EO_AAaLRKh0bcqs4tKwPJOV3GFAys6yvPJlQdygxS9Bc0PUDnMOxNV6qyHUxuLmkmC7TcDu823aAeOwgCLyYyqk-tOv1I6xx65R6HjfKj4wF4CXIhM3ZH')"></div>
+<!-- FLOATING MAP HUD: STATUS OVERLAYS -->
+<div class="absolute top-3 left-3 flex flex-col gap-2 pointer-events-none">
+<div class="bg-surface/90 backdrop-blur-md px-space-sm py-1 rounded-lg shadow-md flex items-center gap-space-xs font-label-sm text-label-sm pointer-events-auto">
+<span class="h-2.5 w-2.5 rounded-full bg-error animate-pulse"></span>
+<span class="font-bold text-on-surface">Active Inundation Zone: Musi Riverway</span>
+</div>
+<div class="bg-surface/90 backdrop-blur-md px-space-sm py-1 rounded-lg shadow-md flex items-center gap-space-xs font-label-sm text-label-sm pointer-events-auto">
+<span class="material-symbols-outlined text-[16px] text-secondary">flight</span>
+<span class="font-semibold text-on-surface">3 Autonomous UAVs Patrolling Sector 07</span>
+</div>
+</div>
+<!-- FLOATING MAP HUD: UNIT METRICS -->
+<div class="absolute bottom-3 right-3 bg-surface/90 backdrop-blur-md p-space-sm rounded-lg shadow-md flex items-center gap-space-md pointer-events-auto">
+<div class="flex items-center gap-1 text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-error">emergency</span>
+<span class="font-bold">6 Ambulances</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">directions_boat</span>
+<span class="font-bold">8 Rescue Boats</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-on-surface">local_fire_department</span>
+<span class="font-bold">4 Fire Brigades</span>
+</div>
+</div>
+</div>
+<!-- HIGH GROUND SHELTERS STATUS ROW -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm pt-space-xs">
+<!-- SHELTER 1 -->
+<div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Shelter 01: Lal Bahadur Stadium</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">68% Capacity</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 68%;"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Elev: 540m MSL</span>
+<span>816 / 1,200 Spots</span>
+</div>
+</div>
+<!-- SHELTER 2 -->
+<div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Shelter 02: Nizam College Grounds</span>
+<span class="font-label-sm text-label-sm text-error font-semibold">92% Capacity</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 92%;"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Elev: 532m MSL</span>
+<span>1,380 / 1,500 Spots</span>
+</div>
+</div>
+<!-- SHELTER 3 -->
+<div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Shelter 03: Jubilee Community Center</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">34% Capacity</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 34%;"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Elev: 590m MSL (High Ridge)</span>
+<span>306 / 900 Spots</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ACTIVE INCIDENTS TRACKER -->
+<section class="bg-surface-container-lowest rounded-xl shadow-md p-space-md flex flex-col gap-space-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Command Incident Queue</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Live incident triage ledger mapped to municipal response zones.</p>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="bg-surface-container hover:bg-surface-container-high text-on-surface px-space-sm py-1.5 rounded-lg font-label-sm text-label-sm font-semibold flex items-center gap-1 transition-colors" onclick="exportToKaggle()">
+<span class="material-symbols-outlined text-[16px] text-secondary">cloud_upload</span>
+              Export to Kaggle Store
+            </button>
+</div>
+</div>
+<!-- FILTER TABS -->
+<div class="flex items-center gap-1 bg-surface-container p-1 rounded-lg overflow-x-auto">
+<button class="filter-tab px-space-sm py-1 bg-surface-container-lowest text-on-surface rounded font-label-sm text-label-sm font-semibold shadow-sm whitespace-nowrap" onclick="filterIncidents('all')">
+            All (14)
+          </button>
+<button class="filter-tab px-space-sm py-1 text-on-surface-variant hover:text-on-surface rounded font-label-sm text-label-sm whitespace-nowrap" onclick="filterIncidents('critical')">
+            Critical Dispatches (5)
+          </button>
+<button class="filter-tab px-space-sm py-1 text-on-surface-variant hover:text-on-surface rounded font-label-sm text-label-sm whitespace-nowrap" onclick="filterIncidents('pending')">
+            Pending Review (4)
+          </button>
+<button class="filter-tab px-space-sm py-1 text-on-surface-variant hover:text-on-surface rounded font-label-sm text-label-sm whitespace-nowrap" onclick="filterIncidents('dispatched')">
+            Dispatched (3)
+          </button>
+<button class="filter-tab px-space-sm py-1 text-on-surface-variant hover:text-on-surface rounded font-label-sm text-label-sm whitespace-nowrap" onclick="filterIncidents('resolved')">
+            Resolved (2)
+          </button>
+</div>
+<!-- INCIDENTS TABLE -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase">
+<tr>
+<th class="p-space-sm rounded-l-lg">ID &amp; Incident</th>
+<th class="p-space-sm">Type / Zone</th>
+<th class="p-space-sm">Severity</th>
+<th class="p-space-sm">Reported Via</th>
+<th class="p-space-sm">Assigned Team</th>
+<th class="p-space-sm text-right rounded-r-lg">Action / Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container text-on-surface" id="incidentTableBody">
+<!-- ROW 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors incident-row" data-severity="critical" data-status="dispatched">
+<td class="p-space-sm">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">#INC-8492</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Causeway Submersion</span>
+</div>
+</td>
+<td class="p-space-sm">
+<span class="font-semibold text-on-surface">Flash Flood Inundation</span>
+<span class="block text-on-surface-variant font-label-sm text-label-sm">Sector 03 (Old City)</span>
+</td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-1 bg-error-container text-on-error-container px-space-xs py-0.5 rounded font-label-sm text-label-sm font-bold">
+<span class="h-1.5 w-1.5 rounded-full bg-error animate-pulse"></span>
+                    TIER 1 SEVERE
+                  </span>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">smartphone</span>
+<span>Aegis Mobile App</span>
+</div>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm font-semibold text-on-surface">
+                  NDRF Boat Unit 04
+                </td>
+<td class="p-space-sm text-right">
+<span class="bg-secondary-container text-on-secondary-container px-space-xs py-1 rounded font-label-sm text-label-sm font-semibold">
+                    DISPATCH EN ROUTE
+                  </span>
+</td>
+</tr>
+<!-- ROW 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors incident-row" data-severity="critical" data-status="pending">
+<td class="p-space-sm">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">#INC-8491</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Substation Arcing</span>
+</div>
+</td>
+<td class="p-space-sm">
+<span class="font-semibold text-on-surface">High-Voltage Wire Down</span>
+<span class="block text-on-surface-variant font-label-sm text-label-sm">Sector 05 (Chaderghat)</span>
+</td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-1 bg-error-container text-on-error-container px-space-xs py-0.5 rounded font-label-sm text-label-sm font-bold">
+<span class="h-1.5 w-1.5 rounded-full bg-error animate-pulse"></span>
+                    TIER 1 CRITICAL
+                  </span>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-on-surface">sensors</span>
+<span>Grid Telemetry Sensor #19</span>
+</div>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm font-semibold text-error">
+                  Awaiting Grid Lockout
+                </td>
+<td class="p-space-sm text-right">
+<button class="bg-primary text-on-primary hover:bg-on-surface px-space-xs py-1 rounded font-label-sm text-label-sm font-semibold" onclick="assignTeam('INC-8491')">
+                    Assign Squad
+                  </button>
+</td>
+</tr>
+<!-- ROW 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors incident-row" data-severity="pending" data-status="pending">
+<td class="p-space-sm">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">#INC-8488</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Slope Slippage</span>
+</div>
+</td>
+<td class="p-space-sm">
+<span class="font-semibold text-on-surface">Mudslide / Road Blockage</span>
+<span class="block text-on-surface-variant font-label-sm text-label-sm">Sector 09 (Banjara Ridge)</span>
+</td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-1 bg-surface-container text-on-surface px-space-xs py-0.5 rounded font-label-sm text-label-sm font-bold">
+                    TIER 2 ELEVATED
+                  </span>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">language</span>
+<span>Web Console Portal</span>
+</div>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm font-semibold text-on-surface">
+                  Municipal Earthmovers #02
+                </td>
+<td class="p-space-sm text-right">
+<span class="bg-surface-container-high text-on-surface px-space-xs py-1 rounded font-label-sm text-label-sm font-semibold">
+                    ASSESSMENT IN PROGRESS
+                  </span>
+</td>
+</tr>
+<!-- ROW 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors incident-row" data-severity="dispatched" data-status="dispatched">
+<td class="p-space-sm">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">#INC-8482</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Hospital Power Backup Fail</span>
+</div>
+</td>
+<td class="p-space-sm">
+<span class="font-semibold text-on-surface">Critical Infrastructure</span>
+<span class="block text-on-surface-variant font-label-sm text-label-sm">Sector 02 (Osmania Area)</span>
+</td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-1 bg-error-container text-on-error-container px-space-xs py-0.5 rounded font-label-sm text-label-sm font-bold">
+<span class="h-1.5 w-1.5 rounded-full bg-error animate-pulse"></span>
+                    TIER 1 CRITICAL
+                  </span>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">cell_tower</span>
+<span>Citizen SafePing Mesh</span>
+</div>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm font-semibold text-on-surface">
+                  Mobile Gen-Set Taskforce
+                </td>
+<td class="p-space-sm text-right">
+<span class="bg-secondary text-on-secondary px-space-xs py-1 rounded font-label-sm text-label-sm font-semibold">
+                    DEPLOYED
+                  </span>
+</td>
+</tr>
+<!-- ROW 5 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors incident-row" data-severity="resolved" data-status="resolved">
+<td class="p-space-sm">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">#INC-8479</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Culvert Cleared</span>
+</div>
+</td>
+<td class="p-space-sm">
+<span class="font-semibold text-on-surface">Stormwater Drainage Spill</span>
+<span class="block text-on-surface-variant font-label-sm text-label-sm">Sector 01 (Secunderabad)</span>
+</td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-1 bg-surface-container text-on-surface-variant px-space-xs py-0.5 rounded font-label-sm text-label-sm font-semibold">
+                    RESOLVED
+                  </span>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">smartphone</span>
+<span>Field Mobile App</span>
+</div>
+</td>
+<td class="p-space-sm font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                  Drainage Squad C
+                </td>
+<td class="p-space-sm text-right">
+<span class="bg-surface-container text-on-surface-variant px-space-xs py-1 rounded font-label-sm text-label-sm">
+                    ARCHIVED
+                  </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</div>
+<!-- INTERACTIVE TOAST NOTIFICATION HOLDER -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none" id="tacticalToast">
+<div class="bg-primary text-on-primary px-space-md py-space-sm rounded-xl shadow-xl flex items-center gap-space-sm border-l-4 border-secondary">
+<span class="material-symbols-outlined text-secondary text-[22px]" id="toastIcon">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold" id="toastTitle">Command Dispatched</span>
+<span class="font-body-sm text-body-sm text-surface-variant" id="toastMessage">Telemetry packet transmitted successfully.</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  let sirenActive = false;
+
+  function showToast(title, message, icon = 'check_circle') {
+    const toast = document.getElementById('tacticalToast');
+    const toastTitle = document.getElementById('toastTitle');
+    const toastMsg = document.getElementById('toastMessage');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (toast && toastTitle && toastMsg && toastIcon) {
+      toastTitle.textContent = title;
+      toastMsg.textContent = message;
+      toastIcon.textContent = icon;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3500);
+    }
+  }
+
+  // Quick Action: Broadcast SOS Alert
+  const broadcastSosBtn = document.getElementById('broadcastSosBtn');
+  if (broadcastSosBtn) {
+    broadcastSosBtn.addEventListener('click', () => {
+      showToast('Global SOS Broadcast Triggered', 'Encrypted EAS push sent to 1,842 mobile nodes in Hyderabad perimeter.', 'warning');
+    });
+  }
+
+  // Quick Action: Send Bulk SafePing
+  const bulkSafepingBtn = document.getElementById('bulkSafepingBtn');
+  if (bulkSafepingBtn) {
+    bulkSafepingBtn.addEventListener('click', () => {
+      showToast('Bulk SafePing Dispatched', 'Automated location validation ping pushed to 42,000 citizens in flood zones.', 'cell_tower');
+    });
+  }
+
+  // Quick Action: Audio Siren Toggle
+  const audioSirenBtn = document.getElementById('audioSirenBtn');
+  const sirenBtnText = document.getElementById('sirenBtnText');
+  if (audioSirenBtn && sirenBtnText) {
+    audioSirenBtn.addEventListener('click', () => {
+      sirenActive = !sirenActive;
+      if (sirenActive) {
+        sirenBtnText.textContent = 'SILENCE AUDIO SIREN';
+        audioSirenBtn.classList.remove('bg-surface-container-high', 'text-on-surface');
+        audioSirenBtn.classList.add('bg-error', 'text-on-error');
+        showToast('ACOUSTIC SIREN ACTIVE', '135dB mechanical sirens sounded across Old City riverbanks.', 'volume_up');
+      } else {
+        sirenBtnText.textContent = 'TRIGGER AUDIO SIREN';
+        audioSirenBtn.classList.add('bg-surface-container-high', 'text-on-surface');
+        audioSirenBtn.classList.remove('bg-error', 'text-on-error');
+        showToast('Siren Deactivated', 'Acoustic warning systems stood down to standby.', 'volume_off');
+      }
+    });
+  }
+
+  // Quick Action: Dispatch Rapid Rescue
+  const dispatchRescueBtn = document.getElementById('dispatchRescueBtn');
+  if (dispatchRescueBtn) {
+    dispatchRescueBtn.addEventListener('click', () => {
+      showToast('Rapid Rescue Squads Deployed', 'Air & Water taskforce dispatched to high-triage clusters.', 'flight_takeoff');
+    });
+  }
+
+  // SOS Individual Beacon Handlers
+  function acknowledgeSos(cardId) {
+    const card = document.getElementById(cardId);
+    if (card) {
+      card.classList.add('opacity-70');
+      showToast('SOS Beacon Acknowledged', 'Responder status flagged as ACKNOWLEDGED in central tactical ledger.');
+    }
+  }
+
+  function dispatchDrone(droneUnit, targetLocation) {
+    showToast(`Drone Dispatched: ${droneUnit}`, `Target destination set to ${targetLocation}. Autonomous flight corridor authorized.`, 'drone');
+  }
+
+  function pushSafePing(recipient, phone) {
+    showToast('SafePing Sent', `High-priority SMS & P2P push sent to ${recipient} (${phone}).`, 'send_to_mobile');
+  }
+
+  function dispatchRescueUnit(unitName, sector) {
+    showToast(`Unit Dispatched: ${unitName}`, `En route to ${sector}. Live GPS tracker engaged on map viewport.`, 'sailing');
+  }
+
+  // Family SafePing Network Controls
+  const sendFamilyPingBtn = document.getElementById('sendFamilyPingBtn');
+  if (sendFamilyPingBtn) {
+    sendFamilyPingBtn.addEventListener('click', () => {
+      showToast('Family Circle Ping Dispatched', 'Status requests sent to 3 officer dependents with geo-fencing verify.', 'diversity_1');
+    });
+  }
+
+  function pingSingle(name) {
+    showToast(`Pinged ${name}`, 'Priority ping routed via mesh network (fallback SMS queued).', 'notifications_active');
+  }
+
+  // Force Commit to Kaggle
+  function forceSync() {
+    showToast('Kaggle Hub Sync Complete', 'Committed 12,480 telemetry events to Private Kaggle Hub (Batch #1043).', 'cloud_sync');
+  }
+
+  function exportToKaggle() {
+    showToast('Export Triggered', 'Exporting current incident snapshot into disaster-telemetry-v3 Kaggle Dataset.', 'cloud_upload');
+  }
+
+  function assignTeam(incId) {
+    showToast(`Team Assigned to #${incId}`, 'High-Voltage Electrical Response Team 01 alerted for grid lockout.', 'engineering');
+  }
+
+  // Table Filter Tabs Logic
+  function filterIncidents(category) {
+    const tabs = document.querySelectorAll('.filter-tab');
+    tabs.forEach(t => {
+      t.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-sm');
+      t.classList.add('text-on-surface-variant');
+    });
+
+    event.currentTarget.classList.add('bg-surface-container-lowest', 'text-on-surface', 'font-semibold', 'shadow-sm');
+    event.currentTarget.classList.remove('text-on-surface-variant');
+
+    const rows = document.querySelectorAll('.incident-row');
+    rows.forEach(row => {
+      if (category === 'all') {
+        row.style.display = '';
+      } else if (category === 'critical') {
+        row.style.display = row.getAttribute('data-severity') === 'critical' ? '' : 'none';
+      } else if (category === 'pending') {
+        row.style.display = row.getAttribute('data-status') === 'pending' ? '' : 'none';
+      } else if (category === 'dispatched') {
+        row.style.display = row.getAttribute('data-status') === 'dispatched' ? '' : 'none';
+      } else if (category === 'resolved') {
+        row.style.display = row.getAttribute('data-status') === 'resolved' ? '' : 'none';
+      }
+    });
+  }
+</script></main><footer class="w-full bg-surface-container-low text-on-surface-variant py-space-xl"><div class="w-full px-margin-desktop space-y-space-lg"><div class="p-space-md bg-surface-container rounded-lg flex items-start gap-space-sm text-on-surface"><span class="material-symbols-outlined text-secondary text-[22px] flex-shrink-0 mt-0.5">verified_user</span><p class="font-body-sm text-body-sm leading-relaxed"><strong class="font-semibold">Official Tactical Intelligence Notice:</strong> Emergency telemetry, predictive projections, and alert hazard tiers displayed are calculated for operational preparedness. Critical public instructions and evacuation mandates should always be verified through official NDRF, IMD, or State Disaster Management Authorities before field execution.</p></div><div class="flex flex-col md:flex-row items-center justify-between gap-space-md pt-space-sm"><div class="flex flex-wrap items-center gap-space-lg"><a class="font-label-md text-label-md hover:text-on-surface transition-colors" data-path="safety-hub" href="#">Safety Guidelines</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">Privacy Framework</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">Security &amp; Cryptographic Sync</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">API Docs</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" data-path="kaggle-private-store" href="#">Kaggle Private Store</a></div><div class="flex items-center gap-space-sm bg-surface-container px-space-md py-space-xs rounded-full"><span class="h-2 w-2 rounded-full bg-secondary animate-pulse"></span><span class="font-label-sm text-label-sm font-semibold text-on-surface">Kaggle Private Cloud Sync • 100GB Active</span></div></div><div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-xs font-label-sm text-label-sm text-outline"><p>© 2025 Aegis Alert Disaster Intelligence System. Autonomous Multi-Hazard Risk Operating Environment.</p><p>Node ID: HYD-SEC-09 • Encryption: AES-256 GCM • Kaggle Sync: Active • Sensor Feed: Live</p></div></div></footer></body></html>

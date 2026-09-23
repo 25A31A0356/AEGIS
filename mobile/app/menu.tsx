@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { AegisLogo } from '@/components/aegis-logo';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -28,22 +29,26 @@ export default function MenuScreen() {
           <IconSymbol name="xmark" size={21} color={colors.foreground} />
           <Text style={[styles.closeText, { color: colors.muted }]}>{dict.menu}</Text>
         </Pressable>
-        <Text style={[styles.kicker, { color: colors.primary }]}>AGIES ALERT</Text>
+        <View style={{ marginBottom: 4 }}><AegisLogo size="sm" showSubtitle={false} /></View>
         <Text style={[styles.title, { color: colors.foreground }]}>{dict.safetyHub}</Text>
         <Text style={[styles.intro, { color: colors.muted }]}>{dict.everythingPrepare}</Text>
 
         <View style={[styles.profile, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-            <Text style={styles.avatarText}>
-              {profile.fullName?.trim() ? profile.fullName.trim()[0].toUpperCase() : "A"}
-            </Text>
+          <View style={[styles.avatar, { backgroundColor: colors.primary, overflow: "hidden" }]}>
+            {profile.avatarUri ? (
+              <Image source={{ uri: profile.avatarUri }} style={{ width: "100%", height: "100%", borderRadius: 16 }} />
+            ) : (
+              <Text style={styles.avatarText}>
+                {profile.fullName?.trim() ? profile.fullName.trim()[0].toUpperCase() : "A"}
+              </Text>
+            )}
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.profileName, { color: colors.foreground }]}>{profile.fullName || "Aarav"}</Text>
             <Text style={[styles.profileSub, { color: colors.muted }]}>{dict.readyToday}</Text>
           </View>
           <Pressable onPress={() => router.push("/settings")}>
-            <IconSymbol name="gearshape.fill" size={21} color={colors.primary} />
+            <IconSymbol name="person.crop.circle.fill" size={24} color={colors.primary} />
           </Pressable>
         </View>
 
@@ -74,7 +79,7 @@ export default function MenuScreen() {
           onPress={() => router.push("/settings")}
           style={[styles.settingsButton, { borderColor: colors.border }]}
         >
-          <IconSymbol name="gearshape.fill" size={19} color={colors.primary} />
+          <IconSymbol name="person.crop.circle.fill" size={20} color={colors.primary} />
           <Text style={[styles.settingsText, { color: colors.foreground }]}>{t("settings")}</Text>
         </Pressable>
       </ScrollView>

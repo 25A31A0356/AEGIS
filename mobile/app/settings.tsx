@@ -1,6 +1,8 @@
 import { useState } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Linking,
   Modal,
@@ -49,7 +51,36 @@ export default function SettingsScreen() {
   const [tempBlood, setTempBlood] = useState(profile.bloodGroup || "O+");
   const [tempMedical, setTempMedical] = useState(profile.medicalNotes || "");
   const [tempPeople, setTempPeople] = useState(String(profile.peopleCount || 1));
+  const [tempAvatar, setTempAvatar] = useState(profile.avatarUri || "");
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const pickImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert("Permission Required", "Please allow access to your photos to update profile picture.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+        base64: true,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const uri = asset.base64 ? `data:image/jpeg;base64,${asset.base64}` : asset.uri;
+        setTempAvatar(uri);
+      }
+    } catch (err) {
+      console.warn("Image picker error:", err);
+    }
+  };
+
+  const removeImage = () => {
+    setTempAvatar("");
+  };
 
   const openEditModal = () => {
     setTempName(profile.fullName || "");
@@ -57,6 +88,7 @@ export default function SettingsScreen() {
     setTempBlood(profile.bloodGroup || "O+");
     setTempMedical(profile.medicalNotes || "");
     setTempPeople(String(profile.peopleCount || 1));
+    setTempAvatar(profile.avatarUri || "");
     setIsEditModalVisible(true);
   };
 
@@ -71,6 +103,7 @@ export default function SettingsScreen() {
       bloodGroup: tempBlood,
       medicalNotes: tempMedical.trim(),
       peopleCount: parseInt(tempPeople, 10) || 1,
+      avatarUri: tempAvatar,
     });
     setSaveSuccess(true);
     setTimeout(() => {
@@ -95,7 +128,7 @@ export default function SettingsScreen() {
 
         <Text style={[styles.kicker, { color: colors.primary }]}>{dict.preferences}</Text>
         <Text style={[styles.title, { color: colors.foreground }]}>{t("settings")}</Text>
-        <Text style={[styles.intro, { color: colors.muted }]}>{dict.makeAgiesWork}</Text>
+        <Text style={[styles.intro, { color: colors.muted }]}>{dict.makeAegisWork}</Text>
 
         {/* PROFILE CARD WITH WORKING PENCIL EDIT BUTTON */}
         <View style={styles.profileSectionHeader}>
@@ -114,10 +147,14 @@ export default function SettingsScreen() {
             pressed && styles.pressed,
           ]}
         >
-          <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-            <Text style={styles.avatarText}>
-              {profile.fullName?.trim() ? profile.fullName.trim()[0].toUpperCase() : "A"}
-            </Text>
+          <View style={[styles.avatar, { backgroundColor: colors.primary, overflow: "hidden" }]}>
+            {profile.avatarUri ? (
+              <Image source={{ uri: profile.avatarUri }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>
+                {profile.fullName?.trim() ? profile.fullName.trim()[0].toUpperCase() : "A"}
+              </Text>
+            )}
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.cardLabel, { color: colors.muted }]}>{dict.nameInApp}</Text>
@@ -269,16 +306,16 @@ export default function SettingsScreen() {
           <SettingRow
             icon="questionmark.circle.fill"
             title={t("helpDesk")}
-            detail="help@agiesalert.app"
+            detail="help@aegisalert.app"
             colors={colors}
-            onPress={() => Linking.openURL("mailto:help@agiesalert.app")}
+            onPress={() => Linking.openURL("mailto:help@aegisalert.app")}
           />
           <SettingRow
             icon="link"
-            title={dict.agiesWeb}
+            title={dict.aegisWeb}
             detail={dict.openCompanionWeb}
             colors={colors}
-            onPress={() => Linking.openURL("https://agiesalert.app")}
+            onPress={() => Linking.openURL("https://aegisalert.app")}
             last
           />
         </View>
@@ -311,6 +348,46 @@ export default function SettingsScreen() {
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false} style={styles.modalScroll}>
+                {/* Profile Photo Uploader */}
+                <View style={[styles.editAvatarSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <View style={[styles.editAvatarCircle, { backgroundColor: colors.primary }]}>
+                    {tempAvatar ? (
+                      <Image source={{ uri: tempAvatar }} style={styles.editAvatarImage} />
+                    ) : (
+                      <Text style={styles.editAvatarText}>
+                        {tempName?.trim() ? tempName.trim()[0].toUpperCase() : "A"}
+                      </Text>
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.fieldLabel, { color: colors.foreground, marginBottom: 6 }]}>Profile Photo</Text>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <Pressable
+                        onPress={pickImage}
+                        style={({ pressed }) => [
+                          styles.photoActionBtn,
+                          { backgroundColor: colors.primary },
+                          pressed && styles.pressed,
+                        ]}
+                      >
+                        <IconSymbol name="camera.fill" size={13} color="#fff" />
+                        <Text style={styles.photoActionText}>{tempAvatar ? "Change Photo" : "Upload Photo"}</Text>
+                      </Pressable>
+                      {tempAvatar ? (
+                        <Pressable
+                          onPress={removeImage}
+                          style={({ pressed }) => [
+                            styles.photoRemoveBtn,
+                            { borderColor: colors.error + "40" },
+                            pressed && styles.pressed,
+                          ]}
+                        >
+                          <Text style={[styles.photoRemoveText, { color: colors.error }]}>Remove</Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  </View>
+                </View>
                 {/* Full Name */}
                 <Text style={[styles.fieldLabel, { color: colors.foreground }]}>Full Name *</Text>
                 <TextInput
@@ -495,6 +572,42 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.75, transform: [{ scale: 0.98 }] },
 
   // Modal Styles
+  avatarImage: { width: "100%", height: "100%", borderRadius: 16 },
+  editAvatarSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  editAvatarCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  editAvatarImage: { width: "100%", height: "100%" },
+  editAvatarText: { color: "#fff", fontSize: 24, fontWeight: "900" },
+  photoActionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  photoActionText: { color: "#fff", fontSize: 12, fontWeight: "800" },
+  photoRemoveBtn: {
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  photoRemoveText: { fontSize: 12, fontWeight: "800" },
   modalBackdrop: {
     flex: 1,
     justifyContent: "flex-end",

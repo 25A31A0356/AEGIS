@@ -33,7 +33,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: t("home"), tabBarIcon: ({ color }) => <IconSymbol size={23} name="house.fill" color={color} /> }} />
-      <Tabs.Screen name="safe" options={{ title: t("safe"), tabBarIcon: ({ color }) => <IconSymbol size={23} name="shield.lefthalf.filled" color={color} /> }} />
+      <Tabs.Screen name="safe" options={{ title: "Maps", tabBarIcon: ({ color }) => <IconSymbol size={23} name="map.fill" color={color} /> }} />
       <Tabs.Screen name="beacon" options={{ title: t("beacon"), tabBarIcon: ({ color }) => <IconSymbol size={27} name="sos.circle.fill" color={color} /> }} />
       <Tabs.Screen name="guide" options={{ href: null, title: t("guide"), tabBarIcon: ({ color }) => <IconSymbol size={23} name="book.closed.fill" color={color} /> }} />
       <Tabs.Screen name="reports" options={{ title: t("reports"), tabBarIcon: ({ color }) => <IconSymbol size={23} name="exclamationmark.bubble.fill" color={color} /> }} />

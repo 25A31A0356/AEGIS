@@ -1,373 +1,165 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { LiveMapHeader } from '../components/livemap/LiveMapHeader';
-import { InteractiveLocationMap, MapFeatureItem } from '../components/livemap/InteractiveLocationMap';
-import { TechnicalLayerSwitcher, TechnicalLayerType } from '../components/livemap/TechnicalLayerSwitcher';
-import { SavedLocationsList } from '../components/livemap/SavedLocationsList';
-import { NearbyActivityFeed } from '../components/livemap/NearbyActivityFeed';
+import React, { useState } from 'react';
 import { useLocation } from '../context/LocationContext';
-import { LocationService, SavedLocationItem, NearbyActivityItem } from '../services/locationService';
-import { RealtimeService, RealtimeEvent } from '../services/realtimeService';
-import { ApiClient } from '../services/apiClient';
+import { useSOS } from '../context/SOSContext';
+import { HazardService } from '../services/hazardService';
+import { SOSBeacon } from '../types/sos';
 
-interface LiveMapPageProps {
-  onNavigate: (tab: string) => void;
-  onSelectHazardById?: (id: string) => void;
-}
+export const LiveMapPage: React.FC = () => {
+  const { selectedLocation } = useLocation();
+  const { beacons, updateBeaconTriage } = useSOS();
+  const hazards = HazardService.getAllHazards();
 
-export const LiveMapPage: React.FC<LiveMapPageProps> = ({
-  onNavigate,
-}) => {
-  const {
-    selectedLocation,
-    savedLocations,
-    selectLocationItem,
-    saveLocationItem,
-    removeLocationItem,
-    requestCurrentGPS,
-    weather,
-  } = useLocation();
+  const [mapMode, setMapMode] = useState<'weather' | 'sos'>('weather');
+  const [selectedWeatherLayer, setSelectedWeatherLayer] = useState<'temperature' | 'rainfall' | 'wind' | 'humidity' | 'cloud' | 'alerts'>('rainfall');
+  const [selectedBeacon, setSelectedBeacon] = useState<SOSBeacon | null>(null);
 
-  const currentCenter = selectedLocation?.coordinates || [19.0760, 72.8777];
-  const activeLocationName = selectedLocation?.name || weather?.cityName || 'Mumbai';
-
-  // Technical Layer State
-  const [activeLayer, setActiveLayer] = useState<TechnicalLayerType>('radar');
-  const [isRadarPlaying, setIsRadarPlaying] = useState<boolean>(true);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-
-  // Authoritative Map Features across all 5 layers
-  const [mapFeatures, setMapFeatures] = useState<MapFeatureItem[]>([]);
-  const [nearbyActivities, setNearbyActivities] = useState<NearbyActivityItem[]>(() =>
-    LocationService.getNearbyActivity(currentCenter)
-  );
-  const [selectedHazard, setSelectedHazard] = useState<NearbyActivityItem | null>(null);
-
-  // Convert GeoJSON features from /api/v1/map-data to MapFeatureItem
-  const parseGeoJSONFeatures = (geoCollection: any): MapFeatureItem[] => {
-    if (!geoCollection || !Array.isArray(geoCollection.features)) return [];
-    return geoCollection.features.map((feat: any) => {
-      const [lon, lat] = feat.geometry?.coordinates || [0, 0];
-      const props = feat.properties || {};
-      return {
-        id: feat.id || props.entity_id || `${props.layer}_${Math.random()}`,
-        layer: props.layer || 'hazards',
-        coordinates: [lat, lon] as [number, number],
-        title: props.title || props.name || 'Emergency Entity',
-        description: props.description || '',
-        category: props.category || props.emergency_type || 'General',
-        severity: (props.severity || 'MODERATE').toUpperCase(),
-        status: props.status || props.assignment_status || 'ACTIVE',
-        isLive: props.is_live !== undefined ? props.is_live : true,
-        lastLocationTime: props.last_location_time || props.last_location_update || props.created_at || '',
-        callerName: props.caller_name,
-        casualtiesCount: props.casualties_count,
-        batteryPercent: props.battery_percent,
-        responderId: props.responder_id,
-        sosId: props.sos_id,
-        etaSeconds: props.eta_seconds,
-        distanceMeters: props.distance_meters,
-        capacity: props.capacity,
-        amenities: props.amenities,
-        district: props.district || props.city,
-        state: props.state,
-        icon: props.icon,
-      };
-    });
-  };
-
-  const loadAuthoritativeMapData = useCallback(async (center: [number, number]) => {
-    try {
-      const res = await ApiClient.get<any>('/map-data', {
-        lat: center[0],
-        lng: center[1],
-        radius_km: 250,
-        layers: 'hazards,reports,sos_beacons,responders,shelters,facilities,safe_events'
-      }, { skipCache: true, timeoutMs: 4000 });
-
-      if (res && res.features) {
-        const parsed = parseGeoJSONFeatures(res);
-        setMapFeatures(parsed);
-
-        // Also convert to nearbyActivities for the right-column feed
-        const activityItems: NearbyActivityItem[] = parsed
-          .filter(f => f.layer === 'hazards' || f.layer === 'reports' || f.layer === 'sos_beacons')
-          .map(f => ({
-            id: f.id,
-            hazardType: f.category,
-            title: f.title,
-            locationName: `${f.district || 'Local Sector'}, ${f.state || 'India'}`,
-            distanceKm: LocationService.calculateDistanceKm(center, f.coordinates),
-            timestamp: f.lastLocationTime ? new Date(f.lastLocationTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Live',
-            severity: f.severity === 'CRITICAL' ? 'Critical' : f.severity === 'HIGH' ? 'Warning' : 'Watch',
-            coordinates: f.coordinates,
-            source: f.layer === 'sos_beacons' ? 'SOS Beacon (Active)' : f.layer === 'reports' ? 'Citizen Report' : 'Official Observation',
-            status: f.status,
-            recommendedAction: f.description || 'Proceed with caution.',
-            safetyGuideSlug: 'floods'
-          }));
-
-        setNearbyActivities(activityItems);
-        return;
-      }
-    } catch (err) {
-      console.warn('[LiveMapPage] Failed to fetch /api/v1/map-data:', err);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadAuthoritativeMapData(currentCenter);
-  }, [currentCenter[0], currentCenter[1], loadAuthoritativeMapData]);
-
-  // Real-Time WebSocket Event Listeners
-  useEffect(() => {
-    // 1. SOS Created -> Add beacon to map immediately
-    const unsubSOSCreated = RealtimeService.on('SOS_CREATED', (evt: RealtimeEvent) => {
-      const d = evt.data || {};
-      const lat = d.latitude || d.lat;
-      const lon = d.longitude || d.lon || d.lng;
-      if (lat && lon) {
-        const newSosItem: MapFeatureItem = {
-          id: `sos_${d.id || d.sos_id}`,
-          layer: 'sos_beacons',
-          coordinates: [lat, lon],
-          title: `Emergency SOS: ${(d.emergency_type || 'General').replace(/_/g, ' ')}`,
-          description: `Casualties: ${d.casualties_count || 1}. Battery: ${d.battery_percent || 100}%`,
-          category: d.emergency_type || 'EMERGENCY_SOS',
-          severity: (d.severity || 'CRITICAL').toUpperCase(),
-          status: d.status || 'TRIGGERED',
-          isLive: true,
-          lastLocationTime: new Date().toISOString(),
-          callerName: d.caller_name,
-          casualtiesCount: d.casualties_count || 1,
-          batteryPercent: d.battery_percent,
-          sosId: d.id || d.sos_id,
-          district: d.district || d.city,
-          state: d.state,
-          icon: 'emergency_beacon'
-        };
-
-        setMapFeatures((prev) => [newSosItem, ...prev.filter(p => p.id !== newSosItem.id)]);
-      }
-    });
-
-    // 2. Responder Location Updated -> Move responder marker strictly to new GPS position
-    const unsubResponderLoc = RealtimeService.on('RESPONDER_LOCATION_UPDATED', (evt: RealtimeEvent) => {
-      const d = evt.data || {};
-      const lat = d.latitude || d.lat;
-      const lon = d.longitude || d.lon || d.lng;
-      const responderId = d.responder_id || d.user_id;
-
-      if (lat && lon && responderId) {
-        setMapFeatures((prev) => {
-          const respId = `responder_${responderId}`;
-          const existing = prev.find(p => p.id === respId || p.responderId === responderId);
-          const updatedResp: MapFeatureItem = {
-            id: respId,
-            layer: 'responders',
-            coordinates: [lat, lon],
-            title: existing?.title || `Responder ${responderId.substring(0, 6)}`,
-            description: `Live GPS Fix • ETA: ${d.eta_seconds ? Math.round(d.eta_seconds / 60) + 'm' : 'En route'}`,
-            category: 'RESPONDER',
-            severity: 'LOW',
-            status: 'DISPATCHED_EN_ROUTE',
-            isLive: true,
-            lastLocationTime: new Date().toISOString(),
-            responderId,
-            sosId: d.sos_id || existing?.sosId,
-            etaSeconds: d.eta_seconds,
-            distanceMeters: d.distance_meters,
-            icon: 'responder_unit'
-          };
-
-          return [updatedResp, ...prev.filter(p => p.id !== respId && p.responderId !== responderId)];
-        });
-      }
-    });
-
-    // 3. SOS Status Updated / Resolved / Cancelled
-    const unsubSOSStatus = RealtimeService.on('SOS_STATUS_UPDATED', (evt: RealtimeEvent) => {
-      const d = evt.data || {};
-      const sosId = d.id || d.sos_id;
-      if (sosId) {
-        setMapFeatures((prev) => prev.map(p => {
-          if (p.sosId === sosId || p.id === `sos_${sosId}`) {
-            return { ...p, status: d.status || p.status, lastLocationTime: new Date().toISOString() };
-          }
-          return p;
-        }));
-      }
-    });
-
-    const unsubSOSResolved = RealtimeService.on('SOS_RESOLVED', (evt: RealtimeEvent) => {
-      const d = evt.data || {};
-      const sosId = d.id || d.sos_id;
-      if (sosId) {
-        setMapFeatures((prev) => prev.filter(p => p.sosId !== sosId && p.id !== `sos_${sosId}`));
-      }
-    });
-
-    const unsubSOSCancelled = RealtimeService.on('SOS_CANCELLED', (evt: RealtimeEvent) => {
-      const d = evt.data || {};
-      const sosId = d.id || d.sos_id;
-      if (sosId) {
-        setMapFeatures((prev) => prev.filter(p => p.sosId !== sosId && p.id !== `sos_${sosId}`));
-      }
-    });
-
-    // 4. Community Report Created & Updated
-    const unsubReportCreated = RealtimeService.on('REPORT_CREATED', (evt: RealtimeEvent) => {
-      const d = evt.data || {};
-      const lat = d.latitude || d.location?.lat;
-      const lon = d.longitude || d.location?.lng;
-      if (lat && lon) {
-        const newRep: MapFeatureItem = {
-          id: `rep_${d.id || d.trackingId}`,
-          layer: 'reports',
-          coordinates: [lat, lon],
-          title: d.title || `Citizen Incident: ${d.category || d.hazard_type}`,
-          description: d.description || '',
-          category: d.category || d.hazard_type || 'Incident',
-          severity: (d.severity || 'MODERATE').toUpperCase(),
-          status: d.status || 'ACTIVE',
-          isLive: true,
-          lastLocationTime: new Date().toISOString(),
-          district: d.city || d.location?.city,
-          state: d.state || d.location?.state,
-          icon: `community_${(d.category || 'hazard').toLowerCase()}`
-        };
-        setMapFeatures((prev) => [newRep, ...prev.filter(p => p.id !== newRep.id)]);
-      }
-    });
-
-    // 5. Alert Created
-    const unsubAlertCreated = RealtimeService.on('ALERT_CREATED', (evt: RealtimeEvent) => {
-      const d = evt.data || {};
-      const lat = d.latitude;
-      const lon = d.longitude;
-      if (lat && lon) {
-        const newAlert: MapFeatureItem = {
-          id: `alert_${d.id}`,
-          layer: 'hazards',
-          coordinates: [lat, lon],
-          title: d.title || `Official Alert: ${d.hazard_type}`,
-          description: d.description || d.instructions || '',
-          category: d.hazard_type || 'WEATHER',
-          severity: (d.severity || 'HIGH').toUpperCase(),
-          status: 'ACTIVE',
-          isLive: true,
-          lastLocationTime: new Date().toISOString(),
-          district: d.district_name,
-          state: d.state_name,
-          icon: 'alert_broadcast'
-        };
-        setMapFeatures((prev) => [newAlert, ...prev.filter(p => p.id !== newAlert.id)]);
-      }
-    });
-
-    return () => {
-      unsubSOSCreated();
-      unsubResponderLoc();
-      unsubSOSStatus();
-      unsubSOSResolved();
-      unsubSOSCancelled();
-      unsubReportCreated();
-      unsubAlertCreated();
-    };
-  }, []);
-
-  const handleSelectSavedLocation = (loc: SavedLocationItem) => {
-    selectLocationItem(loc);
-  };
-
-  const handleAddLocation = (locData: Omit<SavedLocationItem, 'id'>) => {
-    saveLocationItem(locData);
-  };
-
-  const handleRemoveLocation = (id: string) => {
-    removeLocationItem(id);
-  };
-
-  const handleUseCurrentGPS = async () => {
-    await requestCurrentGPS();
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadAuthoritativeMapData(currentCenter);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 500);
-  };
-
-  const handleViewSafetyGuide = (_slug?: string) => {
-    onNavigate('safety');
-  };
+  const city = selectedLocation?.name || 'Visakhapatnam';
 
   return (
-    <div className="max-w-[1720px] mx-auto space-y-6 font-sans">
-      {/* 1. Page Header with Title, Subtitle, and Live Status Pill */}
-      <LiveMapHeader
-        lastUpdated="Telemetry Synchronized"
-        onRefresh={handleRefresh}
-        isRefreshing={isRefreshing}
-      />
-
-      {/* 2. Main Grid: Left = Location Map | Right = Technical Layers & Nearby Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* LEFT COLUMN: Location Map (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          <InteractiveLocationMap
-            centerCoordinates={currentCenter}
-            locationName={activeLocationName}
-            activeTechnicalLayer={activeLayer}
-            features={mapFeatures}
-            selectedHazard={selectedHazard}
-            onSelectHazard={(h) => setSelectedHazard(h)}
-            onSelectCoordinates={(coords, name) => {
-              selectLocationItem({
-                id: `coord-${coords[0].toFixed(2)}-${coords[1].toFixed(2)}`,
-                name,
-                stateName: selectedLocation?.stateName || 'India',
-                district: name,
-                stateId: selectedLocation?.stateId || 'IN',
-                coordinates: coords,
-                riskScore: selectedLocation?.riskScore || 70,
-                riskLevel: selectedLocation?.riskLevel || 'High',
-              });
-            }}
-            onUseCurrentGPS={handleUseCurrentGPS}
-            onViewSafetyGuide={handleViewSafetyGuide}
-            heightClass="h-[620px]"
-          />
+    <div className="space-y-4 max-w-7xl mx-auto pb-12 font-sans">
+      {/* Top Header & Map Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-[#27272a]">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            AEGIS Operational GIS Maps
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-[#a1a1aa]">
+            High-clarity tactical geographic views for Republic of India.
+          </p>
         </div>
 
-        {/* RIGHT COLUMN: Technical Layers & Nearby Activity Feed (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          <TechnicalLayerSwitcher
-            activeLayer={activeLayer}
-            onSelectLayer={(l) => setActiveLayer(l)}
-            isRadarPlaying={isRadarPlaying}
-            onToggleRadarPlay={() => setIsRadarPlaying(!isRadarPlaying)}
-          />
-
-          <NearbyActivityFeed
-            activities={nearbyActivities}
-            onSelectActivity={(act) => {
-              setSelectedHazard(act);
-            }}
-            onViewSafetyGuide={handleViewSafetyGuide}
-          />
+        {/* Mode Toggle: Weather Map vs SOS Map */}
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#111111] p-1.5 rounded-xl border border-slate-200 dark:border-[#27272a] shadow-xs">
+          <button
+            onClick={() => setMapMode('weather')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              mapMode === 'weather'
+                ? 'bg-slate-900 dark:bg-white text-white dark:text-black shadow-xs'
+                : 'text-slate-600 dark:text-[#a1a1aa] hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            Weather Map
+          </button>
+          <button
+            onClick={() => setMapMode('sos')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              mapMode === 'sos'
+                ? 'bg-red-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-[#a1a1aa] hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <span>SOS Map</span>
+            {beacons.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-red-700 text-white">
+                {beacons.length}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* 3. Below the Map: Saved Locations Manager */}
-      <SavedLocationsList
-        savedLocations={savedLocations}
-        selectedLocationId={selectedLocation?.id || null}
-        onSelectLocation={handleSelectSavedLocation}
-        onAddLocation={handleAddLocation}
-        onRemoveLocation={handleRemoveLocation}
-      />
+      {/* Main Map Container */}
+      <div className="relative w-full h-[580px] bg-slate-100 dark:bg-[#0a0a0c] rounded-2xl border border-slate-200 dark:border-[#27272a] overflow-hidden shadow-xs dark:shadow-md">
+        {/* Floating Layer Control Panel (Weather Map Mode) */}
+        {mapMode === 'weather' && (
+          <div className="absolute top-4 left-4 z-10 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-[#27272a] p-3.5 shadow-xl space-y-2 text-xs">
+            <p className="font-bold text-slate-800 dark:text-white uppercase tracking-wider text-[10px]">
+              Weather Overlays
+            </p>
+            <div className="flex flex-col gap-1">
+              {(['temperature', 'rainfall', 'wind', 'humidity', 'cloud', 'alerts'] as const).map((layer) => (
+                <label
+                  key={layer}
+                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors ${
+                    selectedWeatherLayer === layer ? 'bg-slate-900 dark:bg-white text-white dark:text-black font-bold' : 'hover:bg-slate-100 dark:hover:bg-[#18181b] text-slate-600 dark:text-[#a1a1aa]'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="weather_layer"
+                    checked={selectedWeatherLayer === layer}
+                    onChange={() => setSelectedWeatherLayer(layer)}
+                    className="accent-slate-900 dark:accent-white"
+                  />
+                  <span className="capitalize">{layer}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Map Canvas with Geographic Silhouette */}
+        <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-white relative">
+          <div className="text-center space-y-2 z-0">
+            <span className="material-symbols-outlined text-slate-400 dark:text-slate-600 text-6xl">public</span>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+              {mapMode === 'weather' ? `India Weather GIS • Active Layer: ${selectedWeatherLayer.toUpperCase()}` : 'National SOS Distress Grid (Aggregated Clustered Events)'}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Centering on: {city} &bull; Coordinates: {selectedLocation?.coordinates?.join(', ') || '17.68, 83.21'}
+            </p>
+          </div>
+
+          {/* SOS Markers Simulation when in SOS Mode */}
+          {mapMode === 'sos' && (
+            <div className="absolute inset-0 p-8 flex flex-wrap items-center justify-around pointer-events-none">
+              {beacons.slice(0, 5).map((b, i) => (
+                <button
+                  key={b.id}
+                  onClick={() => setSelectedBeacon(b)}
+                  className="pointer-events-auto p-2 rounded-xl bg-red-600 text-white text-xs font-bold font-mono shadow-lg hover:scale-105 transition-transform flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                  SOS &times; {i === 0 ? 3 : 1}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Slide-in SOS Details Panel */}
+        {selectedBeacon && (
+          <div className="absolute top-4 right-4 z-20 w-80 bg-white dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-[#27272a] p-4 shadow-2xl space-y-3 animate-in slide-in-from-right text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#27272a]">
+              <div>
+                <span className="text-[10px] font-bold font-mono uppercase bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 px-2 py-0.5 rounded-full border border-red-500/30">
+                  {selectedBeacon.triageStatus}
+                </span>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white mt-1.5">
+                  {selectedBeacon.id}
+                </h4>
+              </div>
+              <button onClick={() => setSelectedBeacon(null)} className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[#18181b]">
+                <span className="material-symbols-outlined text-base">close</span>
+              </button>
+            </div>
+
+            <div className="space-y-1.5 text-slate-600 dark:text-[#a1a1aa]">
+              <p><span className="font-semibold text-slate-800 dark:text-white">District:</span> {selectedBeacon.district || 'Local Sector'}</p>
+              <p><span className="font-semibold text-slate-800 dark:text-white">Emergency:</span> {selectedBeacon.emergencyType}</p>
+              <p><span className="font-semibold text-slate-800 dark:text-white">Phone (Masked):</span> {selectedBeacon.phoneMasked || '+91 98**** 3210'}</p>
+              <p><span className="font-semibold text-slate-800 dark:text-white">Persons in Need:</span> {selectedBeacon.personsCount || 1}</p>
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 dark:border-[#27272a] flex gap-2">
+              <button
+                onClick={() => updateBeaconTriage(selectedBeacon.id, 'ACCEPTED')}
+                className="flex-1 py-2 rounded-xl bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-black font-bold transition-all shadow-xs cursor-pointer"
+              >
+                Acknowledge
+              </button>
+              <button
+                onClick={() => updateBeaconTriage(selectedBeacon.id, 'RESOLVED')}
+                className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-xs cursor-pointer"
+              >
+                Resolve
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
+
+export default LiveMapPage;

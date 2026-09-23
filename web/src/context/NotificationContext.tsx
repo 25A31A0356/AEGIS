@@ -28,18 +28,7 @@ const INITIAL_NOTIFICATIONS: AlertNotification[] = [
     linkTab: 'hazards',
     hazardId: 'HAZ-2026-CYC-01',
   },
-  {
-    id: 'NOTIF-02',
-    timestamp: '15m ago',
-    severity: 'critical',
-    title: 'SOS Distress Beacon #TS-8821 Activated',
-    message: 'Family stranded by floodwaters in Khammam. NDRF Rescue Boat Charlie en route.',
-    source: 'TSDMA Central Dispatch',
-    location: 'Khammam, Telangana',
-    read: false,
-    linkTab: 'sos',
-    sosId: 'SOS-TS-8821',
-  },
+  
   {
     id: 'NOTIF-03',
     timestamp: '35m ago',

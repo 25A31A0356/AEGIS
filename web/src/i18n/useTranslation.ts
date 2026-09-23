@@ -1,27 +1,35 @@
 import { useProfile } from '../context/ProfileContext';
-import { getTranslation, TRANSLATIONS } from './translations';
+import { LANGUAGES, TRANSLATIONS, LanguageCode, TranslationDictionary } from './translations';
+
+export { LANGUAGES, TRANSLATIONS };
+export type { LanguageCode, TranslationDictionary };
 
 export function useTranslation() {
   const { language, setLanguage } = useProfile();
 
+  const activeLangCode = (LANGUAGES.some((l) => l.code === language) ? language : 'en') as LanguageCode;
+  const dict: TranslationDictionary = TRANSLATIONS[activeLangCode] || TRANSLATIONS.en;
+
   const t = (key: string, fallback?: string): string => {
-    return getTranslation(key, language, fallback);
+    if (key in dict) {
+      return (dict as any)[key] || fallback || key;
+    }
+
+    const shortKey = key.split('.').pop() || key;
+    if (shortKey in dict) {
+      return (dict as any)[shortKey] || fallback || key;
+    }
+
+    return fallback || key;
   };
 
   return {
     t,
-    language,
+    dict,
+    language: activeLangCode,
     setLanguage,
-    availableLanguages: [
-      { code: 'en', label: 'English', native: 'English' },
-      { code: 'hi', label: 'Hindi', native: 'हिन्दी' },
-      { code: 'te', label: 'Telugu', native: 'తెలుగు' },
-      { code: 'ta', label: 'Tamil', native: 'தமிழ்' },
-      { code: 'bn', label: 'Bengali', native: 'বাংলা' },
-      { code: 'mr', label: 'Marathi', native: 'मराठी' },
-      { code: 'kn', label: 'Kannada', native: 'ಕನ್ನಡ' },
-      { code: 'ml', label: 'Malayalam', native: 'മലയാളം' },
-      { code: 'gu', label: 'Gujarati', native: 'ગુજરાતી' },
-    ],
+    availableLanguages: LANGUAGES,
   };
 }
+
+export default useTranslation;

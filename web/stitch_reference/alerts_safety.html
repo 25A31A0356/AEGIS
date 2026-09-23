@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-primary-fixed": "#131b2e", "on-error-container": "#93000a", "surface-container": "#e5eeff", "error-container": "#ffdad6", "primary-container": "#131b2e", "surface-variant": "#d3e4fe", "surface-dim": "#cbdbf5", "on-primary": "#ffffff", "inverse-primary": "#bec6e0", "primary-fixed-dim": "#bec6e0", "surface-container-lowest": "#ffffff", "secondary-container": "#5bb8fe", "primary": "#000000", "on-tertiary-fixed": "#001e2c", "outline": "#76777d", "secondary-fixed-dim": "#93ccff", "on-secondary-fixed-variant": "#004b73", "background": "#f8f9ff", "surface-bright": "#f8f9ff", "inverse-surface": "#213145", "secondary-fixed": "#cce5ff", "on-surface": "#0b1c30", "tertiary": "#000000", "outline-variant": "#c6c6cd", "on-tertiary-container": "#008ebf", "primary-fixed": "#dae2fd", "tertiary-container": "#001e2c", "surface-container-highest": "#d3e4fe", "tertiary-fixed": "#c4e7ff", "on-error": "#ffffff", "surface-container-low": "#eff4ff", "surface": "#f8f9ff", "surface-tint": "#565e74", "on-secondary-fixed": "#001d31", "on-primary-fixed-variant": "#3f465c", "on-primary-container": "#7c839b", "tertiary-fixed-dim": "#7bd0ff", "surface-container-high": "#dce9ff", "inverse-on-surface": "#eaf1ff", "error": "#ba1a1a", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "on-background": "#0b1c30", "on-surface-variant": "#45464d", "secondary": "#006398", "on-secondary": "#ffffff", "on-tertiary-fixed-variant": "#004c69" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-sm": "0.5rem", "margin-tablet": "1.5rem", "margin-desktop": "2rem", "gutter-desktop": "1.5rem", "space-md": "1rem", "space-xs": "0.25rem", "margin": "1rem", "space-xl": "2rem", "gutter": "1rem", "space-lg": "1.5rem" }, fontFamily: { "body-sm": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "tabular-metric": ["Inter"], "label-lg": ["Inter"], "headline-xl": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-md": ["Inter"], "headline-xl-mobile": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"] }, fontSize: { "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }], "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }], "tabular-metric": ["24px", { "lineHeight": "28px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "headline-xl-mobile": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "800" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }] } } } };</script></head><body class="bg-background font-body-md text-body-md text-on-background min-h-screen"><header class="fixed top-0 left-0 right-0 w-full z-50 bg-surface/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="bg-error text-on-error px-margin-desktop py-space-xs flex items-center justify-between font-label-md text-label-md shadow-inner"><div class="flex items-center gap-space-sm overflow-hidden text-ellipsis whitespace-nowrap"><span class="material-symbols-outlined text-[18px] animate-pulse">warning</span><span class="font-label-lg text-label-lg uppercase tracking-wider font-bold text-on-error">Active Advisory:</span><span>Flash Flood Watch in Southern Districts. Water levels rising along Musi River basin. Monitor real-time telemetry.</span><a class="underline font-semibold hover:text-surface-container ml-space-xs inline-flex items-center gap-0.5" data-path="alert-center" href="#">View Advisory Details <span class="material-symbols-outlined text-[14px]">arrow_forward</span></a></div><button aria-label="Dismiss alert" class="flex items-center justify-center p-0.5 hover:bg-on-error-container/20 rounded text-on-error transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button></div><div class="h-28 w-full px-margin-desktop flex flex-col justify-between pt-space-xs pb-space-sm"><div class="flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-md"><img alt="Aegis Alert Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U8KVywuwP6MGi061yDxnzC6OcZEfbwVRnAW9AzGhum4pLjudqiihu6PtskXLwqfQLjkt8XwhwqIN84Ystq0u48gCWZuUOFWXMl72EgJPcCWgkx6sLxLAC1My-Yqee4VJfqewEIKnepd9fZIprhn0olldKCYKDCFv3s1zm2v5ayLapf4RGBJQHFVXUgqPI1lQICK9zq7GwuvaIaF5s2gfXx61YZSSnxZFc7j7NTqV0V6u6b_zk7972S-ko"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-bold tracking-tight text-on-surface">Aegis Alert</span><span class="font-label-sm text-label-sm text-on-surface-variant font-medium">See the Risk. Know the Threat. Stay Safe.</span></div></div><div class="hidden md:flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.03)]"><span class="material-symbols-outlined text-secondary text-[18px]">location_on</span><div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface"><span class="font-semibold">Hyderabad, Telangana</span><button class="text-secondary hover:text-on-secondary-container text-label-sm font-label-sm underline transition-colors">(Edit / Use My Location)</button><span class="material-symbols-outlined text-[16px] text-on-surface-variant cursor-pointer">arrow_drop_down</span></div><span class="px-space-xs py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-bold tracking-wider">DEMO DATA READY</span></div><div class="flex items-center gap-space-md"><div class="hidden lg:flex items-center bg-surface-container-low px-space-sm py-space-xs rounded-lg w-56 text-on-surface-variant"><span class="material-symbols-outlined text-[18px] mr-space-xs">search</span><input class="bg-transparent text-on-surface font-body-sm text-body-sm focus:outline-none w-full placeholder:text-on-surface-variant" placeholder="Search telemetry, zones..." type="text"/></div><button aria-label="Emergency Broadcast Notifications" class="relative p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-full"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-error"></span></span></button><button aria-label="Toggle Dark/Light Mode" class="p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-full"><span class="material-symbols-outlined text-[20px]">light_mode</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjCv16UlcLOXvOyfG8MuluLu9OC8t_lqsOgkUSNxeCJJ4-22hkdG3oA_u4JZ-QPbD2fl-obdUFwo24Mxcitu1r5UewyagtKWsXGGAaHSXozeTujOp-yggN43eLhK8nogRbcORGhMtFLEP-h71J2huLiprHKdB10ooysr2tVJVhzH-CSoNGMsmoay_s1jPb3bZQyI7dFwyYXFWQ6T8woiwrPk2WaV_mZG0frGSXlnIwRVfXgOQ4y6CH"/><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Officer Sarah Jenkins</span><span class="font-label-sm text-label-sm text-on-surface-variant">Emergency Welfare Officer</span></div></div></div></div><div class="flex items-center justify-between pt-space-xs overflow-x-auto"><nav class="flex items-center gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-semibold rounded-lg"><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="dashboard" href="#">Home / Dashboard</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="live-map" href="#">Live Map</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="weather" href="#">Weather</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="hazards" href="#">Hazards</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="predictions" href="#">Predictions</a><a aria-current="page" class="px-space-sm py-1 transition-colors whitespace-nowrap bg-surface-container-high text-on-surface font-semibold rounded-lg" data-path="alert-center" href="#">Alert Center</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="safety-center" href="#">Safety Center</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="report-incident" href="#">Report Incident</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="about-and-ai-pipeline" href="#">About &amp; AI Pipeline</a></nav><div class="hidden sm:flex items-center gap-space-xs font-label-sm text-label-sm text-secondary bg-surface-container-low px-space-sm py-0.5 rounded"><span class="h-2 w-2 rounded-full bg-secondary animate-pulse"></span><span>SYNCING TELEMETRY (0.4s)</span></div></div></div></header><main class="w-full pt-36 bg-background min-h-[calc(100vh-280px)]"><div class="flex flex-col w-full">
+<div class="w-full px-margin-desktop py-space-md bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="h-10 w-10 rounded-full bg-error flex items-center justify-center text-on-error shadow-sm">
+<span class="material-symbols-outlined text-[24px]">crisis_alert</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">Crisis Dispatch &amp; Citizen Safety Portal</span>
+<span class="px-space-xs py-0.5 rounded-full bg-error/15 text-error font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span> Live Broadcast
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Validated civil alerts, tripartite response playbooks, and priority telemetry crowdsourcing.</p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<a class="px-space-md py-space-xs rounded-lg bg-on-primary-fixed text-on-primary font-label-lg text-label-lg font-semibold hover:bg-surface-tint transition-colors flex items-center gap-space-xs shadow-sm" href="#incident-reporting-terminal">
+<span class="material-symbols-outlined text-[18px]">add_alert</span>
+        Report Live Threat
+      </a>
+<a class="px-space-md py-space-xs rounded-lg bg-surface-container text-secondary font-label-lg text-label-lg font-semibold hover:bg-surface-variant transition-colors flex items-center gap-space-xs" href="#hotlines-drawer">
+<span class="material-symbols-outlined text-[18px]">call</span>
+        SOS Hotlines (112)
+      </a>
+</div>
+</div>
+<div class="w-full px-margin-desktop py-space-xl space-y-space-xl">
+<section class="space-y-space-lg">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md pb-space-xs">
+<div class="space-y-space-xs">
+<div class="flex items-center gap-space-xs text-secondary font-label-sm text-label-sm uppercase tracking-widest font-bold">
+<span class="material-symbols-outlined text-[16px]">sensors</span> Tactical Telemetry Queue
+          </div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">Active Warning Center &amp; Bulletins</h2>
+</div>
+<div class="flex items-center gap-1.5 p-1 rounded-full bg-surface-container overflow-x-auto max-w-full">
+<button class="alert-tab-btn px-space-md py-1 rounded-full text-on-surface font-label-md text-label-md font-semibold bg-surface-container-lowest shadow-sm transition-all whitespace-nowrap" id="filter-all" onclick="filterAlerts('all')">All Alerts (4)</button>
+<button class="alert-tab-btn px-space-md py-1 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-all whitespace-nowrap flex items-center gap-1" id="filter-critical" onclick="filterAlerts('critical')">
+<span class="w-2 h-2 rounded-full bg-error"></span> Critical (1)
+          </button>
+<button class="alert-tab-btn px-space-md py-1 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-all whitespace-nowrap flex items-center gap-1" id="filter-warning" onclick="filterAlerts('warning')">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span> Warning (1)
+          </button>
+<button class="alert-tab-btn px-space-md py-1 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-all whitespace-nowrap flex items-center gap-1" id="filter-advisory" onclick="filterAlerts('advisory')">
+<span class="w-2 h-2 rounded-full bg-surface-tint"></span> Advisory (2)
+          </button>
+<button class="alert-tab-btn px-space-md py-1 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-medium transition-all whitespace-nowrap flex items-center gap-1" id="filter-resolved" onclick="filterAlerts('resolved')">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span> Archive
+          </button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop">
+<div class="lg:col-span-8 space-y-space-md" id="alerts-container">
+<article class="alert-item bg-surface-container-lowest rounded-xl shadow-md overflow-hidden relative transition-all duration-300" data-level="critical">
+<div class="absolute top-0 left-0 bottom-0 w-2 bg-error"></div>
+<div class="p-space-lg pl-space-xl space-y-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold tracking-wider flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+                    CRITICAL FLASH FLOOD WARNING
+                  </span>
+<span class="font-label-sm text-label-sm text-outline">Ref: ACT-2025-0982</span>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-error">schedule</span>
+<span>Issued 14 mins ago • Exp: +3h 45m</span>
+</div>
+</div>
+<div class="space-y-space-xs">
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface leading-tight">
+                  Musi River Catchment Basin Rapid Breach &amp; Overflow Vector
+                </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                  Water discharge from Osmansagar and Himayatsagar sluice gates exceeds 28,000 cusecs. Silt buildup combined with localized cloudburst rates (68 mm/h) poses catastrophic street flooding across lower embankment corridors.
+                </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm p-space-md rounded-lg bg-surface-container-low">
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Priority Impact Area</span>
+<p class="font-body-sm text-body-sm text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">explore</span>
+                    Malakpet, Amberpet, Moosarambagh Causeway, Chaderghat
+                  </p>
+</div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Immediate Mandate</span>
+<p class="font-body-sm text-body-sm text-error font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">fitbit_push_ups</span>
+                    Evacuate ground-floor units; stay off all bridge causeways.
+                  </p>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-md pt-space-xs">
+<div class="flex items-center gap-space-xs flex-wrap">
+<button class="tts-trigger px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md font-semibold flex items-center gap-space-xs transition-colors" onclick="readAloud(this, 'Critical Flash Flood Warning for Musi River Basin. Issued 14 minutes ago. Low lying wards of Malakpet, Amberpet, and Moosarambagh are at risk. Evacuate ground floor units immediately.')">
+<span class="material-symbols-outlined text-[18px] text-secondary">volume_up</span>
+<span>Audio TTS Readout</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md font-semibold flex items-center gap-space-xs transition-colors" onclick="shareBroadcast('CRITICAL FLASH FLOOD WARNING: Evacuate ground levels around Musi river basin immediately. Dial 112 for relief.', 'WhatsApp')">
+<span class="material-symbols-outlined text-[18px] text-secondary">share</span>
+<span>Share WhatsApp / SMS</span>
+</button>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-md py-1.5 rounded-lg bg-on-primary-fixed text-on-primary font-label-md text-label-md font-semibold hover:bg-surface-tint transition-all flex items-center gap-1 shadow-sm" onclick="acknowledgeAlert(this)">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Mark Acknowledged</span>
+</button>
+</div>
+</div>
+</div>
+</article>
+<article class="alert-item bg-surface-container-lowest rounded-xl shadow-md overflow-hidden relative transition-all duration-300" data-level="warning">
+<div class="absolute top-0 left-0 bottom-0 w-2 bg-secondary-container"></div>
+<div class="p-space-lg pl-space-xl space-y-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-bold tracking-wider flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                    HIGH WIND &amp; SEVERE THUNDERSTORM
+                  </span>
+<span class="font-label-sm text-label-sm text-outline">Ref: ACT-2025-0980</span>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Issued 42 mins ago • Exp: +6h 00m</span>
+</div>
+</div>
+<div class="space-y-space-xs">
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface leading-tight">
+                  Squall Line Wind Gusts up to 65 km/h with High Cloud-to-Ground Lightning
+                </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                  Fast-moving convective cluster traversing Cyberabad, Gachibowli, and Serilingampally wards. Tree branches, unsecured solar panels, and commercial hoardings prone to dislodgement.
+                </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm p-space-md rounded-lg bg-surface-container-low">
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Affected Sectors</span>
+<p class="font-body-sm text-body-sm text-on-surface font-semibold">IT Corridor, Madhapur, Hitec City, Kondapur</p>
+</div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Protective Protocol</span>
+<p class="font-body-sm text-body-sm text-on-surface font-semibold">Cease elevated operations, secure vehicles away from old trees.</p>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-md pt-space-xs">
+<div class="flex items-center gap-space-xs flex-wrap">
+<button class="tts-trigger px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md font-semibold flex items-center gap-space-xs transition-colors" onclick="readAloud(this, 'Severe Thunderstorm and Gale Warning. Wind gusts reaching 65 kilometers per hour. Secure fragile installations in Cyberabad.')">
+<span class="material-symbols-outlined text-[18px] text-secondary">volume_up</span>
+<span>Audio TTS Readout</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md font-semibold flex items-center gap-space-xs transition-colors" onclick="shareBroadcast('WEATHER ALERT: 65 km/h gusts and lightning over West Hyderabad. Park away from trees.', 'WhatsApp')">
+<span class="material-symbols-outlined text-[18px] text-secondary">share</span>
+<span>Share WhatsApp / SMS</span>
+</button>
+</div>
+<button class="px-space-md py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md font-semibold hover:bg-surface-variant transition-all flex items-center gap-1" onclick="acknowledgeAlert(this)">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Mark Acknowledged</span>
+</button>
+</div>
+</div>
+</article>
+<article class="alert-item bg-surface-container-lowest rounded-xl shadow-md overflow-hidden relative transition-all duration-300" data-level="advisory">
+<div class="absolute top-0 left-0 bottom-0 w-2 bg-surface-tint"></div>
+<div class="p-space-lg pl-space-xl space-y-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-bold tracking-wider">
+                    🟡 ADVISORY / WATER QUALITY
+                  </span>
+<span class="font-label-sm text-label-sm text-outline">Ref: ACT-2025-0975</span>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Issued 2 hours ago</span>
+</div>
+</div>
+<div class="space-y-space-xs">
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface leading-tight">
+                  Turbidity Spike &amp; Silt Runoff in Municipal Intake Grid
+                </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                  Heavy surface runoff has elevated raw water NTU count past standard domestic filtration thresholds. Boil tap water for at least 3 minutes before pediatric or elderly consumption.
+                </p>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-md pt-space-xs">
+<div class="flex items-center gap-space-xs flex-wrap">
+<button class="tts-trigger px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md font-semibold flex items-center gap-space-xs transition-colors" onclick="readAloud(this, 'Drinking water turbidity advisory in effect. Please boil all domestic tap water for 3 minutes.')">
+<span class="material-symbols-outlined text-[18px] text-secondary">volume_up</span>
+<span>Audio TTS Readout</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md font-semibold flex items-center gap-space-xs transition-colors" onclick="shareBroadcast('ADVISORY: Boil domestic drinking water due to upstream pipeline silt intrusion.', 'WhatsApp')">
+<span class="material-symbols-outlined text-[18px] text-secondary">share</span>
+<span>Share WhatsApp / SMS</span>
+</button>
+</div>
+<button class="px-space-md py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md font-semibold hover:bg-surface-variant transition-all flex items-center gap-1" onclick="acknowledgeAlert(this)">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Mark Acknowledged</span>
+</button>
+</div>
+</div>
+</article>
+<article class="alert-item bg-surface-container-lowest rounded-xl shadow-md overflow-hidden relative transition-all duration-300" data-level="advisory">
+<div class="absolute top-0 left-0 bottom-0 w-2 bg-surface-tint"></div>
+<div class="p-space-lg pl-space-xl space-y-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-bold tracking-wider">
+                    🟡 ADVISORY / POWER GRID DOWNTIME
+                  </span>
+<span class="font-label-sm text-label-sm text-outline">Ref: ACT-2025-0971</span>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Issued 3 hours ago</span>
+</div>
+</div>
+<div class="space-y-space-xs">
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface leading-tight">
+                  Precautionary 33kV Feeder De-energization: LB Nagar Substation
+                </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                  TSSPDCL line dispatchers have cut power along low-elevation transformers in Dilsukhnagar &amp; Kothapet to forestall electrocution hazards from flood pool backflows.
+                </p>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-md pt-space-xs">
+<div class="flex items-center gap-space-xs flex-wrap">
+<button class="tts-trigger px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md font-semibold flex items-center gap-space-xs transition-colors" onclick="readAloud(this, 'Precautionary feeder shutdown active in LB Nagar substation zone.')">
+<span class="material-symbols-outlined text-[18px] text-secondary">volume_up</span>
+<span>Audio TTS Readout</span>
+</button>
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant font-label-md text-label-md font-semibold flex items-center gap-space-xs transition-colors" onclick="shareBroadcast('POWER ALERT: Feeder de-energized in LB Nagar to avoid electrocution.', 'WhatsApp')">
+<span class="material-symbols-outlined text-[18px] text-secondary">share</span>
+<span>Share WhatsApp / SMS</span>
+</button>
+</div>
+<button class="px-space-md py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md font-semibold hover:bg-surface-variant transition-all flex items-center gap-1" onclick="acknowledgeAlert(this)">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Mark Acknowledged</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+<aside class="lg:col-span-4 space-y-space-md">
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-md space-y-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-bold tracking-wider">Hydrological Gauge Radar</span>
+<span class="px-space-xs py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">DANGER PEAK</span>
+</div>
+<div class="flex items-baseline justify-between">
+<div>
+<p class="font-tabular-metric text-tabular-metric font-bold text-on-surface">519.45 <span class="font-label-md text-label-md text-outline">m MSL</span></p>
+<p class="font-body-sm text-body-sm text-error font-medium">+1.82m past Danger Contour (517.63m)</p>
+</div>
+<div class="w-16 h-8">
+<svg class="w-full h-full stroke-current text-error fill-none" viewbox="0 0 100 40">
+<path d="M0 35 Q 20 30, 40 22 T 80 12 L 100 5" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg space-y-space-xs">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span class="text-on-surface-variant">Himayat Sagar Storage</span>
+<span class="text-on-surface font-semibold">96.4% Capacity</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full rounded-full bg-error" style="width: 96.4%;"></div>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg space-y-space-xs">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span class="text-on-surface-variant">Osman Sagar Storage</span>
+<span class="text-on-surface font-semibold">91.2% Capacity</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full rounded-full bg-secondary" style="width: 91.2%;"></div>
+</div>
+</div>
+<div class="pt-space-xs border-t-0 space-y-space-xs">
+<div class="flex items-center gap-space-xs text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-secondary">cell_tower</span>
+<span class="font-label-md text-label-md font-semibold">Broadcasting via CAP-v1.2</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-normal">
+                Disaster push messages synchronized through Cell Broadcast Entity (CBE) across mobile cell towers in 14 pincodes.
+              </p>
+</div>
+</div>
+<div class="bg-primary-container text-on-primary rounded-xl p-space-lg shadow-md space-y-space-md relative overflow-hidden">
+<div class="relative z-10 space-y-space-sm">
+<div class="flex items-center gap-space-xs text-secondary-container font-label-sm text-label-sm uppercase tracking-wider font-bold">
+<span class="material-symbols-outlined text-[16px]">support_agent</span> 24/7 Field Operations Net
+              </div>
+<h4 class="font-headline-sm text-headline-sm font-bold text-on-primary">Municipal Crisis Cell</h4>
+<p class="font-body-sm text-body-sm text-on-primary-container leading-relaxed">
+                Emergency logistics personnel are staged at 18 disaster shelters in GHMC Circle 4 &amp; 5. For stranded transport or medical boat dispatch, connect instantly.
+              </p>
+<div class="pt-space-xs flex flex-col gap-space-xs">
+<a class="w-full py-space-sm rounded-lg bg-error text-on-error font-label-md text-label-md font-bold text-center hover:opacity-90 transition-opacity flex items-center justify-center gap-2" href="tel:1070">
+<span class="material-symbols-outlined text-[18px]">phone_in_talk</span> Call Disaster Control: 1070
+                </a>
+<a class="w-full py-space-sm rounded-lg bg-surface-container-highest text-on-surface font-label-md text-label-md font-semibold text-center hover:bg-surface-variant transition-colors flex items-center justify-center gap-2" href="tel:112">
+<span class="material-symbols-outlined text-[18px]">local_police</span> State Police Emergency: 112
+                </a>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</section>
+<section class="space-y-space-lg pt-space-md">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-sm">
+<div class="space-y-space-xs">
+<div class="flex items-center gap-space-xs text-secondary font-label-sm text-label-sm uppercase tracking-widest font-bold">
+<span class="material-symbols-outlined text-[16px]">menu_book</span> Preparedness SOP Engine
+          </div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">Safety &amp; Disaster Resilience Hub</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Validated 3-Phase Standard Operating Protocols (Before, During, After) across critical disaster domains.</p>
+</div>
+<button class="px-space-md py-space-xs rounded-lg bg-surface-container text-on-surface font-label-md text-label-md font-semibold hover:bg-surface-variant transition-colors flex items-center gap-space-xs self-start md:self-auto" onclick="printProtocolChecklist()">
+<span class="material-symbols-outlined text-[18px]">print</span>
+          Print Emergency Guide
+        </button>
+</div>
+<div class="flex items-center gap-space-xs overflow-x-auto pb-space-xs" id="hazard-selector-bar">
+<button class="hazard-pill px-space-md py-space-sm rounded-lg bg-on-primary-fixed text-on-primary font-label-md text-label-md font-bold flex items-center gap-2 whitespace-nowrap shadow-sm" id="tab-hazard-flood" onclick="switchProtocol('flood')">
+<span class="material-symbols-outlined text-[18px]">flood</span> Flood &amp; Deluge
+        </button>
+<button class="hazard-pill px-space-md py-space-sm rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-2 whitespace-nowrap transition-colors" id="tab-hazard-cyclone" onclick="switchProtocol('cyclone')">
+<span class="material-symbols-outlined text-[18px]">cyclone</span> Cyclone &amp; Gale
+        </button>
+<button class="hazard-pill px-space-md py-space-sm rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-2 whitespace-nowrap transition-colors" id="tab-hazard-earthquake" onclick="switchProtocol('earthquake')">
+<span class="material-symbols-outlined text-[18px]">broken_image</span> Earthquake
+        </button>
+<button class="hazard-pill px-space-md py-space-sm rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-2 whitespace-nowrap transition-colors" id="tab-hazard-fire" onclick="switchProtocol('fire')">
+<span class="material-symbols-outlined text-[18px]">local_fire_department</span> Urban Fire
+        </button>
+<button class="hazard-pill px-space-md py-space-sm rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-2 whitespace-nowrap transition-colors" id="tab-hazard-lightning" onclick="switchProtocol('lightning')">
+<span class="material-symbols-outlined text-[18px]">bolt</span> Lightning &amp; Cloudburst
+        </button>
+<button class="hazard-pill px-space-md py-space-sm rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-2 whitespace-nowrap transition-colors" id="tab-hazard-extreme-heat" onclick="switchProtocol('extreme-heat')">
+<span class="material-symbols-outlined text-[18px]">thermostat</span> Extreme Heatwave
+        </button>
+<button class="hazard-pill px-space-md py-space-sm rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-2 whitespace-nowrap transition-colors" id="tab-hazard-landslide" onclick="switchProtocol('landslide')">
+<span class="material-symbols-outlined text-[18px]">landscape</span> Landslide
+        </button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter-desktop" id="protocol-cards-grid">
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-md flex flex-col justify-between space-y-space-md relative">
+<div class="space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-bold">PHASE 1 : READINESS</span>
+<span class="material-symbols-outlined text-secondary text-[24px]">inventory_2</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface">BEFORE: Preparation &amp; Mitigation</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Actions mandated before flood waters reach containment threshold.</p>
+<ul class="space-y-space-sm pt-space-xs">
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px] flex-shrink-0 mt-0.5">check_circle</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Build a 72-Hour Go-Bag:</strong> 3L potable water/person/day, high-calorie dry rations, flashlight with backup batteries, first-aid pack, power banks.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px] flex-shrink-0 mt-0.5">check_circle</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Waterproof Envelopes:</strong> Seal passports, property deeds, identification cards, and doctor prescriptions in airtight zip-locks.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px] flex-shrink-0 mt-0.5">check_circle</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Identify Relief Camp:</strong> Plot two separate uphill evacuation trajectories to the local district relief node (e.g., Amberpet Municipal High School).</span>
+</li>
+</ul>
+</div>
+<div class="pt-space-md">
+<div class="w-full p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Preparedness Verification</span>
+<span class="font-bold text-secondary">3 of 3 Tasks Required</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-md flex flex-col justify-between space-y-space-md relative">
+<div class="space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<span class="px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">PHASE 2 : ACUTE SURVIVAL</span>
+<span class="material-symbols-outlined text-error text-[24px]">crisis_alert</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface">DURING: Acute Impact Maneuvers</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Strict operational mandates once inundation has commenced.</p>
+<ul class="space-y-space-sm pt-space-xs">
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-error text-[20px] flex-shrink-0 mt-0.5">warning</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Isolate Utilities:</strong> Trip main electrical breaker at the DB board and manually lock off the LPG cylinder valve immediately.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-error text-[20px] flex-shrink-0 mt-0.5">warning</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Elevate to Upper Levels:</strong> Shift dependents and essentials to upper floors. Never barricade yourself inside an enclosed attic without roof escape tools.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-error text-[20px] flex-shrink-0 mt-0.5">warning</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Turn Around, Don't Drown:</strong> Never walk, wade, or drive through standing or flowing water. 15 cm of moving water can knock down an adult.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-error text-[20px] flex-shrink-0 mt-0.5">warning</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Electrical Isolation:</strong> Keep a minimum 10-meter radius away from sagging wires or sub-surface transformer boxes.</span>
+</li>
+</ul>
+</div>
+<div class="pt-space-md">
+<div class="w-full p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Risk Severity</span>
+<span class="font-bold text-error">Zero-Tolerance Directives</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-md flex flex-col justify-between space-y-space-md relative">
+<div class="space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-bold">PHASE 3 : RECOVERY</span>
+<span class="material-symbols-outlined text-surface-tint text-[24px]">published_with_changes</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface">AFTER: Re-entry &amp; Remediation</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Actions required before re-occupying contaminated premises.</p>
+<ul class="space-y-space-sm pt-space-xs">
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0 mt-0.5">task_alt</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Wait for Official Clearance:</strong> Do not return until the National Disaster Response Force (NDRF) or State Disaster Authority marks the sector GREEN.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0 mt-0.5">task_alt</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Water Purification:</strong> Boil all municipal/well water vigorously for 3 minutes or treat with chlorine tablets before culinary use.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0 mt-0.5">task_alt</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Structural Structural Inspection:</strong> Inspect foundational walls for shear cracks before entry. Check for gas leaks using soapy water, never matches.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0 mt-0.5">task_alt</span>
+<span class="font-body-sm text-body-sm text-on-surface leading-snug"><strong>Damage Documentation:</strong> Capture geotagged photos of water lines, electrical destruction, and vehicle immersion for insurance claims.</span>
+</li>
+</ul>
+</div>
+<div class="pt-space-md">
+<div class="w-full p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Sanitation Protocol</span>
+<span class="font-bold text-on-surface">Standard Civil Guidance</span>
+</div>
+</div>
+</div>
+</div>
+<div class="rounded-xl bg-surface-container-low p-space-lg space-y-space-md shadow-sm" id="hotlines-drawer">
+<div class="flex items-center justify-between flex-wrap gap-space-sm">
+<div class="space-y-0.5">
+<h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">Direct Emergency Telephony Index</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Toll-free 24/7 dedicated public safety response bridges.</p>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold bg-surface-container px-space-sm py-1 rounded">CARRIER SYNCHRONIZED</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-md">
+<a class="p-space-md rounded-lg bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow flex items-center gap-space-sm" href="tel:1070">
+<div class="h-10 w-10 rounded-full bg-error-container text-on-error-container flex items-center justify-center font-bold text-[18px]">
+<span class="material-symbols-outlined text-[20px]">sos</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase font-semibold">State Disaster Toll-Free</p>
+<p class="font-tabular-metric text-tabular-metric font-bold text-on-surface">1070</p>
+</div>
+</a>
+<a class="p-space-md rounded-lg bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow flex items-center gap-space-sm" href="tel:100">
+<div class="h-10 w-10 rounded-full bg-surface-container text-secondary flex items-center justify-center font-bold text-[18px]">
+<span class="material-symbols-outlined text-[20px]">local_police</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase font-semibold">Police Dispatch</p>
+<p class="font-tabular-metric text-tabular-metric font-bold text-on-surface">100 / 112</p>
+</div>
+</a>
+<a class="p-space-md rounded-lg bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow flex items-center gap-space-sm" href="tel:108">
+<div class="h-10 w-10 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center font-bold text-[18px]">
+<span class="material-symbols-outlined text-[20px]">ambulance</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase font-semibold">Medical Emergency Net</p>
+<p class="font-tabular-metric text-tabular-metric font-bold text-on-surface">108</p>
+</div>
+</a>
+<a class="p-space-md rounded-lg bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow flex items-center gap-space-sm" href="tel:181">
+<div class="h-10 w-10 rounded-full bg-surface-container text-on-surface flex items-center justify-center font-bold text-[18px]">
+<span class="material-symbols-outlined text-[20px]">shield_person</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase font-semibold">Women &amp; Vulnerable Helpline</p>
+<p class="font-tabular-metric text-tabular-metric font-bold text-on-surface">181</p>
+</div>
+</a>
+</div>
+</div>
+</section>
+<section class="space-y-space-lg pt-space-md pb-space-xl" id="incident-reporting-terminal">
+<div class="max-w-4xl mx-auto space-y-space-md">
+<div class="space-y-space-xs text-center">
+<span class="px-space-sm py-1 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-bold tracking-widest uppercase">
+            COMMUNITY SENSING TERMINAL
+          </span>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Report a Live Hazard Incident</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
+            Help municipal emergency dispatchers and surrounding residents maintain situational clarity. Crowdsourced observations are cryptographically geo-anchored and verified against radar feeds.
+          </p>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden p-space-lg md:p-space-xl space-y-space-lg">
+<div class="p-space-md rounded-xl bg-surface-container-low flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px] flex-shrink-0 mt-0.5">encrypted</span>
+<div class="space-y-0.5">
+<p class="font-label-md text-label-md text-on-surface font-bold">Privacy Framework &amp; Data Sanitation Active</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-normal">
+                Personal contact information is strictly scrubbed from public feeds. Location metadata is generalized to an 80m sector radius to protect private residence privacy.
+              </p>
+</div>
+</div>
+<form class="space-y-space-lg" id="incident-form" onsubmit="handleIncidentSubmit(event)">
+<div class="space-y-space-xs">
+<label class="font-label-lg text-label-lg font-bold text-on-surface flex items-center justify-between">
+<span>1. Select Threat / Incident Classification</span>
+<span class="font-label-sm text-label-sm text-outline font-normal">Mandatory</span>
+</label>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-space-sm pt-space-xs">
+<label class="incident-radio-label flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<input checked="" class="accent-secondary h-4 w-4" name="incident_type" type="radio" value="Flood / Severe Waterlogging"/>
+<span class="font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary">flood</span>
+                    Flood / Inundation
+                  </span>
+</label>
+<label class="incident-radio-label flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<input class="accent-secondary h-4 w-4" name="incident_type" type="radio" value="Fallen Tree / Blocked Way"/>
+<span class="font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary">forest</span>
+                    Fallen Tree / Debris
+                  </span>
+</label>
+<label class="incident-radio-label flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<input class="accent-secondary h-4 w-4" name="incident_type" type="radio" value="Road Submerged / Bridge Closed"/>
+<span class="font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary">traffic</span>
+                    Road Submerged
+                  </span>
+</label>
+<label class="incident-radio-label flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<input class="accent-secondary h-4 w-4" name="incident_type" type="radio" value="Transformer Spark / Wire Down"/>
+<span class="font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-error">electric_bolt</span>
+                    Transformer Spark
+                  </span>
+</label>
+<label class="incident-radio-label flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<input class="accent-secondary h-4 w-4" name="incident_type" type="radio" value="Structural Wall Collapse"/>
+<span class="font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary">domain_disabled</span>
+                    Structural Crack
+                  </span>
+</label>
+<label class="incident-radio-label flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<input class="accent-secondary h-4 w-4" name="incident_type" type="radio" value="Other Hazardous Emergency"/>
+<span class="font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline">help</span>
+                    Other Hazard
+                  </span>
+</label>
+</div>
+</div>
+<div class="space-y-space-xs">
+<label class="font-label-lg text-label-lg font-bold text-on-surface flex items-center justify-between">
+<span>2. Geo-Location &amp; Spatial Anchor</span>
+<span class="font-label-sm text-label-sm text-outline font-normal">GPS Verified</span>
+</label>
+<div class="grid grid-cols-1 sm:grid-cols-12 gap-space-sm">
+<div class="sm:col-span-8 relative">
+<input class="w-full h-11 px-space-md pl-10 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:bg-surface-container focus:outline-none" id="incident-location-input" placeholder="Enter landmark, road, or intersection..." required="" type="text" value="Moosarambagh Old Bridge Causeway, Ward 44"/>
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-secondary">location_on</span>
+</div>
+<div class="sm:col-span-4">
+<button class="w-full h-11 px-space-sm rounded-lg bg-surface-container text-on-surface font-label-md text-label-md font-semibold hover:bg-surface-variant transition-colors flex items-center justify-center gap-2" onclick="detectUserGps()" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">my_location</span>
+<span>Detect My GPS</span>
+</button>
+</div>
+</div>
+<div class="h-44 w-full rounded-xl overflow-hidden mt-space-sm relative" data-alt="Satellite map view of Hyderabad flood plain around Musi river showing topographic overlays, elevation contours, and alert boundaries rendered in technical crisis navigation styling." data-location="Moosarambagh, Hyderabad" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD3cKlKgYT2Y-f9NJRtgvdZsb1jdHpJLzyK4NElp_-gFLKgIAWN0Xgvw1AyEnnQg8X_M10OfGd-d86eHsbBH_moANxIwiRuX2w1SnsHPuFzz3TCxIxkhM1qaXqIF4yR6PAEiM7rQ-EWcW5XxpValrD_VUt3OU9Xdb1ydsNfrK4wSRG4wxzrI7nl4vtxQoXI96C_veIiKbo9cQY8jdtgOD0PvAS2Djlet7uVgnijBj0DC1mCzRJvmSQT')">
+<div class="absolute top-3 left-3 bg-surface/90 backdrop-blur-md px-space-sm py-1 rounded font-label-sm text-label-sm text-on-surface flex items-center gap-1.5 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-error animate-ping"></span>
+                  Pin Locked: 17.3712° N, 78.5085° E
+                </div>
+<div class="absolute bottom-3 right-3 bg-on-primary-fixed/90 backdrop-blur-md px-space-sm py-0.5 rounded text-on-primary font-label-sm text-label-sm">
+                  Sensor Accuracy: ± 4.2m
+                </div>
+</div>
+</div>
+<div class="space-y-space-xs">
+<label class="font-label-lg text-label-lg font-bold text-on-surface">
+                3. Operational Severity Assessment
+              </label>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-sm">
+<label class="flex flex-col p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-outline uppercase">Minor</span>
+<input class="accent-secondary" name="severity" type="radio" value="Minor"/>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface mt-1">Localized pooling, passible traffic.</span>
+</label>
+<label class="flex flex-col p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-surface-tint uppercase">Moderate</span>
+<input checked="" class="accent-secondary" name="severity" type="radio" value="Moderate"/>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface mt-1">Curb overrun, light vehicles stalled.</span>
+</label>
+<label class="flex flex-col p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-secondary uppercase">Dangerous</span>
+<input class="accent-secondary" name="severity" type="radio" value="Dangerous"/>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface mt-1">Water flowing &gt; 30cm, live wire risk.</span>
+</label>
+<label class="flex flex-col p-space-sm rounded-lg bg-error-container/40 hover:bg-error-container/60 cursor-pointer transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-error uppercase">Life Threat</span>
+<input class="accent-error" name="severity" type="radio" value="Life-Threatening"/>
+</div>
+<span class="font-body-sm text-body-sm text-on-error-container mt-1 font-medium">Persons trapped, rapid torrent.</span>
+</label>
+</div>
+</div>
+<div class="space-y-space-xs">
+<label class="font-label-lg text-label-lg font-bold text-on-surface">
+                4. Field Visual Documentation (Drag &amp; Drop or Upload)
+              </label>
+<div class="p-space-lg rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors text-center cursor-pointer flex flex-col items-center justify-center space-y-space-xs" id="drop-zone" onclick="triggerFileUpload()">
+<input accept="image/*,video/*" class="hidden" id="incident-file-input" onchange="previewUpload(event)" type="file"/>
+<div class="h-12 w-12 rounded-full bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[28px]">add_a_photo</span>
+</div>
+<p class="font-label-lg text-label-lg font-semibold text-on-surface">Click to capture from camera or drag evidence file</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Supports HEIC, JPG, PNG, MP4 up to 25MB. EXIF location preserved.</p>
+</div>
+<div class="hidden grid-cols-2 sm:grid-cols-4 gap-space-sm pt-space-xs" id="upload-preview-container">
+<div class="relative rounded-lg overflow-hidden h-24 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A user-uploaded mobile camera snapshot capturing high floodwater overflowing over asphalt street curbs near Hyderabad residential apartment gates, realistic documentary angle." id="upload-img-preview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTKo6QOSwzWfttjtrIRm9RI_ekUFZQBkxYknvD0MVdZvmDdDNpY83par_DC41lSeOvGiMsu5XyvSGHEWoCXSwppb8OMRlUcRSfUcpcdU8Jgwh9JQK8RHpklGtiwzIMxiLKe8HiX2gihgsL8cqGSKxWGBBK9XKZE-LUKfBSCQ1LJ8W7_Jm-n7ef_GZZZtnYiAXsOfpPq3FFU7qiUo305WrE46YNKS3Lfrxeo645zWGFY1yea3kjMC3K"/>
+<button class="absolute top-1 right-1 h-6 w-6 rounded-full bg-on-primary-fixed/80 text-on-primary flex items-center justify-center" onclick="clearUploadedFile()" type="button">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<div class="space-y-space-xs">
+<label class="font-label-lg text-label-lg font-bold text-on-surface">
+                5. Observations &amp; Operational Context
+              </label>
+<textarea class="w-full p-space-md rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:bg-surface-container focus:outline-none" id="incident-desc-input" placeholder="Describe depth of water, trapped vehicles, whether power has been cut, and any vulnerable individuals requiring evacuation..." required="" rows="3"></textarea>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+<div class="space-y-space-xs">
+<label class="font-label-md text-label-md font-semibold text-on-surface">
+                  Reporter Name / Handle <span class="text-outline font-normal">(Optional)</span>
+</label>
+<input class="w-full h-11 px-space-md rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:bg-surface-container focus:outline-none" placeholder="e.g., Community Ward Volunteer" type="text"/>
+</div>
+<div class="space-y-space-xs">
+<label class="font-label-md text-label-md font-semibold text-on-surface">
+                  Callback Phone <span class="text-outline font-normal">(For Rescue Verification Only)</span>
+</label>
+<input class="w-full h-11 px-space-md rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:bg-surface-container focus:outline-none" placeholder="+91 98XXX XXXXX" type="tel"/>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container text-on-surface-variant font-body-sm text-body-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[18px] flex-shrink-0 mt-0.5">info</span>
+<span><strong>DEMO PROTOTYPE NOTICE:</strong> Incident reports submitted through this interface populate the client simulation feed. In production mode, packets dispatch directly to GHMC Disaster Command and NDRF Sector Radios.</span>
+</div>
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-md pt-space-xs">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+<span>SHA-256 Node Signature Ready • HYD-WEST-TX88</span>
+</div>
+<button class="w-full sm:w-auto px-space-xl py-space-sm rounded-lg bg-on-primary-fixed text-on-primary font-label-lg text-label-lg font-bold hover:bg-surface-tint transition-all flex items-center justify-center gap-space-xs shadow-md" id="submit-btn" type="submit">
+<span class="material-symbols-outlined text-[20px]">send</span>
+<span>Submit Citizen Report</span>
+</button>
+</div>
+</form>
+<div class="hidden p-space-md rounded-xl bg-surface-container text-on-surface space-y-space-xs transition-all duration-300" id="submission-success-toast">
+<div class="flex items-center gap-space-xs text-secondary font-bold font-label-md text-label-md">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span>Report Transmitted Successfully • Ticket #AEGIS-83921</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Telemetry added to regional threat assessment radar. Dispatchers notified. Thank you for safeguarding your neighborhood.
+            </p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-space-sm">
+<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex items-center gap-space-md">
+<img class="w-20 h-20 rounded-lg object-cover flex-shrink-0" data-alt="High resolution photo of local volunteers and civic safety teams coordinating relief boat equipment in orange life jackets with equipment chests, professional documentary lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXRVxCgCXMK3pPgOdrrtdZQL3-LRmD0FxgUTxC1gb8dRADM3oOLLhFxHYPtGZn67vGcmSrxafYJu4nqxoQUVwm4ngRijoQcm1O4pLwnx1m4XAkrPx78hpqtbpfZW5cdflj06UQvdSVNnmJ58xQWQxINqdecglO5F_lpsz9nFJgrkg9nxQXU-slQldyhQUuyTqc31NNldf4_l6hrKxxekjO9vK06k_2m38AWIihF6CQR-Rg9Pkf85Yb"/>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-secondary font-bold uppercase">Community Network</span>
+<p class="font-headline-sm text-headline-sm font-bold text-on-surface">Volunteer Response Corps</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">Connect with 1,240 certified civilian first-responders active across Hyderabad wards.</p>
+</div>
+</div>
+<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex items-center gap-space-md">
+<img class="w-20 h-20 rounded-lg object-cover flex-shrink-0" data-alt="Photo of a municipal flood control room workstation with multiple monitors displaying hydrologic sensors, satellite feeds, and emergency telecommunication lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAp8Na_gloISZjxURpZM_Yh0HYgWC6N57HmYooPWPWNdz-sycd9oroKBIWZZVBg5nbde0rmZJlJkAU6pVlPO_-6gM8gXeSkDe8dKhs72kGfEJ1LZdNdgdwZaCa2DY0geMeHhxE8ZlhMNjSDVc6zC2FlVjKxKKm5gPrjkTlw07sKCM-CSU4dxnf4Z-JXP94AixhGOw8SrzOqcAH-NyjK3jlAt8W5FqPUN05jw8bX8YaY4lIzhXB7aA0x"/>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-secondary font-bold uppercase">Operations Center</span>
+<p class="font-headline-sm text-headline-sm font-bold text-on-surface">Telemetry Verification Pipeline</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">Incoming user reports undergo AI duplicate suppression before GIS dispatch display.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<script>
+  function filterAlerts(tier) {
+    const buttons = document.querySelectorAll('.alert-tab-btn');
+    buttons.forEach(btn => {
+      btn.classList.remove('bg-surface-container-lowest', 'shadow-sm', 'text-on-surface', 'font-semibold');
+      btn.classList.add('text-on-surface-variant', 'font-medium');
+    });
+
+    const activeBtn = document.getElementById('filter-' + tier);
+    if (activeBtn) {
+      activeBtn.classList.add('bg-surface-container-lowest', 'shadow-sm', 'text-on-surface', 'font-semibold');
+      activeBtn.classList.remove('text-on-surface-variant', 'font-medium');
+    }
+
+    const items = document.querySelectorAll('#alerts-container .alert-item');
+    items.forEach(item => {
+      const level = item.getAttribute('data-level');
+      if (tier === 'all') {
+        item.style.display = 'block';
+      } else if (tier === 'critical' && level === 'critical') {
+        item.style.display = 'block';
+      } else if (tier === 'warning' && level === 'warning') {
+        item.style.display = 'block';
+      } else if (tier === 'advisory' && level === 'advisory') {
+        item.style.display = 'block';
+      } else if (tier === 'resolved') {
+        item.style.display = 'none';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  function readAloud(btn, text) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px] text-error animate-pulse">record_voice_over</span><span>Broadcasting TTS...</span>';
+      
+      utterance.onend = function() {
+        btn.innerHTML = originalHtml;
+      };
+      
+      utterance.onerror = function() {
+        btn.innerHTML = originalHtml;
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert("Text-to-speech engine is not supported on this browser.");
+    }
+  }
+
+  function shareBroadcast(message, method) {
+    const encoded = encodeURIComponent(message + " - Verified by Aegis Alert Intelligence Portal.");
+    if (navigator.share) {
+      navigator.share({
+        title: 'Aegis Alert Emergency Warning',
+        text: message,
+        url: window.location.href
+      }).catch(() => {});
+    } else {
+      const shareUrl = "https://api.whatsapp.com/send?text=" + encoded;
+      window.open(shareUrl, '_blank');
+    }
+  }
+
+  function acknowledgeAlert(btn) {
+    const card = btn.closest('.alert-item');
+    btn.innerHTML = '<span class="material-symbols-outlined text-[16px] text-secondary">verified</span><span>Acknowledged</span>';
+    btn.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+    btn.disabled = true;
+    card.style.opacity = '0.85';
+  }
+
+  const protocolsData = {
+    flood: {
+      title: "Flood & Deluge Protocol",
+      before: [
+        "<strong>Build a 72-Hour Go-Bag:</strong> 3L potable water/person/day, high-calorie dry rations, flashlight with backup batteries, first-aid pack, power banks.",
+        "<strong>Waterproof Envelopes:</strong> Seal passports, property deeds, identification cards, and doctor prescriptions in airtight zip-locks.",
+        "<strong>Identify Relief Camp:</strong> Plot two separate uphill evacuation trajectories to the local district relief node."
+      ],
+      during: [
+        "<strong>Isolate Utilities:</strong> Trip main electrical breaker at the DB board and manually lock off the LPG cylinder valve immediately.",
+        "<strong>Elevate to Upper Levels:</strong> Shift dependents and essentials to upper floors. Never barricade inside an attic without roof egress.",
+        "<strong>Turn Around, Don't Drown:</strong> Never walk, wade, or drive through moving currents. 15 cm of moving water can knock down an adult.",
+        "<strong>Electrical Isolation:</strong> Keep a minimum 10-meter radius away from sagging wires or sub-surface transformer boxes."
+      ],
+      after: [
+        "<strong>Wait for Official Clearance:</strong> Do not return until NDRF or State Disaster Management Authorities mark the sector green.",
+        "<strong>Water Purification:</strong> Boil municipal tap water vigorously for 3 minutes or treat with chlorine tablets before consumption.",
+        "<strong>Structural Inspection:</strong> Inspect foundational walls for shear cracks before entry. Check for gas leaks with soapy water.",
+        "<strong>Damage Documentation:</strong> Capture geotagged photos of water lines, electrical destruction, and vehicle immersion for claims."
+      ]
+    },
+    cyclone: {
+      title: "Cyclone & Severe Gale Protocol",
+      before: [
+        "<strong>Fortify Openings:</strong> Board up large glass windows or apply criss-cross heavy tape to mitigate flying glass shards.",
+        "<strong>Trim Hazards:</strong> Prune overhanging dead branches and bring outdoor furniture, solar inverters, and antennas indoors.",
+        "<strong>Emergency Battery Reserve:</strong> Fully charge satellite radios, solar lamps, and medical support equipment."
+      ],
+      during: [
+        "<strong>Seek Central Room:</strong> Remain in the innermost room, hallway, or under reinforced reinforced concrete tables.",
+        "<strong>Beware the Eye of the Storm:</strong> If winds suddenly calm, do NOT step outside; catastrophic reverse winds follow immediately.",
+        "<strong>Disconnect Power:</strong> Disconnect heavy air conditioners, computers, and TV aerial leads to prevent surge damage."
+      ],
+      after: [
+        "<strong>Avoid Puddles Near Poles:</strong> Standing storm water often conceals energized broken power cables.",
+        "<strong>Check for Gas Leaks:</strong> Do not strike matches or lighters until structural ventilation is fully established.",
+        "<strong>Report Road Obstructions:</strong> Relay fallen tree blockages to municipal road dispatch via the Aegis Alert incident tool."
+      ]
+    },
+    earthquake: {
+      title: "Earthquake Protocol",
+      before: [
+        "<strong>Anchor Heavy Appliances:</strong> Bolt tall bookcases, mirrors, and water heaters directly to wall studs.",
+        "<strong>Family Rally Point:</strong> Establish a safe assembly rendezvous in an open field clear of power towers.",
+        "<strong>Emergency Shut-off Practice:</strong> Ensure all adult occupants know how to shut off main water and gas valves."
+      ],
+      during: [
+        "<strong>DROP, COVER, HOLD ON:</strong> Drop to hands and knees, take cover under a sturdy desk, and hold on until shaking stops.",
+        "<strong>Stay Away from Glass:</strong> Shield head and neck from shattering window panes, heavy chandeliers, and exterior cladding.",
+        "<strong>If in a Vehicle:</strong> Pull over safely away from flyovers, pedestrian bridges, and high-tension utility lines."
+      ],
+      after: [
+        "<strong>Anticipate Aftershocks:</strong> Secondary shocks frequently precipitate collapse of already weakened structural concrete.",
+        "<strong>Inspect Stairs Carefully:</strong> Never use elevators; verify stairwell integrity before descending multistory premises.",
+        "<strong>Listen for Rescuers:</strong> Tap rhythmic patterns on pipes if trapped to guide acoustic search and rescue sensors."
+      ]
+    },
+    fire: {
+      title: "Urban Fire Protocol",
+      before: [
+        "<strong>Install Smoke Detectors:</strong> Test battery alarms on every level once monthly; inspect fire extinguishers.",
+        "<strong>Map Two Exits:</strong> Ensure every sleeping chamber has two clear escape routes including unobstructed windows.",
+        "<strong>Store Flammables Properly:</strong> Store fuels, paints, and solvents in ventilated metal lockers far from heat sources."
+      ],
+      during: [
+        "<strong>Crawl Low Under Smoke:</strong> Toxic combustion gases accumulate at ceiling height; crawl on hands and knees.",
+        "<strong>Check Doors for Heat:</strong> Feel door handles with the back of your hand; never open a hot door.",
+        "<strong>Stop, Drop, and Roll:</strong> If clothing catches fire, immediately smother flames by rolling on the floor."
+      ],
+      after: [
+        "<strong>Do Not Re-enter:</strong> Never return inside a burning or recently extinguished building for personal possessions.",
+        "<strong>Treat Smoke Inhalation:</strong> Seek urgent paramedic triage for carbon monoxide or inhalation burns.",
+        "<strong>Notify Insurance & Fire Marshal:</strong> Request copy of the official incident report before initiating reconstruction."
+      ]
+    },
+    lightning: {
+      title: "Lightning & Cloudburst Protocol",
+      before: [
+        "<strong>Monitor Radar Vectors:</strong> Seek interior shelter when thunder rumbles within 10km (30-second rule).",
+        "<strong>Unplug Electronics:</strong> Disconnect delicate microcomputers and broadband lines to avoid atmospheric inductive spikes."
+      ],
+      during: [
+        "<strong>No High Ground or Isolated Trees:</strong> Never stand under tall trees, open pavilions, or near metal wire fences.",
+        "<strong>Avoid Plumbing Conductors:</strong> Do not take showers, wash dishes, or touch hardwired plumbing fixtures during strikes.",
+        "<strong>Lightning Crouch:</strong> If caught in open terrain, crouch low on balls of feet with heels touching; minimize ground contact."
+      ],
+      after: [
+        "<strong>Perform CPR if Needed:</strong> Lightning strike victims carry no residual charge; apply immediate chest compressions.",
+        "<strong>Inspect Attics:</strong> Check roofing rafters for hidden smoldering fire ignited by attic lightning conductor strikes."
+      ]
+    },
+    'extreme-heat': {
+      title: "Extreme Heatwave Protocol",
+      before: [
+        "<strong>Insulate Glass:</strong> Install thermal curtains or solar-reflective films over west-facing window surfaces.",
+        "<strong>Electrolyte Stock:</strong> Maintain reserves of oral rehydration salts (ORS), coconut water, and mineral salts."
+      ],
+      during: [
+        "<strong>Curtail Midday Exertion:</strong> Cease outdoor manual activity between 11:00 AM and 4:30 PM.",
+        "<strong>Recognize Heat Stroke:</strong> High body temp, absence of sweat, confusion, vomiting mandate emergency ambulance 108.",
+        "<strong>Hydrate Regularly:</strong> Drink water every 20 minutes regardless of thirst perception; avoid alcohol and heavy caffeine."
+      ],
+      after: [
+        "<strong>Monitor Vulnerable Groups:</strong> Check twice daily on elderly neighbors, pets, and children with limited thermoregulation."
+      ]
+    },
+    landslide: {
+      title: "Landslide Protocol",
+      before: [
+        "<strong>Observe Hillside Cracks:</strong> Watch for tilted trees, new surface fissures, or bulging slope embankments.",
+        "<strong>Divert Runoff:</strong> Ensure surface channels route storm water safely into culverts rather than slope soil."
+      ],
+      during: [
+        "<strong>Evacuate Immediately:</strong> If rumbling or crackling sounds are heard, evacuate horizontal to the slide direction.",
+        "<strong>Curl into a Tight Ball:</strong> If escape is impossible, curl tightly and protect your head with arms and blankets."
+      ],
+      after: [
+        "<strong>Beware Secondary Slides:</strong> Saturated hillsides remain volatile for days following the initial failure event.",
+        "<strong>Report Pipeline Ruptures:</strong> Gas and water main breaks on hillsides accelerate catastrophic slope liquification."
+      ]
+    }
+  };
+
+  function switchProtocol(hazardKey) {
+    const data = protocolsData[hazardKey] || protocolsData.flood;
+    
+    document.querySelectorAll('.hazard-pill').forEach(btn => {
+      btn.classList.remove('bg-on-primary-fixed', 'text-on-primary', 'font-bold');
+      btn.classList.add('bg-surface-container', 'text-on-surface-variant', 'font-semibold');
+    });
+
+    const activeBtn = document.getElementById('tab-hazard-' + hazardKey);
+    if (activeBtn) {
+      activeBtn.classList.add('bg-on-primary-fixed', 'text-on-primary', 'font-bold');
+      activeBtn.classList.remove('bg-surface-container', 'text-on-surface-variant', 'font-semibold');
+    }
+
+    const grid = document.getElementById('protocol-cards-grid');
+    if (!grid) return;
+
+    const beforeHtml = data.before.map(item => `
+      <li class="flex items-start gap-space-sm">
+        <span class="material-symbols-outlined text-secondary text-[20px] flex-shrink-0 mt-0.5">check_circle</span>
+        <span class="font-body-sm text-body-sm text-on-surface leading-snug">${item}</span>
+      </li>
+    `).join('');
+
+    const duringHtml = data.during.map(item => `
+      <li class="flex items-start gap-space-sm">
+        <span class="material-symbols-outlined text-error text-[20px] flex-shrink-0 mt-0.5">warning</span>
+        <span class="font-body-sm text-body-sm text-on-surface leading-snug">${item}</span>
+      </li>
+    `).join('');
+
+    const afterHtml = data.after.map(item => `
+      <li class="flex items-start gap-space-sm">
+        <span class="material-symbols-outlined text-outline text-[20px] flex-shrink-0 mt-0.5">task_alt</span>
+        <span class="font-body-sm text-body-sm text-on-surface leading-snug">${item}</span>
+      </li>
+    `).join('');
+
+    grid.innerHTML = `
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-md flex flex-col justify-between space-y-space-md relative">
+        <div class="space-y-space-md">
+          <div class="flex items-center justify-between pb-space-xs">
+            <span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-bold">PHASE 1 : READINESS</span>
+            <span class="material-symbols-outlined text-secondary text-[24px]">inventory_2</span>
+          </div>
+          <h3 class="font-headline-md text-headline-md font-bold text-on-surface">BEFORE: Preparation &amp; Mitigation</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Preventive actions before hazard onset.</p>
+          <ul class="space-y-space-sm pt-space-xs">${beforeHtml}</ul>
+        </div>
+        <div class="pt-space-md">
+          <div class="w-full p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+            <span>Preparedness Status</span>
+            <span class="font-bold text-secondary">Verified SOP</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-md flex flex-col justify-between space-y-space-md relative">
+        <div class="space-y-space-md">
+          <div class="flex items-center justify-between pb-space-xs">
+            <span class="px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">PHASE 2 : ACUTE SURVIVAL</span>
+            <span class="material-symbols-outlined text-error text-[24px]">crisis_alert</span>
+          </div>
+          <h3 class="font-headline-md text-headline-md font-bold text-on-surface">DURING: Acute Protective Action</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">High-priority protective maneuvers for human life preservation.</p>
+          <ul class="space-y-space-sm pt-space-xs">${duringHtml}</ul>
+        </div>
+        <div class="pt-space-md">
+          <div class="w-full p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+            <span>Threat Severity</span>
+            <span class="font-bold text-error">Zero-Tolerance Mandate</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-md flex flex-col justify-between space-y-space-md relative">
+        <div class="space-y-space-md">
+          <div class="flex items-center justify-between pb-space-xs">
+            <span class="px-space-sm py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-bold">PHASE 3 : RECOVERY</span>
+            <span class="material-symbols-outlined text-surface-tint text-[24px]">published_with_changes</span>
+          </div>
+          <h3 class="font-headline-md text-headline-md font-bold text-on-surface">AFTER: Safe Assessment &amp; Re-entry</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Remediation criteria before re-entering zones.</p>
+          <ul class="space-y-space-sm pt-space-xs">${afterHtml}</ul>
+        </div>
+        <div class="pt-space-md">
+          <div class="w-full p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+            <span>Restoration Protocol</span>
+            <span class="font-bold text-on-surface">Civil Rehabilitation</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function printProtocolChecklist() {
+    window.print();
+  }
+
+  function detectUserGps() {
+    const input = document.getElementById('incident-location-input');
+    input.value = "Detecting GPS coordinates...";
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          input.value = pos.coords.latitude.toFixed(4) + "° N, " + pos.coords.longitude.toFixed(4) + "° E (GPS Acc: ±" + Math.round(pos.coords.accuracy) + "m)";
+        },
+        () => {
+          input.value = "Amberpet Circle 4, Hyderabad (Manual Marker Locked)";
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      input.value = "Hyderabad Basin Sector 7 (Auto GPS unsupported)";
+    }
+  }
+
+  function triggerFileUpload() {
+    document.getElementById('incident-file-input').click();
+  }
+
+  function previewUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const previewContainer = document.getElementById('upload-preview-container');
+      const previewImg = document.getElementById('upload-img-preview');
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        previewContainer.classList.remove('hidden');
+        previewContainer.classList.add('grid');
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function clearUploadedFile() {
+    document.getElementById('incident-file-input').value = "";
+    const previewContainer = document.getElementById('upload-preview-container');
+    previewContainer.classList.add('hidden');
+    previewContainer.classList.remove('grid');
+  }
+
+  function handleIncidentSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const toast = document.getElementById('submission-success-toast');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span>Encrypting &amp; Relaying...</span>';
+
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">send</span><span>Submit Citizen Report</span>';
+      toast.classList.remove('hidden');
+      toast.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('incident-form').reset();
+      clearUploadedFile();
+    }, 1200);
+  }
+</script></main><footer class="w-full bg-surface-container-low text-on-surface-variant py-space-xl"><div class="w-full px-margin-desktop space-y-space-lg"><div class="p-space-md bg-surface-container rounded-lg flex items-start gap-space-sm text-on-surface"><span class="material-symbols-outlined text-secondary text-[22px] flex-shrink-0 mt-0.5">verified_user</span><p class="font-body-sm text-body-sm leading-relaxed"><strong class="font-semibold">Official Disaster Intelligence Notice:</strong> Emergency telemetry, predictive projections, and alert hazard tiers displayed are calculated for operational preparedness. Critical public instructions and evacuation mandates should always be verified through official NDRF, IMD, or State Disaster Management Authorities before field execution.</p></div><div class="flex flex-col md:flex-row items-center justify-between gap-space-md pt-space-sm"><div class="flex flex-wrap items-center gap-space-lg"><a class="font-label-md text-label-md hover:text-on-surface transition-colors" data-path="safety-center" href="#">Safety Guidelines</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">Privacy Framework</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">Security &amp; Cryptographic Sync</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">API Docs</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">Kaggle ML Models</a></div><div class="flex items-center gap-space-sm bg-surface-container px-space-md py-space-xs rounded-full"><span class="h-2 w-2 rounded-full bg-secondary"></span><span class="font-label-sm text-label-sm font-semibold text-on-surface">Mobile Responder App: CONNECTED</span></div></div><div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-xs font-label-sm text-label-sm text-outline"><p>© 2025 Aegis Alert Disaster Intelligence System. Autonomous Multi-Hazard Risk Operating Environment.</p><p>Node ID: HYD-SEC-09 • Encryption: AES-256 GCM • Sensor Feed: Live</p></div></div></footer></body></html>

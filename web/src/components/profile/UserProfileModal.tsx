@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   X,
   ChevronLeft,
@@ -21,6 +21,7 @@ import {
   Trash2,
   Lock,
   Smartphone,
+  Camera,
 } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
 import { APP_LANGUAGES, BLOOD_GROUPS } from '../../types/profile';
@@ -60,6 +61,25 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
   const [tempBlood, setTempBlood] = useState(profile.bloodGroup || 'O+');
   const [tempMedical, setTempMedical] = useState(profile.medicalNotes || '');
   const [tempPeople, setTempPeople] = useState(String(profile.peopleCount || 3));
+  const [tempAvatar, setTempAvatar] = useState(profile.avatarUrl || '');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image file size should be less than 5MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setTempAvatar(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Add Family Contact Form State
@@ -79,6 +99,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
     setTempBlood(profile.bloodGroup || 'O+');
     setTempMedical(profile.medicalNotes || '');
     setTempPeople(String(profile.peopleCount || 3));
+    setTempAvatar(profile.avatarUrl || '');
     setCurrentView('edit-profile');
   };
 
@@ -188,8 +209,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                     onClick={handleOpenEditProfile}
                     className="p-4 rounded-2xl bg-white dark:bg-[#0E1C2A] border border-slate-200 dark:border-[#1E3347] shadow-xs hover:border-slate-300 dark:hover:border-[#18C3D0] transition-all cursor-pointer flex items-center gap-3.5 group"
                   >
-                    <div className="w-13 h-13 rounded-full bg-[#075B8A] text-white flex items-center justify-center font-black text-xl shadow-md shrink-0 ring-4 ring-[#075B8A]/10">
-                      {avatarInitial}
+                    <div className="w-13 h-13 rounded-full bg-[#075B8A] text-white flex items-center justify-center font-black text-xl shadow-md shrink-0 ring-4 ring-[#075B8A]/10 overflow-hidden">
+                      {profile.avatarUrl ? (
+                        <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        avatarInitial
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -439,12 +464,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                         </div>
                         <div>
                           <div className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-[#075B8A] dark:group-hover:text-[#18C3D0] transition-colors flex items-center gap-1.5">
-                            <span>AEGIS Mobile App</span>
+                            <span>AEGIS ALERT app</span>
                             <span className="text-[10px] font-mono text-sky-600 dark:text-[#18C3D0] bg-sky-100 dark:bg-sky-950/50 px-1.5 py-0.2 rounded font-bold">
                               PORT 8081
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400">Open Companion Mobile Web</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">Open companion app link</div>
                         </div>
                       </div>
                       <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors" />
@@ -514,6 +539,47 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
               {/* Form */}
               <form onSubmit={handleSaveProfile} className="p-5 overflow-y-auto space-y-4 text-xs flex-1">
+                {/* Profile Photo Uploader */}
+                <div className="flex items-center gap-3.5 p-3.5 bg-slate-50 dark:bg-[#132335] rounded-2xl border border-slate-200 dark:border-[#1E3347]">
+                  <div className="w-14 h-14 rounded-full bg-[#075B8A] text-white flex items-center justify-center font-black text-xl shadow-md shrink-0 overflow-hidden">
+                    {tempAvatar ? (
+                      <img src={tempAvatar} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      tempName?.trim() ? tempName.trim()[0].toUpperCase() : 'A'
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold text-slate-900 dark:text-slate-100 mb-1">
+                      {t('settings.profilePhoto', 'Profile Photo')}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handlePhotoUpload}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3 py-1.5 rounded-xl bg-[#075B8A] hover:bg-[#0B6E9E] dark:bg-[#18C3D0] dark:hover:bg-[#14adb8] text-white dark:text-[#075B8A] font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>{tempAvatar ? t('settings.changePhoto', 'Change Photo') : t('settings.uploadPhoto', 'Upload Photo')}</span>
+                      </button>
+                      {tempAvatar && (
+                        <button
+                          type="button"
+                          onClick={() => setTempAvatar('')}
+                          className="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-bold text-[11px] transition-colors cursor-pointer"
+                        >
+                          {t('settings.removePhoto', 'Remove')}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">
                     {t('settings.fullName', 'Full Name')} *

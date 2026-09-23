@@ -2,6 +2,10 @@ import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface AegisLocationResult {
+  village?: string;
+  subdistrict?: string;
+  formattedVillage?: string;
+  isVillageLevel?: boolean;
   latitude: number;
   longitude: number;
   label: string;
@@ -102,6 +106,10 @@ export async function getResponsibleLocation(): Promise<AegisLocationResult> {
     let district: string | undefined;
     let state: string | undefined;
 
+    let village: string | undefined;
+    let subdistrict: string | undefined;
+    let formattedVillage: string | undefined;
+
     try {
       const places = await Location.reverseGeocodeAsync({
         latitude: sanitized.latitude,
@@ -109,9 +117,17 @@ export async function getResponsibleLocation(): Promise<AegisLocationResult> {
       });
       if (places && places.length > 0) {
         const place = places[0];
-        district = place.city || place.district || place.subregion || undefined;
+        village = place.name || place.street || undefined;
+        subdistrict = place.subregion || place.city || undefined;
+        district = place.district || place.city || place.subregion || undefined;
         state = place.region || place.country || undefined;
-        label = [district, state].filter(Boolean).join(", ") || label;
+
+        if (village && village !== district) {
+          formattedVillage = `Village ${village}${district ? ` • ${district}` : ''}`;
+          label = `🌾 ${formattedVillage}, ${state || 'India'}`;
+        } else {
+          label = [district, state].filter(Boolean).join(", ") || label;
+        }
       }
     } catch {
       // Geocoding non-critical
@@ -123,6 +139,10 @@ export async function getResponsibleLocation(): Promise<AegisLocationResult> {
       label,
       state,
       district,
+      village,
+      subdistrict,
+      formattedVillage,
+      isVillageLevel: Boolean(village),
       source: "gps",
       accuracyMeters: position.coords.accuracy ? Math.round(position.coords.accuracy) : undefined,
       accuracy: position.coords.accuracy ? Math.round(position.coords.accuracy) : undefined,

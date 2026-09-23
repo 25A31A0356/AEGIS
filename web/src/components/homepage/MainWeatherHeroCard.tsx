@@ -14,10 +14,20 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { useLocation } from '../../context/LocationContext';
+import { useProfile } from '../../context/ProfileContext';
 import { DataStatusIndicator } from '../common/DataStatusIndicator';
 
 export const MainWeatherHeroCard: React.FC = () => {
-  const { weather, selectedState } = useLocation();
+  const { weather, selectedLocation, selectedState, isGpsActive } = useLocation();
+  const { profile } = useProfile();
+  const userName = profile?.fullName?.trim() ? profile.fullName.trim().split(' ')[0] : 'Friend';
+  const rawVillage = selectedLocation?.village || selectedLocation?.formattedVillage || weather.cityName || 'Your Village';
+  const cleanVillageName = rawVillage
+    .replace(/^Village:?\s*/i, '')
+    .replace(/^Rural Sector\s*•\s*/i, '')
+    .split('•')[0]
+    .split('(')[0]
+    .trim();
 
   const getWeatherIcon = (code: string) => {
     switch (code) {
@@ -43,13 +53,13 @@ export const MainWeatherHeroCard: React.FC = () => {
 
       {/* Top Bar: Location Tag & Data Source Badge */}
       <div className="flex items-center justify-between gap-2 pb-4 mb-4 border-b border-white/10 relative z-10">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#A7D7E8]">
-            {weather.cityName}, {selectedState?.name || 'India'}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-bold text-white flex items-center gap-1.5">
+            Hi {userName}! 👋 &bull; Village: {cleanVillageName}
           </span>
           <span className="text-white/40">•</span>
-          <span className="text-[11px] font-mono text-[#D3E8F4]">
-            {weather.coordinates ? `[${weather.coordinates[0].toFixed(2)}°N, ${weather.coordinates[1].toFixed(2)}°E]` : ''}
+          <span className="text-[11px] font-mono text-[#D3E8F4] bg-white/15 px-2 py-0.5 rounded-full border border-white/20">
+            📍 Auto GPS
           </span>
         </div>
 

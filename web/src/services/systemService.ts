@@ -71,7 +71,7 @@ export class SystemService {
       });
       if (res && res.csrfToken) {
         if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('agies_csrf_token', res.csrfToken);
+          localStorage.setItem('aegis_csrf_token', res.csrfToken);
         }
         return res.csrfToken;
       }

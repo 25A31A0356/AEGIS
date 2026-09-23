@@ -30,6 +30,7 @@ export interface EmergencyProfile {
   secondaryContact?: EmergencyContact;
   customSosMessage: string;
   customSafeMessage: string;
+  avatarUri?: string;
 }
 
 export const DEFAULT_FAMILY_CONTACTS: FamilyContact[] = [];
@@ -49,6 +50,7 @@ export const DEFAULT_EMERGENCY_PROFILE: EmergencyProfile = {
   secondaryContact: undefined,
   customSosMessage: "EMERGENCY SOS: I need immediate help! Please dispatch rescue to my location.",
   customSafeMessage: "I am safe and secure. Sharing my location with family through AEGIS ALERT.",
+  avatarUri: "",
 };
 
 const STORAGE_KEY = "agies_emergency_profile_sec";

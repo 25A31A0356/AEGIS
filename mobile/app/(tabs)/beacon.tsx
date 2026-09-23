@@ -124,6 +124,10 @@ export default function BeaconScreen() {
 
   const scrollRef = useRef<ScrollView>(null);
   const [currentPage, setCurrentPage] = useState<0 | 1>(0);
+  const [offlineSosState, setOfflineSosState] = useState<OfflineSosState | null>(null);
+  useEffect(() => {
+    getLocalSosState().then(setOfflineSosState).catch(() => {});
+  }, []);
 
   // Rapido-style Nearby SOS Responder Hook with 7-stage lifecycle & safe check-in
   const {

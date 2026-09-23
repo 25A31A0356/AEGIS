@@ -6,7 +6,7 @@ import type { ExpoConfig } from "expo/config";
 // e.g., "my-app" created at 2024-01-15 10:30:45 -> "space.manus.my.app.t20240115103045"
 // Bundle ID can only contain letters, numbers, and dots
 // Android requires each dot-separated segment to start with a letter
-const rawBundleId = "com.app.agiesalert";
+const rawBundleId = "com.app.aegisalert";
 const bundleId =
   rawBundleId
     .replace(/[-_]/g, ".") // Replace hyphens/underscores with dots
@@ -28,8 +28,8 @@ const schemeFromBundleId = `manus${timestamp}`;
 
 const env = {
   // App branding - update these values directly (do not use env vars)
-  appName: "AGIES ALERT",
-  appSlug: "agies-alert",
+  appName: "AEGIS ALERT",
+  appSlug: "aegis-alert",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
   logoUrl: "",
@@ -92,13 +92,13 @@ const config: ExpoConfig = {
     [
       "expo-location",
       {
-        locationAlwaysAndWhenInUsePermission: "Allow AGIES ALERT to use your location for live weather, safety routes, and emergency context.",
+        locationAlwaysAndWhenInUsePermission: "Allow AEGIS ALERT to use your location for live weather, safety routes, and emergency context.",
       },
     ],
     [
       "expo-image-picker",
       {
-        photosPermission: "Allow AGIES ALERT to attach evidence images to citizen reports.",
+        photosPermission: "Allow AEGIS ALERT to attach evidence images to citizen reports.",
       },
     ],
     [

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useLocation } from '../../context/LocationContext';
 import { useDataProvider } from '../../context/DataProviderContext';
+import { useTranslation } from '../../i18n/useTranslation';
 import { HazardService } from '../../services/hazardService';
 import { AIService, AIChatResponse, AISuggestedAction, AIChatContext } from '../../services/aiService';
 import { DataStatusIndicator } from './DataStatusIndicator';
@@ -53,6 +54,7 @@ export const FloatingAskAGIES: React.FC<FloatingAskAGIESProps> = ({
 
   const { weather, selectedState, userCoordinates } = useLocation();
   const { dataMode } = useDataProvider();
+  const { dict } = useTranslation();
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -399,9 +401,7 @@ export const FloatingAskAGIES: React.FC<FloatingAskAGIESProps> = ({
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#075B8A]"></span>
           </span>
         </div>
-        <span className="font-extrabold text-xs tracking-wider uppercase font-sans text-[#075B8A]">
-          Ask AGIES
-        </span>
+        <span className="font-extrabold text-xs tracking-wider uppercase font-sans text-[#075B8A]">{dict.askAgies || "Ask AGIES"}</span>
       </button>
     </div>
   );

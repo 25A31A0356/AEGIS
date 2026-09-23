@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-primary-fixed": "#131b2e", "on-error-container": "#93000a", "surface-container": "#e5eeff", "error-container": "#ffdad6", "primary-container": "#131b2e", "surface-variant": "#d3e4fe", "surface-dim": "#cbdbf5", "on-primary": "#ffffff", "inverse-primary": "#bec6e0", "primary-fixed-dim": "#bec6e0", "surface-container-lowest": "#ffffff", "secondary-container": "#5bb8fe", "primary": "#000000", "on-tertiary-fixed": "#001e2c", "outline": "#76777d", "secondary-fixed-dim": "#93ccff", "on-secondary-fixed-variant": "#004b73", "background": "#f8f9ff", "surface-bright": "#f8f9ff", "inverse-surface": "#213145", "secondary-fixed": "#cce5ff", "on-surface": "#0b1c30", "tertiary": "#000000", "outline-variant": "#c6c6cd", "on-tertiary-container": "#008ebf", "primary-fixed": "#dae2fd", "tertiary-container": "#001e2c", "surface-container-highest": "#d3e4fe", "tertiary-fixed": "#c4e7ff", "on-error": "#ffffff", "surface-container-low": "#eff4ff", "surface": "#f8f9ff", "surface-tint": "#565e74", "on-secondary-fixed": "#001d31", "on-primary-fixed-variant": "#3f465c", "on-primary-container": "#7c839b", "tertiary-fixed-dim": "#7bd0ff", "surface-container-high": "#dce9ff", "inverse-on-surface": "#eaf1ff", "error": "#ba1a1a", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "on-background": "#0b1c30", "on-surface-variant": "#45464d", "secondary": "#006398", "on-secondary": "#ffffff", "on-tertiary-fixed-variant": "#004c69" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-sm": "0.5rem", "margin-tablet": "1.5rem", "margin-desktop": "2rem", "gutter-desktop": "1.5rem", "space-md": "1rem", "space-xs": "0.25rem", "margin": "1rem", "space-xl": "2rem", "gutter": "1rem", "space-lg": "1.5rem" }, fontFamily: { "body-sm": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "tabular-metric": ["Inter"], "label-lg": ["Inter"], "headline-xl": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-md": ["Inter"], "headline-xl-mobile": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"] }, fontSize: { "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }], "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }], "tabular-metric": ["24px", { "lineHeight": "28px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "headline-xl-mobile": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "800" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }] } } } };</script></head><body class="bg-background font-body-md text-body-md text-on-background min-h-screen"><header class="fixed top-0 left-0 right-0 w-full z-50 bg-surface/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="bg-error text-on-error px-margin-desktop py-space-xs flex items-center justify-between font-label-md text-label-md shadow-inner"><div class="flex items-center gap-space-sm overflow-hidden text-ellipsis whitespace-nowrap"><span class="material-symbols-outlined text-[18px] animate-pulse">warning</span><span class="font-label-lg text-label-lg uppercase tracking-wider font-bold text-on-error">Active Advisory:</span><span>Flash Flood Watch in Southern Districts. Water levels rising along Musi River basin. Monitor real-time telemetry.</span><a class="underline font-semibold hover:text-surface-container ml-space-xs inline-flex items-center gap-0.5" data-path="alert-center" href="#">View Advisory Details <span class="material-symbols-outlined text-[14px]">arrow_forward</span></a></div><button aria-label="Dismiss alert" class="flex items-center justify-center p-0.5 hover:bg-on-error-container/20 rounded text-on-error transition-colors"><span class="material-symbols-outlined text-[18px]">close</span></button></div><div class="h-28 w-full px-margin-desktop flex flex-col justify-between pt-space-xs pb-space-sm"><div class="flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><img alt="Aegis Alert Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1U8KVywuwP6MGi061yDxnzC6OcZEfbwVRnAW9AzGhum4pLjudqiihu6PtskXLwqfQLjkt8XwhwqIN84Ystq0u48gCWZuUOFWXMl72EgJPcCWgkx6sLxLAC1My-Yqee4VJfqewEIKnepd9fZIprhn0olldKCYKDCFv3s1zm2v5ayLapf4RGBJQHFVXUgqPI1lQICK9zq7GwuvaIaF5s2gfXx61YZSSnxZFc7j7NTqV0V6u6b_zk7972S-ko"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-bold tracking-tight text-on-surface">Aegis Alert</span><span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Tactical Command Suite</span></div></div><div class="hidden xl:flex items-center gap-space-xs"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-full text-label-sm font-label-sm"><span class="material-symbols-outlined text-secondary text-[16px]">location_on</span><span class="font-semibold text-on-surface">Hyderabad, Telangana</span></div><div class="flex items-center gap-space-xs bg-surface-container-high px-space-sm py-1 rounded-full text-label-sm font-label-sm font-semibold text-secondary"><span class="h-2 w-2 rounded-full bg-secondary animate-pulse"></span><span>KAGGLE CLOUD SYNC: ACTIVE (Private 100GB)</span></div><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-full text-label-sm font-label-sm font-medium text-on-surface-variant"><span class="h-2 w-2 rounded-full bg-secondary"></span><span>MOBILE SYNC: CONNECTED (Peer-to-Peer)</span></div></div><div class="flex items-center gap-space-md"><button aria-label="Emergency Broadcast Notifications" class="relative p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-full"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-error"></span></span></button><button aria-label="Toggle Dark/Light Mode" class="p-space-xs text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors rounded-full"><span class="material-symbols-outlined text-[20px]">light_mode</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjCv16UlcLOXvOyfG8MuluLu9OC8t_lqsOgkUSNxeCJJ4-22hkdG3oA_u4JZ-QPbD2fl-obdUFwo24Mxcitu1r5UewyagtKWsXGGAaHSXozeTujOp-yggN43eLhK8nogRbcORGhMtFLEP-h71J2huLiprHKdB10ooysr2tVJVhzH-CSoNGMsmoay_s1jPb3bZQyI7dFwyYXFWQ6T8woiwrPk2WaV_mZG0frGSXlnIwRVfXgOQ4y6CH"/><div class="hidden 2xl:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Officer Sarah Jenkins</span><span class="font-label-sm text-label-sm text-on-surface-variant">Tactical Commander</span></div></div></div></div><div class="flex items-center justify-between pt-space-xs overflow-x-auto"><nav class="flex items-center gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-semibold rounded-lg"><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="dashboard" href="#">Home / Dashboard</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="tactical-command" href="#">Tactical Command</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="live-map" href="#">Live Map</a><a aria-current="page" class="px-space-sm py-1 transition-colors whitespace-nowrap bg-surface-container-high text-on-surface font-semibold rounded-lg" data-path="kaggle-private-store" href="#">Kaggle Private Store</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="ai-emergency-triage" href="#">AI Emergency Triage</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="predictions" href="#">Predictions</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="alert-center" href="#">Alert Center</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="safety-hub" href="#">Safety Hub</a><a class="px-space-sm py-1 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors whitespace-nowrap" data-path="report-incident" href="#">Report Incident</a></nav><div class="hidden lg:flex items-center gap-space-xs font-label-sm text-label-sm text-secondary bg-surface-container-low px-space-sm py-0.5 rounded"><span class="h-2 w-2 rounded-full bg-secondary animate-pulse"></span><span>TELEMETRY (0.4s)</span></div></div></div></header><main class="w-full pt-28 bg-background min-h-[calc(100vh-280px)]"><div class="flex flex-col w-full">
+<div class="px-margin-desktop py-space-lg max-w-[1680px] mx-auto w-full space-y-space-lg">
+<!-- Top Architecture & Quota Overview Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-stretch">
+<!-- Primary Status & Storage Quota Card -->
+<div class="xl:col-span-8 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-secondary-container/15 blur-3xl pointer-events-none"></div>
+<div class="space-y-space-md relative z-10">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm uppercase tracking-wider">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                Kaggle Datasets API v1
+              </span>
+<span class="inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+                AES-256-GCM Encrypted
+              </span>
+<span class="hidden sm:inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+                Verified Disaster Vault
+              </span>
+</div>
+<div class="flex items-center gap-space-xs text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Next Snapshot: in 24m (30m cadence)</span>
+</div>
+</div>
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Kaggle Private Storage Hub &amp; Disaster Cloud Backup</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl mt-1">
+              Autonomous dual-layer data pipeline bridging browser-level persistent IndexedDB storage with Kaggle’s 100GB zero-cost private dataset infrastructure. Built for zero-loss telemetry during cellular outages and real-time tactical analytics.
+            </p>
+</div>
+<!-- Capacity Bar & Metrics -->
+<div class="bg-surface-container-low rounded-lg p-space-md space-y-space-sm">
+<div class="flex flex-wrap items-baseline justify-between gap-space-xs">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-tabular-metric text-tabular-metric text-on-surface font-bold">1.42 GB</span>
+<span class="font-label-md text-label-md text-on-surface-variant">committed of 100.00 GB private allocation</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-secondary bg-surface-container px-space-sm py-0.5 rounded-full">
+                1.42% Used • 98.58 GB Available
+              </span>
+</div>
+<!-- Progress Meter -->
+<div class="w-full h-3 rounded-full bg-surface-container overflow-hidden p-0.5">
+<div class="h-full rounded-full bg-secondary transition-all duration-500" style="width: 1.42%"></div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-sm pt-space-xs">
+<div class="bg-surface-container-lowest p-space-sm rounded">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Current Version</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-1">
+                  v42 <span class="text-secondary text-[12px] font-normal">#build-8921</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Last Synced</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">6 mins ago</div>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">Pending Queue</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold text-secondary">38 Records</div>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase">API Throughput</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">4.8 MB/s</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Ribbon -->
+<div class="pt-space-md mt-space-md flex flex-wrap items-center gap-space-sm relative z-10">
+<button class="bg-primary text-on-primary hover:opacity-90 px-space-md py-2 rounded-lg font-label-lg text-label-lg font-semibold flex items-center gap-space-xs shadow-sm transition-all active:scale-95" id="btn-force-sync">
+<span class="material-symbols-outlined text-[18px]">cloud_sync</span>
+<span>Force Sync to Kaggle Now</span>
+</button>
+<button class="bg-surface-container-high text-on-surface hover:bg-surface-container font-label-lg text-label-lg font-semibold px-space-md py-2 rounded-lg flex items-center gap-space-xs transition-all" id="btn-download-bundle">
+<span class="material-symbols-outlined text-[18px]">folder_zip</span>
+<span>Download Dataset Bundle (.zip)</span>
+</button>
+<button class="bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-lg text-label-lg px-space-md py-2 rounded-lg flex items-center gap-space-xs transition-colors" onclick="document.getElementById('file-token-input').click()">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+<span>Upload kaggle.json</span>
+</button>
+<input accept=".json" class="hidden" id="file-token-input" type="file"/>
+<a class="ml-auto text-secondary hover:underline font-label-md text-label-md flex items-center gap-1" href="#">
+<span>Manage Kaggle API Keys</span>
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Kaggle Configuration & Handshake Diagnostic Card -->
+<div class="xl:col-span-4 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div class="space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[24px]">key_vertical</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">API Credentials</h2>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-secondary text-label-sm font-label-sm font-semibold">Active • Private</span>
+</div>
+<div class="space-y-space-sm text-body-sm font-body-sm">
+<div class="bg-surface-container-low p-space-sm rounded space-y-1">
+<div class="text-on-surface-variant font-label-sm text-label-sm uppercase">Kaggle Target Slug</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold truncate flex items-center justify-between">
+<span id="repo-slug">aegis-disaster-response/aegis-alert-live-telemetry</span>
+<button class="text-secondary hover:text-on-surface" onclick="navigator.clipboard.writeText('aegis-disaster-response/aegis-alert-live-telemetry')" title="Copy dataset slug">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-xs">
+<div class="bg-surface-container-low p-space-sm rounded">
+<div class="text-on-surface-variant font-label-sm text-label-sm uppercase">Username</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">aegis-disaster-response</div>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded">
+<div class="text-on-surface-variant font-label-sm text-label-sm uppercase">Auth Token</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold tracking-wider">••••••••3f8a</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded flex items-center justify-between">
+<div>
+<div class="text-on-surface-variant font-label-sm text-label-sm uppercase">Visibility Policy</div>
+<div class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">visibility_off</span>
+<span>Restricted Org Members Only</span>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Private</span>
+</div>
+</div>
+<!-- Drag and Drop Target -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-all flex flex-col items-center justify-center text-center cursor-pointer group" id="drop-zone">
+<span class="material-symbols-outlined text-secondary text-[32px] group-hover:scale-110 transition-transform">cloud_upload</span>
+<div class="font-label-md text-label-md font-semibold text-on-surface mt-1">Drop updated kaggle.json token</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">or paste base64 encoded API secrets directly</div>
+</div>
+</div>
+<div class="pt-space-sm flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">verified_user</span>
+<span>Zero Data Leak Guarantee</span>
+</span>
+<a class="text-secondary font-label-sm text-label-sm font-semibold hover:underline" href="#">Revoke Key</a>
+</div>
+</div>
+</div>
+<!-- Section 2: Automated Dataset Packager & File Registry -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[24px]">inventory_2</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Dataset Manifest &amp; Packaged Telemetry Files</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Standardized operational data tables synced to Kaggle via headless worker threads. Pre-validated against IMD &amp; NDMA disaster schema definitions.
+          </p>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md font-semibold px-space-md py-2 rounded-lg flex items-center gap-1 transition-colors" id="btn-validate-all">
+<span class="material-symbols-outlined text-[16px] text-secondary">fact_check</span>
+<span>Validate All Schemas</span>
+</button>
+<button class="bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md font-semibold px-space-md py-2 rounded-lg flex items-center gap-1 transition-colors" id="btn-rebuild-archive">
+<span class="material-symbols-outlined text-[16px]">build_circle</span>
+<span>Re-package Manifest</span>
+</button>
+</div>
+</div>
+<!-- File Registry Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+<!-- File Card 1: incidents.csv -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
+<div class="space-y-space-xs">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">table_chart</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">incidents.csv</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">2.4 MB</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Crowd-sourced hazard pings, GPS lat/long centroids, severity hazard score, structural damage verification.
+            </p>
+<div class="flex items-center gap-space-md text-body-sm font-body-sm text-on-surface-variant pt-space-xs">
+<span><strong>18,492</strong> records</span>
+<span>•</span>
+<span>CSV (RFC 4180)</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<button class="text-secondary hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-0.5" onclick="previewFile('incidents.csv', 'Incident Records', '18,492')">
+<span class="material-symbols-outlined text-[16px]">visibility</span> Preview
+            </button>
+<div class="flex items-center gap-space-xs">
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded" onclick="showToast('Schema validated: incidents.csv conforms to GeoSpatial Geo-CSV v2')" title="Check Schema">
+<span class="material-symbols-outlined text-[18px]">rule</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded" onclick="downloadMock('incidents.csv', 'text/csv')" title="Download CSV">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+</div>
+<!-- File Card 2: sos_beacons.json -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
+<div class="space-y-space-xs">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-error text-[22px]">emergency</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">sos_beacons.json</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-error font-label-sm text-label-sm font-semibold">1.1 MB</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              High-priority distress triggers, battery telemetry, offline acoustic classification, dispatch routing flags.
+            </p>
+<div class="flex items-center gap-space-md text-body-sm font-body-sm text-on-surface-variant pt-space-xs">
+<span><strong>4,120</strong> distress triggers</span>
+<span>•</span>
+<span>JSON Array</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<button class="text-secondary hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-0.5" onclick="previewFile('sos_beacons.json', 'SOS Distress Beacons', '4,120')">
+<span class="material-symbols-outlined text-[16px]">visibility</span> Preview
+            </button>
+<div class="flex items-center gap-space-xs">
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded" onclick="showToast('Schema validated: sos_beacons.json complies with CAP v1.2')" title="Check Schema">
+<span class="material-symbols-outlined text-[18px]">rule</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded" onclick="downloadMock('sos_beacons.json', 'application/json')" title="Download JSON">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+</div>
+<!-- File Card 3: safepings_network.csv -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
+<div class="space-y-space-xs">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">diversity_1</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">safepings_network.csv</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">3.8 MB</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Family safety ring acknowledgments, mesh peer-to-peer relay checks, automated responder heartbeat telemetry.
+            </p>
+<div class="flex items-center gap-space-md text-body-sm font-body-sm text-on-surface-variant pt-space-xs">
+<span><strong>32,910</strong> check-ins</span>
+<span>•</span>
+<span>Graph Edges / CSV</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<button class="text-secondary hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-0.5" onclick="previewFile('safepings_network.csv', 'SafePing Mesh Log', '32,910')">
+<span class="material-symbols-outlined text-[16px]">visibility</span> Preview
+            </button>
+<div class="flex items-center gap-space-xs">
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded" onclick="showToast('Schema validated: safepings_network.csv validated')" title="Check Schema">
+<span class="material-symbols-outlined text-[18px]">rule</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded" onclick="downloadMock('safepings_network.csv', 'text/csv')" title="Download CSV">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+</div>
+<!-- File Card 4: ml_triage_logs.json -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
+<div class="space-y-space-xs">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">neurology</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">ml_triage_logs.json</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">5.2 MB</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              In-browser TreeSHAP inference vectors, on-device Whisper acoustic summaries, medical triage urgency ratings.
+            </p>
+<div class="flex items-center gap-space-md text-body-sm font-body-sm text-on-surface-variant pt-space-xs">
+<span><strong>9,840</strong> inferences</span>
+<span>•</span>
+<span>Nested JSON</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<button class="text-secondary hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-0.5" onclick="previewFile('ml_triage_logs.json', 'ML Triage Explanations', '9,840')">
+<span class="material-symbols-outlined text-[16px]">visibility</span> Preview
+            </button>
+<div class="flex items-center gap-space-xs">
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded" onclick="showToast('Schema validated: ml_triage_logs.json model weights valid')" title="Check Schema">
+<span class="material-symbols-outlined text-[18px]">rule</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded" onclick="downloadMock('ml_triage_logs.json', 'application/json')" title="Download JSON">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+</div>
+<!-- File Card 5: sensor_telemetry.parquet -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
+<div class="space-y-space-xs">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">database</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">sensor_telemetry.parquet</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">18.6 MB</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              High-frequency Musi river flow gauges, ultrasonic bridge depth sensors, IMD Doppler radar reflectivity grids.
+            </p>
+<div class="flex items-center gap-space-md text-body-sm font-body-sm text-on-surface-variant pt-space-xs">
+<span><strong>140,200</strong> time-series</span>
+<span>•</span>
+<span>Apache Parquet Snappy</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<button class="text-secondary hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-0.5" onclick="previewFile('sensor_telemetry.parquet', 'Sensor Telemetry', '140,200')">
+<span class="material-symbols-outlined text-[16px]">visibility</span> Preview
+            </button>
+<div class="flex items-center gap-space-xs">
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded" onclick="showToast('Schema validated: Snappy compressed column metadata intact')" title="Check Schema">
+<span class="material-symbols-outlined text-[18px]">rule</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded" onclick="downloadMock('sensor_telemetry.parquet', 'application/octet-stream')" title="Download Parquet">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+</div>
+<!-- File Card 6: dataset-metadata.json -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col justify-between space-y-space-sm hover:shadow-md transition-shadow">
+<div class="space-y-space-xs">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">code</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">dataset-metadata.json</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">4 KB</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Kaggle API v1 descriptor defining tags (<code class="bg-surface-container px-1 py-0.5 rounded text-[11px]">disaster-response</code>, <code class="bg-surface-container px-1 py-0.5 rounded text-[11px]">hydrology-ml</code>), CC-BY-4.0 license, and access tokens.
+            </p>
+<div class="flex items-center gap-space-md text-body-sm font-body-sm text-on-surface-variant pt-space-xs">
+<span><strong>Metadata Manifest</strong></span>
+<span>•</span>
+<span>Kaggle Spec</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<button class="text-secondary hover:text-on-surface font-label-md text-label-md font-semibold flex items-center gap-0.5" onclick="previewFile('dataset-metadata.json', 'Kaggle Spec Metadata', 'Manifest')">
+<span class="material-symbols-outlined text-[16px]">visibility</span> Preview
+            </button>
+<div class="flex items-center gap-space-xs">
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded" onclick="showToast('Schema validated: dataset-metadata matches kaggle.yaml rules')" title="Check Schema">
+<span class="material-symbols-outlined text-[18px]">rule</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded" onclick="downloadMock('dataset-metadata.json', 'application/json')" title="Download JSON">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Live Data Stream & Interactive Buffer Table -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[24px]">stream</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Live IndexedDB Pipeline &amp; Kaggle Ingestion Buffer</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Live browser-cached records pending next auto-sync upload snapshot.
+          </p>
+</div>
+<!-- Filter and Search -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<div class="relative min-w-[240px]">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container transition-colors" id="stream-search" placeholder="Filter UUID, coordinates, payload..." type="text"/>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg">
+<button class="filter-pill active px-space-sm py-1 rounded font-label-sm text-label-sm bg-surface-container-lowest text-on-surface font-semibold shadow-sm" data-filter="all">All (38)</button>
+<button class="filter-pill px-space-sm py-1 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface font-semibold" data-filter="SOS">SOS (8)</button>
+<button class="filter-pill px-space-sm py-1 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface font-semibold" data-filter="Incident">Incidents (14)</button>
+<button class="filter-pill px-space-sm py-1 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface font-semibold" data-filter="Gauge">Sensors (16)</button>
+</div>
+</div>
+</div>
+<!-- Live Stream Table -->
+<div class="overflow-x-auto rounded-lg">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-sm px-space-md">Timestamp</th>
+<th class="py-space-sm px-space-md font-mono">Record UUID</th>
+<th class="py-space-sm px-space-md">Stream Stream</th>
+<th class="py-space-sm px-space-md">Severity</th>
+<th class="py-space-sm px-space-md">Geo Centroid</th>
+<th class="py-space-sm px-space-md">Payload Snapshot</th>
+<th class="py-space-sm px-space-md text-right">Cloud Sync State</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container" id="telemetry-table-body">
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-space-sm px-space-md font-mono text-on-surface whitespace-nowrap">14:48:12.104</td>
+<td class="py-space-sm px-space-md font-mono text-secondary font-semibold">hyd-sos-8910-c3</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">emergency</span> SOS Distress
+                </span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-bold">
+                  Tier 4 Critical
+                </span>
+</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface-variant">17.3616° N, 78.4747° E</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface truncate max-w-xs" title="{ water_level: 1.82m, people_stranded: 4, audio_triaged: true }">
+                { water_level: 1.82m, people: 4, acoustic: distress }
+              </td>
+<td class="py-space-sm px-space-md text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 text-secondary font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                  Queued in Local Buffer
+                </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-space-sm px-space-md font-mono text-on-surface whitespace-nowrap">14:47:55.882</td>
+<td class="py-space-sm px-space-md font-mono text-secondary font-semibold">hyd-inc-4022-f1</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px] text-secondary">report_problem</span> Incident
+                </span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">
+                  Tier 2 Moderate
+                </span>
+</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface-variant">17.3850° N, 78.4867° E</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface truncate max-w-xs" title="{ hazard: 'road_submersion', depth_cm: 65, obstruction: true }">
+                { hazard: 'road_submersion', depth_cm: 65 }
+              </td>
+<td class="py-space-sm px-space-md text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 text-secondary font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                  Queued in Local Buffer
+                </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-space-sm px-space-md font-mono text-on-surface whitespace-nowrap">14:46:31.002</td>
+<td class="py-space-sm px-space-md font-mono text-secondary font-semibold">hyd-gau-0094-a9</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">waves</span> River Gauge
+                </span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm font-semibold">
+                  Tier 3 Severe
+                </span>
+</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface-variant">17.3591° N, 78.4682° E</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface truncate max-w-xs" title="{ discharge_cumecs: 1420, velocity_ms: 3.4, saturation: 94% }">
+                { discharge: 1420 cumecs, vel: 3.4 m/s }
+              </td>
+<td class="py-space-sm px-space-md text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">cloud_done</span>
+                  Synced to Kaggle v42
+                </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-space-sm px-space-md font-mono text-on-surface whitespace-nowrap">14:45:10.420</td>
+<td class="py-space-sm px-space-md font-mono text-secondary font-semibold">hyd-safe-1102-d5</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">safety_check</span> SafePing
+                </span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-medium">
+                  Tier 0 Normal
+                </span>
+</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface-variant">17.4410° N, 78.3912° E</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface truncate max-w-xs" title="{ circle_id: 'fam-889', members_safe: 6, battery: 92% }">
+                { circle: 'fam-889', members_safe: 6 }
+              </td>
+<td class="py-space-sm px-space-md text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">cloud_done</span>
+                  Synced to Kaggle v42
+                </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-space-sm px-space-md font-mono text-on-surface whitespace-nowrap">14:44:02.771</td>
+<td class="py-space-sm px-space-md font-mono text-secondary font-semibold">hyd-gau-0095-b2</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">waves</span> River Gauge
+                </span>
+</td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">
+                  Tier 2 Moderate
+                </span>
+</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface-variant">17.3700° N, 78.4800° E</td>
+<td class="py-space-sm px-space-md font-mono text-on-surface truncate max-w-xs" title="{ discharge_cumecs: 910, velocity_ms: 2.1, saturation: 82% }">
+                { discharge: 910 cumecs, vel: 2.1 m/s }
+              </td>
+<td class="py-space-sm px-space-md text-right whitespace-nowrap">
+<span class="inline-flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">cloud_done</span>
+                  Synced to Kaggle v42
+                </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex flex-wrap items-center justify-between text-body-sm font-body-sm text-on-surface-variant pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<span>Showing 5 of 38 active buffer records</span>
+<span>•</span>
+<span class="text-secondary font-semibold">Local Storage Ingestion Speed: 0.12ms/write</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold">Previous</button>
+<span class="font-label-sm text-label-sm font-mono px-2">Page 1 of 8</span>
+<button class="px-space-sm py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold">Next</button>
+</div>
+</div>
+</div>
+<!-- Section 4: Client-Side Offline Storage, Instant Exports & Architectural Trust -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+<!-- Client Storage & Instant Export Suite -->
+<div class="xl:col-span-6 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md flex flex-col justify-between">
+<div class="space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[24px]">save</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Client Persistent Storage &amp; Export Toolkit</h2>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">Unevictable Cache</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            Aegis Alert implements browser-level <strong class="text-on-surface">IndexedDB Storage Manager API</strong> with persistent storage rights, guaranteeing zero browser eviction even during low-memory conditions.
+          </p>
+<!-- Storage Gauge & Status -->
+<div class="bg-surface-container-low p-space-md rounded-lg space-y-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface font-semibold">IndexedDB Allocated Quota</span>
+<span class="text-secondary font-bold">2.00 GB Max Persistent</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full rounded-full bg-secondary" style="width: 15.6%"></div>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant pt-0.5">
+<span>Current Cache: 312 MB</span>
+<span>15.6% Consumed</span>
+</div>
+</div>
+<!-- Instant Exports Grid -->
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<button class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container text-left transition-colors flex items-start gap-space-xs" onclick="downloadExport('csv')">
+<span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">description</span>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-surface">Export Raw CSV</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Combined multi-hazard streams</div>
+</div>
+</button>
+<button class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container text-left transition-colors flex items-start gap-space-xs" onclick="downloadExport('geojson')">
+<span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">public</span>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-surface">Geocoded GeoJSON</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">GIS &amp; QGIS ready layer export</div>
+</div>
+</button>
+<button class="p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container text-left transition-colors flex items-start gap-space-xs" onclick="downloadExport('sqlite')">
+<span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">storage</span>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-surface">SQLite Database Dump</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Full relational offline database</div>
+</div>
+</button>
+<button class="p-space-sm rounded-lg bg-error-container hover:opacity-90 text-left transition-colors flex items-start gap-space-xs" onclick="confirmPurge()">
+<span class="material-symbols-outlined text-on-error-container text-[20px] mt-0.5">delete_forever</span>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-error-container">Purge Synced Cache</div>
+<div class="font-body-sm text-body-sm text-on-error-container/80">Keep only un-uploaded logs</div>
+</div>
+</button>
+</div>
+</div>
+<div class="pt-space-sm border-t-0 flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Worker: ServiceWorker Cache API [Online]</span>
+<span class="text-secondary font-mono">IDB_DISASTER_CACHE_V4</span>
+</div>
+</div>
+<!-- Offline-First Resilience Technical Architecture Note -->
+<div class="xl:col-span-6 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md flex flex-col justify-between">
+<div class="space-y-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[24px]">offline_bolt</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Offline-First Resilience Architecture</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            During acute flash floods or cyclones, commercial telecommunications often collapse. Aegis Alert guarantees data survivability through an asynchronous 3-stage relay pipeline:
+          </p>
+<div class="space-y-space-sm">
+<div class="flex items-start gap-space-sm p-space-sm rounded-lg bg-surface-container-low">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-label-md text-label-md font-bold text-secondary flex-shrink-0">
+                1
+              </div>
+<div class="space-y-0.5">
+<div class="font-label-md text-label-md font-bold text-on-surface">Zero-Latency IndexedDB Ingestion</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Incoming GPS beacons, field responder photos, and sensor telemetry are committed to non-volatile local IndexedDB in under 1ms, completely independent of network connectivity.
+                </p>
+</div>
+</div>
+<div class="flex items-start gap-space-sm p-space-sm rounded-lg bg-surface-container-low">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-label-md text-label-md font-bold text-secondary flex-shrink-0">
+                2
+              </div>
+<div class="space-y-0.5">
+<div class="font-label-md text-label-md font-bold text-on-surface">Peer-to-Peer Mesh Sync</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  If cell towers go dark, devices negotiate local WebRTC mesh connections across Wi-Fi Direct and Bluetooth LE, cross-replicating critical SOS beacons across neighboring units.
+                </p>
+</div>
+</div>
+<div class="flex items-start gap-space-sm p-space-sm rounded-lg bg-surface-container-low">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-label-md text-label-md font-bold text-secondary flex-shrink-0">
+                3
+              </div>
+<div class="space-y-0.5">
+<div class="font-label-md text-label-md font-bold text-on-surface">Automated Kaggle Cloud Handshake</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Once backhaul or satellite links restore, a background web worker bundles new delta records into compressed archives, automatically triggering Kaggle API multipart version uploads without operator manual intervention.
+                </p>
+</div>
+</div>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container flex items-center gap-space-sm text-on-surface">
+<span class="material-symbols-outlined text-secondary text-[20px] flex-shrink-0">shield_with_heart</span>
+<span class="font-body-sm text-body-sm leading-tight">
+<strong>Kaggle Cloud Guarantee:</strong> 100GB of permanently free storage with direct Python / Pandas access for researchers and disaster rescue squads globally.
+          </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Modal for File Preview -->
+<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-space-md" id="preview-modal">
+<div class="bg-surface-container-lowest rounded-xl max-w-3xl w-full p-space-lg shadow-xl space-y-space-md max-h-[921px] flex flex-col">
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[22px]">data_object</span>
+<h3 class="font-headline-md text-headline-md text-on-surface" id="modal-title">File Inspection</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant" id="modal-subtitle">Displaying sample schema payload</p>
+</div>
+<button class="p-1 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container" onclick="closePreview()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-md overflow-x-auto flex-1 font-mono text-body-sm text-on-surface">
+<pre class="leading-relaxed whitespace-pre-wrap" id="modal-code-content"></pre>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Validated against Kaggle Datasets API Spec</span>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-md py-2 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md font-semibold hover:bg-surface-container" onclick="closePreview()">Close</button>
+<button class="px-space-md py-2 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg font-semibold hover:opacity-90" id="modal-download-btn">Download Raw File</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Toast Notification -->
+<div class="fixed bottom-8 right-8 z-50 bg-primary text-on-primary px-space-md py- space-sm rounded-lg shadow-xl font-label-md text-label-md flex items-center gap-space-xs transition-transform transform translate-y-32 opacity-0 pointer-events-none" id="toast">
+<span class="material-symbols-outlined text-secondary text-[20px]" id="toast-icon">check_circle</span>
+<span id="toast-text">Action executed successfully.</span>
+</div>
+<script>
+    // Mock Data Handlers & Micro Interactions
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-text');
+      const icon = document.getElementById('toast-icon');
+      
+      text.innerText = message;
+      icon.innerText = isError ? 'warning' : 'check_circle';
+      icon.className = isError ? 'material-symbols-outlined text-error text-[20px]' : 'material-symbols-outlined text-secondary text-[20px]';
+      
+      toast.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3500);
+    }
+
+    // Force Sync Simulation
+    document.getElementById('btn-force-sync').addEventListener('click', function() {
+      const btn = this;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span>Syncing with Kaggle...</span>';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        showToast('Snapshot v43 generated! Kaggle Private Dataset updated with 38 pending buffer entries.');
+      }, 2200);
+    });
+
+    // Download Complete Zip Simulation
+    document.getElementById('btn-download-bundle').addEventListener('click', function() {
+      showToast('Compiling 6 dataset tables into aegis-telemetry-v42.zip...');
+      setTimeout(() => {
+        downloadMock('aegis-telemetry-v42.zip', 'application/zip');
+      }, 1000);
+    });
+
+    // File Preview Modal Handling
+    const mockPayloads = {
+      'incidents.csv': `id,latitude,longitude,severity_tier,hazard_type,reported_at,verified,responder_assigned\\nhyd-inc-4022-f1,17.3850,78.4867,2,road_submersion,2025-10-14T14:47:55Z,true,NDRF-SEC-12\\nhyd-inc-4021-e8,17.3821,78.4820,3,embankment_overflow,2025-10-14T14:40:12Z,true,SDRF-BOAT-04\\nhyd-inc-4020-a2,17.3910,78.4901,1,drainage_choke,2025-10-14T14:32:00Z,false,GHMC-MAINT-89`,
+      'sos_beacons.json': `[\\n  {\\n    "uuid": "hyd-sos-8910-c3",\\n    "lat": 17.3616,\\n    "lon": 78.4747,\\n    "water_level_meters": 1.82,\\n    "occupants": 4,\\n    "acoustic_urgency_score": 0.94,\\n    "battery_percent": 34,\\n    "mesh_hops": 2,\\n    "status": "UNCONTAINED"\\n  }\\n]`,
+      'safepings_network.csv': `node_id,circle_id,status,last_ping,signal_dbm,relayed_via\\nsafe-user-892,fam-circle-44,SAFE,2025-10-14T14:45:10Z,-78,BLE-MESH-NODE-4\\nsafe-user-893,fam-circle-44,SAFE,2025-10-14T14:45:08Z,-82,BLE-MESH-NODE-4`,
+      'ml_triage_logs.json': `{\\n  "inference_id": "inf-9981",\\n  "model": "TreeSHAP-HazardTiers-v4",\\n  "features": {\\n    "rainfall_accum_6h_mm": 142.4,\\n    "river_gauge_velocity_ms": 3.4,\\n    "terrain_elevation_m": 492.0\\n  },\\n  "shap_values": { "rainfall": 0.58, "velocity": 0.28, "terrain": -0.14 },\\n  "tier_prediction": "Tier-4-FlashFlood"\\n}`,
+      'sensor_telemetry.parquet': `// Binary Apache Parquet [Snappy Compressed Data]\\n// Columns: sensor_id [int64], timestamp [timestamp_ms], gauge_cumecs [float64], saturation_pct [float32]\\n// Row Count: 140,200 | Dictionary Encoded`,
+      'dataset-metadata.json': `{\\n  "title": "Aegis Alert Real-time Disaster Telemetry",\\n  "id": "aegis-disaster-response/aegis-alert-live-telemetry",\\n  "licenses": [{ "name": "CC-BY-4.0" }],\\n  "keywords": ["disaster-response", "emergency-management", "hydrology-ml", "flash-flood", "telemetry"]\\n}`
+    };
+
+    function previewFile(fileName, title, records) {
+      document.getElementById('modal-title').innerText = fileName + ' — ' + title;
+      document.getElementById('modal-subtitle').innerText = 'Total records: ' + records + ' • Synchronized to Kaggle Cloud Hub';
+      document.getElementById('modal-code-content').innerText = mockPayloads[fileName] || '// No preview data available';
+      document.getElementById('modal-download-btn').onclick = function() {
+        downloadMock(fileName, 'text/plain');
+      };
+      document.getElementById('preview-modal').classList.remove('hidden');
+    }
+
+    function closePreview() {
+      document.getElementById('preview-modal').classList.add('hidden');
+    }
+
+    function downloadMock(filename, mime) {
+      const content = mockPayloads[filename] || 'Mock telemetry file payload';
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Downloading ' + filename);
+    }
+
+    function downloadExport(type) {
+      showToast('Generating ' + type.toUpperCase() + ' client export from local IndexedDB...');
+      setTimeout(() => {
+        downloadMock('aegis-export-' + Date.now() + '.' + type, 'application/octet-stream');
+      }, 700);
+    }
+
+    function confirmPurge() {
+      if (confirm("Purge local browser cache? Only already-synchronized records (Kaggle v42) will be cleared. Pending records will remain intact.")) {
+        showToast('Local IndexedDB cleared. 312 MB recovered.');
+      }
+    }
+
+    // Drag and Drop simulation
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('bg-surface-container');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('bg-surface-container');
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('bg-surface-container');
+      showToast('kaggle.json token parsed and validated successfully.');
+    });
+    dropZone.addEventListener('click', () => {
+      document.getElementById('file-token-input').click();
+    });
+
+    document.getElementById('file-token-input').addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        showToast('Validated token: ' + e.target.files[0].name + ' (API Key Authenticated)');
+      }
+    });
+
+    // Stream Table Filter Pills
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', function() {
+        document.querySelectorAll('.filter-pill').forEach(p => {
+          p.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+          p.classList.add('text-on-surface-variant');
+        });
+        this.classList.remove('text-on-surface-variant');
+        this.classList.add('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+        showToast('Applied table filter: ' + this.dataset.filter);
+      });
+    });
+
+    // Stream Search Filter Handler
+    document.getElementById('stream-search').addEventListener('input', function(e) {
+      const q = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('#telemetry-table-body tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+  </script>
+</div></main><footer class="w-full bg-surface-container-low text-on-surface-variant py-space-xl"><div class="w-full px-margin-desktop space-y-space-lg"><div class="p-space-md bg-surface-container rounded-lg flex items-start gap-space-sm text-on-surface"><span class="material-symbols-outlined text-secondary text-[22px] flex-shrink-0 mt-0.5">verified_user</span><p class="font-body-sm text-body-sm leading-relaxed"><strong class="font-semibold">Official Tactical Intelligence Notice:</strong> Emergency telemetry, predictive projections, and alert hazard tiers displayed are calculated for operational preparedness. Critical public instructions and evacuation mandates should always be verified through official NDRF, IMD, or State Disaster Management Authorities before field execution.</p></div><div class="flex flex-col md:flex-row items-center justify-between gap-space-md pt-space-sm"><div class="flex flex-wrap items-center gap-space-lg"><a class="font-label-md text-label-md hover:text-on-surface transition-colors" data-path="safety-hub" href="#">Safety Guidelines</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">Privacy Framework</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">Security &amp; Cryptographic Sync</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" href="#">API Docs</a><a class="font-label-md text-label-md hover:text-on-surface transition-colors" data-path="kaggle-private-store" href="#">Kaggle Private Store</a></div><div class="flex items-center gap-space-sm bg-surface-container px-space-md py-space-xs rounded-full"><span class="h-2 w-2 rounded-full bg-secondary animate-pulse"></span><span class="font-label-sm text-label-sm font-semibold text-on-surface">Kaggle Private Cloud Sync • 100GB Active</span></div></div><div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-xs font-label-sm text-label-sm text-outline"><p>© 2025 Aegis Alert Disaster Intelligence System. Autonomous Multi-Hazard Risk Operating Environment.</p><p>Node ID: HYD-SEC-09 • Encryption: AES-256 GCM • Kaggle Sync: Active • Sensor Feed: Live</p></div></div></footer></body></html>

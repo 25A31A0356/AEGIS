@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { HazardFilterBar } from '../components/hazards/HazardFilterBar';
-import { HazardCard } from '../components/hazards/HazardCard';
+import { useLocation } from '../context/LocationContext';
 import { HazardDetailModal } from '../components/hazards/HazardDetailModal';
 import { AlertManagementModal } from '../components/hazards/AlertManagementModal';
 import { HazardService, HazardFilterOptions } from '../services/hazardService';
 import { HazardItem } from '../types/hazard';
-import { AlertTriangle, Radio } from 'lucide-react';
 
 interface HazardsPageProps {
   onNavigate: (tab: string) => void;
@@ -18,6 +16,14 @@ export const HazardsPage: React.FC<HazardsPageProps> = ({
   preSelectedHazardId,
   initialCategory,
 }) => {
+  const { selectedLocation, weather } = useLocation();
+  const [severityFilter, setSeverityFilter] = useState<'ALL' | 'CRITICAL' | 'WARNING' | 'MODERATE' | 'SAFE'>('ALL');
+  const [activeModalHazard, setActiveModalHazard] = useState<HazardItem | null>(null);
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState<string | null>(null);
+
+  const cityName = selectedLocation?.name || weather?.cityName || 'Visakhapatnam';
+
   const [filters, setFilters] = useState<HazardFilterOptions>({
     category: (initialCategory as any) || 'all',
     severity: 'all',
@@ -26,8 +32,7 @@ export const HazardsPage: React.FC<HazardsPageProps> = ({
     searchQuery: '',
   });
 
-  const [activeModalHazard, setActiveModalHazard] = useState<HazardItem | null>(null);
-  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [hazardsList, setHazardsList] = useState<HazardItem[]>(() => HazardService.filterHazards(filters));
 
   useEffect(() => {
     if (preSelectedHazardId) {
@@ -37,23 +42,12 @@ export const HazardsPage: React.FC<HazardsPageProps> = ({
   }, [preSelectedHazardId]);
 
   useEffect(() => {
-    if (initialCategory) {
-      setFilters((prev) => ({ ...prev, category: initialCategory as any }));
-    }
-  }, [initialCategory]);
-
-  const [hazardsList, setHazardsList] = useState<HazardItem[]>(() => HazardService.filterHazards(filters));
-  const [metrics, setMetrics] = useState(() => HazardService.getMetricsSummary());
-
-  useEffect(() => {
     HazardService.fetchLiveHazards().then(() => {
       setHazardsList(HazardService.filterHazards(filters));
-      setMetrics(HazardService.getMetricsSummary());
     }).catch(console.error);
 
     const unsubscribe = HazardService.subscribe(() => {
       setHazardsList(HazardService.filterHazards(filters));
-      setMetrics(HazardService.getMetricsSummary());
     });
     return unsubscribe;
   }, []);
@@ -62,86 +56,201 @@ export const HazardsPage: React.FC<HazardsPageProps> = ({
     setHazardsList(HazardService.filterHazards(filters));
   }, [filters]);
 
+  const filteredAlerts = hazardsList.filter((h: HazardItem) => {
+    if (severityFilter === 'ALL') return true;
+    return h.severity.toUpperCase() === severityFilter;
+  });
+
+  const handleAudioTTS = (alert: HazardItem) => {
+    if ('speechSynthesis' in window) {
+      if (isAudioPlaying === alert.id) {
+        window.speechSynthesis.cancel();
+        setIsAudioPlaying(null);
+        return;
+      }
+      const textToRead = `Emergency warning for ${alert.location?.district || cityName}. ${alert.title}. ${alert.description}. Urgency: ${alert.severity}. Recommended actions: Evacuate low-lying areas and follow civil defense advisories.`;
+      const utterance = new SpeechSynthesisUtterance(textToRead);
+      utterance.rate = 0.95;
+      utterance.onend = () => setIsAudioPlaying(null);
+      utterance.onerror = () => setIsAudioPlaying(null);
+      window.speechSynthesis.speak(utterance);
+      setIsAudioPlaying(alert.id);
+    }
+  };
+
+  const criticalCount = hazardsList.filter(h => h.severity === 'critical').length;
+  const warningCount = hazardsList.filter(h => h.severity === 'warning').length;
+  const advisoryCount = hazardsList.filter(h => h.severity === 'moderate' || h.severity === 'minor').length;
+
   return (
-    <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200 shadow-card">
+    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+      <div className="stitch-card p-6 bg-[#131f3d]/90 border-[#334155]/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />
-            <h1 className="font-extrabold text-base text-slate-900 font-mono uppercase tracking-wider">
-              Multi-Hazard Intelligence & Incident Command Hub
-            </h1>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 font-mono font-bold text-xs uppercase">
+              OFFICIAL CAP WARNING CENTER
+            </span>
+            <span className="text-xs text-slate-400 font-mono">|</span>
+            <span className="text-xs font-mono text-slate-300">{cityName} Sector</span>
           </div>
-          <p className="text-xs text-slate-500 font-mono mt-0.5">
-            Verified Natural Hazards & Human/Structural Disaster Advisories Across India
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-sans">
+            Active Warning Center & Bulletins
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-300 mt-1">
+            Official early warning bulletins issued by IMD, CWC, NDMA, and State Disaster Management Authorities.
           </p>
         </div>
 
-        {/* Publish Official Alert Button */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsAlertModalOpen(true)}
-            className="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-xl font-bold font-mono text-xs flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-          >
-            <Radio className="w-3.5 h-3.5 animate-pulse" />
-            <span>Publish Official Advisory</span>
-          </button>
-        </div>
-
-        {/* Quick Tally Chips */}
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="bg-red-100 text-red-700 px-2.5 py-1 rounded-lg font-bold">
-            {metrics.criticalHazards} Critical
-          </span>
-          <span className="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg font-bold">
-            {metrics.warningHazards} Warnings
-          </span>
-          <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg font-bold">
-            {metrics.totalHazards} Monitored
-          </span>
-        </div>
+        <button
+          onClick={() => setIsAlertModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs font-mono shadow-sm transition-colors"
+        >
+          <span className="material-symbols-outlined text-lg">campaign</span>
+          <span>Publish Official Advisory</span>
+        </button>
       </div>
 
-      {/* Filter Bar */}
-      <HazardFilterBar
-        filters={filters}
-        setFilters={setFilters}
-        totalCount={hazardsList.length}
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => setSeverityFilter('ALL')}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all border ${
+            severityFilter === 'ALL'
+              ? 'bg-sky-600 text-white border-sky-400'
+              : 'bg-[#131f3d] text-slate-300 border-[#334155] hover:bg-[#1e293b]'
+          }`}
+        >
+          All Alerts ({hazardsList.length})
+        </button>
 
-      {/* Hazards Cards Grid */}
-      {hazardsList.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400 text-xs shadow-card">
-          <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-          No hazards matching your selected filters. Try clearing search filters.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {hazardsList.map((hazard) => (
-            <HazardCard
-              key={hazard.id}
-              hazard={hazard}
-              onClick={(h) => setActiveModalHazard(h)}
-            />
-          ))}
-        </div>
-      )}
+        <button
+          onClick={() => setSeverityFilter('CRITICAL')}
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all border ${
+            severityFilter === 'CRITICAL'
+              ? 'bg-red-600 text-white border-red-400'
+              : 'bg-[#131f3d] text-red-400 border-red-500/40 hover:bg-red-950/40'
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          <span>Critical ({criticalCount})</span>
+        </button>
 
-      {/* Hazard Deep Dive Modal */}
+        <button
+          onClick={() => setSeverityFilter('WARNING')}
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all border ${
+            severityFilter === 'WARNING'
+              ? 'bg-amber-600 text-white border-amber-400'
+              : 'bg-[#131f3d] text-amber-400 border-amber-500/40 hover:bg-amber-950/40'
+          }`}
+        >
+          <span>Warning ({warningCount})</span>
+        </button>
+
+        <button
+          onClick={() => setSeverityFilter('MODERATE')}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all border ${
+            severityFilter === 'MODERATE'
+              ? 'bg-cyan-600 text-white border-cyan-400'
+              : 'bg-[#131f3d] text-cyan-400 border-cyan-500/40 hover:bg-cyan-950/40'
+          }`}
+        >
+          Advisory ({advisoryCount})
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {filteredAlerts.length === 0 ? (
+          <div className="stitch-card p-12 bg-[#131f3d]/80 border-[#334155]/60 text-center space-y-3">
+            <span className="material-symbols-outlined text-4xl text-emerald-400">check_circle</span>
+            <h3 className="font-bold text-white text-base">No Active Alerts for this Filter</h3>
+            <p className="text-xs text-slate-400 font-mono max-w-sm mx-auto">
+              All monitored atmospheric and geological thresholds are currently within safe baseline parameters.
+            </p>
+          </div>
+        ) : (
+          filteredAlerts.map((alert: HazardItem) => (
+            <div
+              key={alert.id}
+              className={`stitch-card p-6 bg-[#131f3d]/90 border transition-all ${
+                alert.severity === 'critical' ? 'border-red-500/50 hover:border-red-400' :
+                alert.severity === 'warning' ? 'border-amber-500/50 hover:border-amber-400' :
+                'border-sky-500/50 hover:border-sky-400'
+              }`}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#334155]/50 gap-2">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${
+                    alert.severity === 'critical' ? 'bg-red-500 text-white' :
+                    alert.severity === 'warning' ? 'bg-amber-500 text-black' :
+                    'bg-sky-500 text-white'
+                  }`}>
+                    {alert.severity} ADVISORY
+                  </span>
+                  <span className="text-xs text-slate-300 font-mono">
+                    Sector: <strong>{alert.location?.district || cityName}, {alert.location?.state || 'India'}</strong>
+                  </span>
+                </div>
+
+                <span className="text-[11px] text-slate-400 font-mono">
+                  Valid Until: 24 Hours from Issuance
+                </span>
+              </div>
+
+              <div className="my-4">
+                <h2 className="text-lg font-bold text-white font-sans">{alert.title}</h2>
+                <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">{alert.description}</p>
+              </div>
+
+              <div className="pt-3 border-t border-[#334155]/50 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleAudioTTS(alert)}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-mono border transition-colors ${
+                      isAudioPlaying === alert.id
+                        ? 'bg-red-600 text-white border-red-400 animate-pulse'
+                        : 'bg-[#0b1329] hover:bg-[#1e293b] text-slate-300 border-[#334155]'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-sm">
+                      {isAudioPlaying === alert.id ? 'volume_up' : 'volume_mute'}
+                    </span>
+                    <span>{isAudioPlaying === alert.id ? 'Broadcasting...' : 'Audio TTS Readout'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveModalHazard(alert)}
+                    className="px-3 py-1.5 rounded-lg bg-[#0b1329] hover:bg-[#1e293b] border border-[#334155] text-slate-300 text-xs font-semibold font-mono transition-colors"
+                  >
+                    View Details
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => onNavigate('live-map')}
+                  className="flex items-center gap-1 text-xs font-bold text-sky-400 hover:text-sky-300 font-mono"
+                >
+                  <span>Locate On Tactical Map</span>
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       <HazardDetailModal
         hazard={activeModalHazard}
         onClose={() => setActiveModalHazard(null)}
         onViewOnMap={() => onNavigate('live-map')}
       />
-      {/* Official Alert Advisory Creation Modal */}
+
       <AlertManagementModal
         isOpen={isAlertModalOpen}
         onClose={() => setIsAlertModalOpen(false)}
         onAlertCreated={() => {
           HazardService.fetchLiveHazards().then(() => {
             setHazardsList(HazardService.filterHazards(filters));
-            setMetrics(HazardService.getMetricsSummary());
           });
         }}
       />

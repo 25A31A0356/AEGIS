@@ -1,6 +1,6 @@
 /**
  * AEGIS ALERT - Pan-India Location & Geocoding Service
- * Centralized location system for Homepage, Analytics, Safety, Reports, Live Map, and Ask AGIES.
+ * Centralized location system for Homepage, Analytics, Safety, Reports, Live Map, and Ask AEGIS.
  * Covers all 28 Indian States & 8 Union Territories with all 780+ Districts of India,
  * precise central GPS coordinates (Lat/Lng), real-time risk, weather, & GIS telemetry.
  */
@@ -21,6 +21,11 @@ export interface LocationCoordinates {
 }
 
 export interface LocationSearchResult {
+  village?: string;
+  subdistrict?: string;
+  postcode?: string;
+  formattedVillage?: string;
+  isVillageLevel?: boolean;
   id: string;
   name: string;
   stateName: string;
@@ -34,6 +39,11 @@ export interface LocationSearchResult {
 }
 
 export interface GeocodedAddress {
+  village?: string;
+  subdistrict?: string;
+  postcode?: string;
+  formattedVillage?: string;
+  isVillageLevel?: boolean;
   cityName: string;
   stateName: string;
   district: string;
@@ -83,7 +93,7 @@ export interface GeolocationResult {
   };
 }
 
-const STORAGE_KEY = 'agies_saved_locations_v2';
+const STORAGE_KEY = 'aegis_saved_locations_v2';
 
 // Known risk scores & weather snippets for major hubs
 const KNOWN_CITY_PROFILES: Record<string, { riskScore: number; riskLevel: 'Low' | 'Medium' | 'High' | 'Critical'; weatherSnippet: string }> = {
@@ -370,6 +380,67 @@ class LocationServiceClass {
    * Reverse geocodes coordinates to nearest Indian District from all 780+ districts
    */
   async reverseGeocode(lat: number, lng: number): Promise<GeocodedAddress> {
+    // 1. High-accuracy Village Geocoding via Nominatim with fast 2500ms timeout
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+        {
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal,
+        }
+      );
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const data = await response.json();
+        const addr = data.address || {};
+        const village = addr.village || addr.hamlet || addr.isolated_dwelling || addr.suburb || addr.neighbourhood || addr.residential;
+        const subdistrict = addr.county || addr.subdistrict || addr.taluk || addr.tehsil || addr.mandal || addr.town;
+        const district = addr.state_district || addr.district || addr.county || '';
+        const stateName = addr.state || '';
+        const postcode = addr.postcode || '';
+
+        if (village || subdistrict || district) {
+          const mainName = village || subdistrict || district;
+          const formattedVillage = village
+            ? `Village ${village}${subdistrict ? ` • ${subdistrict} Mandal` : ''}`
+            : (subdistrict ? `${subdistrict} Sector` : mainName);
+
+          const fullReadable = [
+            village ? `Village ${village}` : undefined,
+            subdistrict,
+            district,
+            stateName
+          ].filter(Boolean).join(', ');
+
+          const matchedState = ALL_INDIAN_STATES_DATA.find((s) =>
+            stateName.toLowerCase().includes(s.name.toLowerCase()) ||
+            s.name.toLowerCase().includes(stateName.toLowerCase())
+          );
+
+          return {
+            cityName: mainName,
+            stateName: stateName || (matchedState?.name || 'India'),
+            district: district || mainName,
+            stateId: matchedState?.id || 'IN',
+            readableAddress: fullReadable,
+            coordinates: [lat, lng],
+            village: village || undefined,
+            subdistrict: subdistrict || undefined,
+            postcode: postcode || undefined,
+            formattedVillage,
+            isVillageLevel: Boolean(village),
+          };
+        }
+      }
+    } catch {
+      // Gracefully fall back to local high-density district registry
+    }
+
+    // 2. High-speed local fallback to nearest Indian District Sector
     let closestDistrict = INDIAN_CITIES_REGISTRY[0];
     let minDistance = Infinity;
 
@@ -381,24 +452,24 @@ class LocationServiceClass {
       }
     }
 
-    if (minDistance <= 65) {
-      return {
-        cityName: closestDistrict.name,
-        stateName: closestDistrict.stateName,
-        district: closestDistrict.district,
-        stateId: closestDistrict.stateId,
-        readableAddress: `${closestDistrict.name}, ${closestDistrict.stateName}`,
-        coordinates: [lat, lng],
-      };
-    }
+    const isNearCenter = minDistance <= 20;
+    const villageSectorName = isNearCenter
+      ? closestDistrict.name
+      : `Rural Sector • ${closestDistrict.name} (${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E)`;
 
     return {
-      cityName: `${closestDistrict.name} District Sector`,
+      cityName: villageSectorName,
       stateName: closestDistrict.stateName,
       district: closestDistrict.district,
       stateId: closestDistrict.stateId,
-      readableAddress: `Near ${closestDistrict.name} (${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E), ${closestDistrict.stateName}`,
+      readableAddress: isNearCenter
+        ? `${closestDistrict.name}, ${closestDistrict.stateName}`
+        : `Rural Locality, ${closestDistrict.name} District, ${closestDistrict.stateName}`,
       coordinates: [lat, lng],
+      village: isNearCenter ? undefined : `${closestDistrict.name} Rural Sector`,
+      subdistrict: closestDistrict.name,
+      formattedVillage: `Rural Sector • ${closestDistrict.name}`,
+      isVillageLevel: true,
     };
   }
 
