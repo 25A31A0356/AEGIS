@@ -1,43 +1,62 @@
 import React, { useState } from 'react';
 import { useLocation } from '../context/LocationContext';
+import { IndiaSafetyMap, MapLayersState } from '../components/map/IndiaSafetyMap';
+import { HazardService } from '../services/hazardService';
+import { DEMO_STATES } from '../data/demoStates';
+import { DEMO_SHELTERS } from '../data/demoShelters';
 
 export const ResearchMapsPage: React.FC = () => {
   const { selectedLocation } = useLocation();
+  const hazards = HazardService.getAllHazards();
   const [selectedLayer, setSelectedLayer] = useState<'normal' | 'satellite' | 'cyclone' | 'radar' | 'wind' | 'rainfall' | 'temperature' | 'humidity' | 'cloud'>('radar');
 
   const layers = [
-    { id: 'normal', label: 'Normal Map', desc: 'Standard geographic base' },
-    { id: 'satellite', label: 'Satellite Map', desc: 'High-resolution multispectral imagery' },
-    { id: 'cyclone', label: 'Cyclone Tracks', desc: 'IMD storm cone and track history' },
-    { id: 'radar', label: 'Weather Radar', desc: 'Doppler precipitation reflectivity' },
+    { id: 'normal', label: 'Streets Map', desc: 'Standard geographic base layer' },
+    { id: 'satellite', label: 'Satellite Imagery', desc: 'High-resolution multispectral telemetry' },
+    { id: 'cyclone', label: 'Cyclone Cones', desc: 'IMD storm cone and track history' },
+    { id: 'radar', label: 'Doppler Radar', desc: 'Precipitation reflectivity radar' },
     { id: 'wind', label: 'Wind Velocity', desc: 'Streamlines & gust vectors' },
-    { id: 'rainfall', label: 'Rainfall Distribution', desc: '24h accumulated precipitation' },
-    { id: 'temperature', label: 'Surface Temperature', desc: 'Thermal radiometric anomalies' },
-    { id: 'humidity', label: 'Relative Humidity', desc: 'Atmospheric moisture index' },
-    { id: 'cloud', label: 'Cloud Cover', desc: 'Infrared cloud top telemetry' },
+    { id: 'rainfall', label: 'Rainfall Inundation', desc: 'Flood basin accumulation' },
+    { id: 'temperature', label: 'Thermal Anomaly', desc: 'Surface thermal gradients' },
   ];
+
+  const mapLayers: MapLayersState = {
+    weatherRadar: selectedLayer === 'radar' || selectedLayer === 'rainfall',
+    isobarWinds: selectedLayer === 'wind',
+    floodInundation: selectedLayer === 'rainfall',
+    cycloneTrack: selectedLayer === 'cyclone',
+    wildfireHotspots: selectedLayer === 'temperature',
+    earthquakes: true,
+    sosBeacons: false,
+    safeShelters: true,
+    baseLayer: selectedLayer === 'satellite' ? 'satellite' : 'dark',
+  };
+
+  const coords: [number, number] = selectedLocation?.coordinates && selectedLocation.coordinates.length === 2
+    ? [selectedLocation.coordinates[0], selectedLocation.coordinates[1]]
+    : [17.6868, 83.2185];
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto pb-12 font-sans">
-      <div className="border-b border-slate-200 dark:border-[#27272a] pb-3 flex items-center justify-between">
+      <div className="border-b border-slate-200 dark:border-[#27272a] pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            Scientific & Environmental Research Maps
+            Scientific & Environmental Research GIS
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#a1a1aa]">
-            Dedicated multi-layer research GIS workspace for academic & environmental monitoring.
+          <p className="text-xs text-slate-500 dark:text-[#a1a1aa] mt-0.5">
+            Dedicated multi-layer research GIS workspace for academic & atmospheric monitoring.
           </p>
         </div>
-        <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-[#18181b] px-3 py-1 rounded-full border border-slate-200 dark:border-[#27272a]">
+        <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-[#18181b] px-3 py-1 rounded-full border border-slate-200 dark:border-[#27272a] self-start sm:self-auto">
           GIS Active: {selectedLayer.toUpperCase()}
         </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Left Floating Layer Selector (1 Col) */}
+        {/* Left Layer Selector */}
         <div className="bg-white dark:bg-[#111111] rounded-2xl border border-slate-200 dark:border-[#27272a] p-4 shadow-xs dark:shadow-md space-y-2">
           <p className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-2">
-            Research Map Layers
+            Research GIS Layers
           </p>
           <div className="space-y-1.5">
             {layers.map((layer) => (
@@ -57,23 +76,17 @@ export const ResearchMapsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Dominant Map View (3 Cols) */}
-        <div className="lg:col-span-3 h-[600px] bg-slate-50 dark:bg-[#0a0a0c] rounded-2xl border border-slate-200 dark:border-[#27272a] overflow-hidden relative flex items-center justify-center text-slate-900 dark:text-white shadow-xs dark:shadow-md">
-          <div className="text-center space-y-2">
-            <span className="material-symbols-outlined text-slate-400 dark:text-slate-600 text-6xl">satellite_alt</span>
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-              Displaying Layer: <span className="text-slate-900 dark:text-white font-bold">{selectedLayer.toUpperCase()}</span>
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Sector: {selectedLocation?.name || 'Visakhapatnam'} &bull; Coverage: Pan-India
-            </p>
-          </div>
-
-          {/* Floating Time Slider & Legend Controls */}
-          <div className="absolute bottom-4 left-4 right-4 bg-white/90 dark:bg-[#111111]/90 backdrop-blur-md rounded-xl p-3 border border-slate-200 dark:border-[#27272a] flex items-center justify-between text-xs text-slate-700 dark:text-slate-300">
-            <span className="font-mono">Timestamp: 2026-09-22 18:00 IST</span>
-            <span>Resolution: 1.2km High-Precision Mesh</span>
-          </div>
+        {/* Dominant Map Canvas */}
+        <div className="lg:col-span-3 h-[620px] rounded-2xl border border-slate-200 dark:border-[#27272a] overflow-hidden shadow-xs dark:shadow-md relative">
+          <IndiaSafetyMap
+            hazards={hazards}
+            states={DEMO_STATES}
+            sosBeacons={[]}
+            shelters={DEMO_SHELTERS}
+            layers={mapLayers}
+            userLocation={coords}
+            heightClass="h-full"
+          />
         </div>
       </div>
     </div>
