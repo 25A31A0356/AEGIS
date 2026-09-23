@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  aegis-db:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: aegis-prod-db
+    restart: always
+    environment:
+      POSTGRES_DB: aegis_db
+      POSTGRES_USER: aegis_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-AegisSecurePass2026!}
+    volumes:
+      - aegis_pgdata:/var/lib/postgresql/data
+    networks:
+      - aegis-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegis_admin -d aegis_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  aegis-redis:
+    image: redis:7-alpine
+    container_name: aegis-prod-redis
+    restart: always
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-AegisRedisPass2026!}"]
+    volumes:
+      - aegis_redisdata:/data
+    networks:
+      - aegis-internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-AegisRedisPass2026!}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  aegis-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: aegis-prod-api
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://aegis_admin:${DB_PASSWORD:-AegisSecurePass2026!}@aegis-db:5432/aegis_db
+      REDIS_URL: redis://:${REDIS_PASSWORD:-AegisRedisPass2026!}@aegis-redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:-AegisJwtSecretKeyProd2026UltraSecure!}
+      ENVIRONMENT: production
+    ports:
+      - "8000:8000"
+    depends_on:
+      aegis-db:
+        condition: service_healthy
+      aegis-redis:
+        condition: service_healthy
+    networks:
+      - aegis-internal
+      - aegis-public
+
+  aegis-web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    container_name: aegis-prod-web
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - aegis-api
+    networks:
+      - aegis-public
+
+volumes:
+  aegis_pgdata:
+  aegis_redisdata:
+
+networks:
+  aegis-internal:
+    internal: true
+  aegis-public:
