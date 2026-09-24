@@ -1,112 +1,64 @@
-# 🛡️ AEGIS ALERT — Unified Disaster Management Monorepo
-
-> **Universal Emergency Response & Critical Infrastructure Protection Platform**  
-> Unifying Mobile (Expo/React Native), Web (React 19/Vite), and Central Backend Gateway (FastAPI + PostGIS/SQLite) into a single, high-performance monorepo.
-
----
-
-## 🏛️ Architecture Overview
+# 🛡️ AEGIS ALERT — Master Emergency & Disaster Intelligence Platform
 
 ```
-                      ┌─────────────────────────────────────────┐
-                      │          📱 Mobile App (Expo)           │
-                      │        (React Native + NativeWind)      │
-                      │         http://localhost:8081           │
-                      └────────────────────┬────────────────────┘
-                                           │
-                                           ▼ (POST /reports, POST /sos, GET /activity)
-  ┌──────────────────────────────────────────────────────────────────────────────────┐
-  │                   🛡️ Central AEGIS Backend API Gateway                           │
-  │                   FastAPI • http://localhost:8000/api/v1                         │
-  └────────────────────────┬───────────────────────────────────┬─────────────────────┘
-                           │                                   │
-                           ▼                                   ▼
-        ┌──────────────────────────────────────┐  ┌─────────────────────────────────┐
-        │  🗄️ PostgreSQL 16 + PostGIS          │  │   ⚡ Realtime Event SSE Hub     │
-        │  (or SQLite `aegis_local.db` Fallback)│  │   (Live Incident Push)          │
-        └──────────────────▲───────────────────┘  └────────────────┬────────────────┘
-                           │                                       │
-                           │ (GET /activity, GET /reports, POST /reports)
-                           │                                       │
-                      ┌────┴───────────────────────────────────────▼────┐
-                      │             💻 Web Portal (React 19)            │
-                      │           (Vite + TypeScript + Tailwind)        │
-                      │               http://localhost:5173             │
-                      └─────────────────────────────────────────────────┘
+c:\Users\tst20\...\AEGIS\
+│
+├── 📱 mobile/                 # PURE APP FRONTEND (React Native / Expo)
+│   ├── app/(tabs)/            # Mobile screens (Home, Map, SOS, Alerts, Profile)
+│   ├── components/            # UI components (WeatherHero, SensorBar, SOSButton)
+│   ├── hooks/                 # Native hooks (useLocation, useSOS, useOfflineSync)
+│   ├── lib/                   # Client API & local SQLite offline queue
+│   ├── assets/                # App icons, splash screens, audio alerts
+│   ├── tests/                 # 13 pure client test suites (100% PASSING)
+│   └── app.config.ts          # Expo configuration
+│   └── [PURGED]               # Removed: server/, drizzle/, aegis-web/, template.json
+│
+├── 💻 web/                    # PURE WEB FRONTEND (React 19 + Vite 6 + Tailwind)
+│   ├── src/pages/             # Web views (Dashboard, LiveMap, SOS, Hazards, Reports)
+│   ├── src/components/map/    # Interactive Leaflet GIS (IndiaSafetyMap, Radar, SOS)
+│   ├── src/context/           # LocationContext, SOSContext, ThemeContext
+│   ├── index.html             # Web entrypoint
+│   ├── vite.config.ts         # Pure Vite build + API proxy (http://localhost:8000)
+│   └── [PURGED]               # Removed: server/, database/, stitch_reference/
+│
+├── ⚙️ backend/                # PURE SERVER & BACKEND ENGINE (FastAPI + PostGIS)
+│   ├── app/api/v1/            # Endpoints (/weather, /sos, /hazards, /decoupled-risk)
+│   ├── app/ingestion/         # Telemetry adapters (IMD, CWC, CPCB, NASA FIRMS, Open-Meteo)
+│   ├── app/ml/                # Numerical feature correlation & uncertainty bands
+│   ├── app/realtime/          # Redis Streams & WebSocket distress event bus
+│   ├── app/dispatch/          # Rapido-style 10km/20km PostGIS responder matching
+│   ├── migrations/            # PostGIS schema migrations
+│   └── requirements.txt       # Python dependencies
+│
+├── 🚀 deployment/             # MASTER VERSIONING & CLOUD TOPOLOGIES
+│   ├── versions.yaml          # Canonical semantic version registry for all components
+│   ├── production.yaml        # AWS ap-south-1 (Mumbai) production topology
+│   ├── staging.yaml           # Staging environment topology
+│   └── workflows/             # CI/CD deployment automation
+│
+├── 🏛️ infrastructure/         # CLOUD INFRASTRUCTURE AS CODE
+│   └── terraform/             # Terraform (VPC, ALB, ECS Fargate, RDS PostgreSQL, Redis)
+│
+├── 🐳 docker/                 # PRODUCTION MULTI-STAGE CONTAINERS
+│   ├── Dockerfile.api         # Hardened FastAPI unprivileged container
+│   ├── Dockerfile.web         # Hardened unprivileged Nginx container with CSP/HSTS
+│   └── nginx.conf             # Production reverse proxy & caching rules
+│
+├── 📜 docs/                   # 14 MASTER SPECIFICATION RUNBOOKS
+│   ├── ARCHITECTURE.md        # End-to-end system blueprint
+│   ├── SOS.md                 # Emergency lifecycle & dispatching
+│   ├── MAPS.md                # Dual map GIS specification
+│   ├── SECURITY.md            # 54-point OWASP ASVS/MASVS audit
+│   └── DEPLOYMENT.md          # Step-by-step production operations manual
+│
+└── 🛠️ scripts/                # PLATFORM MANAGEMENT CLIs
+    ├── release_manager.py     # Version bumper & manifest updater
+    ├── health_gate.py         # Zero-downtime health verification probe
+    └── start_all.py           # Unified local development daemon launcher
 ```
 
----
-
-## 📂 Monorepo Project Structure
-
-```
-AEGIS/
-├── backend/                  # Central FastAPI Gateway & Database Models
-│   ├── app/                  # FastAPI Routers, Models, Schemas, Services
-│   ├── tests/                # Backend unit and integration tests
-│   └── aegis_local.db        # SQLite development database fallback
-├── web/                      # React 19 + Vite Web Portal
-│   ├── src/                  # Components, Pages, Context, Services
-│   └── .env                  # VITE_AEGIS_API_URL=http://localhost:8000/api/v1
-├── mobile/                   # Expo / React Native Cross-Platform Mobile App
-│   ├── app/                  # Expo file-based routes & screens
-│   ├── lib/                  # Services, API clients, cache & offline sync
-│   └── .env                  # EXPO_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
-├── scripts/                  # E2E verification & status check scripts
-│   ├── verify_e2e_mobile_web_sync.ts   # Master 19-test bidirectional sync suite
-│   └── check_status.py                 # Service port and health checker
-├── package.json              # Monorepo root workspace configuration
-├── start_all.py              # Automated cross-platform service orchestrator
-├── start_all.bat             # Double-click Windows startup script
-└── README.md                 # Project documentation
-```
-
----
-
-## 🚀 Quick Start
-
-### 1. Start All Services Simultaneously
-From the monorepo root directory:
-
-```bash
-# Using Python Orchestrator:
-python start_all.py
-
-# OR using npm:
-npm run start:all
-
-# OR double-click:
-start_all.bat
-```
-
-### 2. Service Endpoints
-
-| Component | URL | Purpose |
-| :--- | :--- | :--- |
-| **Central Backend Gateway** | `http://localhost:8000/api/v1` | Authoritative REST API & Database Gateway |
-| **Interactive API Docs** | `http://localhost:8000/docs` | Swagger UI documentation |
-| **Web Portal** | `http://localhost:5173` | Command & Citizen Web Dashboard |
-| **Mobile App (Web Mode)** | `http://localhost:8081` | Mobile App preview in browser |
-
----
-
-## 🧪 Master E2E Verification & Health Check
-
-### Run Health Check
-```bash
-npm run status
-# or: python scripts/check_status.py
-```
-
-### Run Master Bidirectional Sync Suite (19 Tests)
-```bash
-npm run verify
-# or: npx tsx scripts/verify_e2e_mobile_web_sync.ts
-```
-
-This tests:
-1. Mobile Report -> Central PostGIS -> Web Portal Feed (Immediate sync without username filter)
-2. Web Report -> Central PostGIS -> Mobile App Feed
-3. Emergency SOS Beacon Lifecycle & Live Dispatch
-4. Real-time Weather, SASGrid Radar, and Shwas AQI telemetry
-5. Offline Idempotency Replay & Deduplication
+## 🚀 Repositories
+- **AEGIS (Master Monorepo)**: https://github.com/25A31A0356/AEGIS
+- **aegis-software (Backend Engine)**: https://github.com/25A31A0356/aegis-software
+- **Aegis-web (Web Frontend)**: https://github.com/25A31A0356/Aegis-web
+- **aegis-alert (App Frontend)**: https://github.com/25A31A0356/aegis-alert
