@@ -16,6 +16,7 @@ from backend.app.api.deps import rate_limit_check
 router = APIRouter(prefix="/correlation", tags=["Multi-Source Correlation Engine"])
 
 
+@router.get("", response_model=ApiResponse[RiskEvaluationResponse], dependencies=[Depends(rate_limit_check)])
 @router.get("/risk", response_model=ApiResponse[RiskEvaluationResponse], dependencies=[Depends(rate_limit_check)])
 async def evaluate_location_risk(
     lat: float = Query(default=19.0760, ge=-90.0, le=90.0),

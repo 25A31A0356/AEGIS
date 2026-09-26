@@ -364,7 +364,7 @@ export default function BeaconScreen() {
   };
 
   return (
-    <ScreenContainer className="px-5" edges={["top", "left", "right"]}>
+    <ScreenContainer className="px-5" edges={["top", "left", "right"]} activeTab="beacon">
       {/* Clean Top Header */}
       <View style={styles.headerRow}>
         <View>

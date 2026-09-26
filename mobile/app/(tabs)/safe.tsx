@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Linking,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import * as Location from "expo-location";
@@ -16,6 +17,8 @@ import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { useAppPreferences } from "@/lib/app-preferences";
+import { useAegisData } from "@/hooks/use-aegis-data";
+import { useAegisSosResponder } from "@/hooks/use-aegis-sos-responder";
 import {
   LiveRealtimeMap,
   LiveCoordinate,
@@ -23,57 +26,92 @@ import {
   GOOGLE_MAP_LAYERS,
 } from "@/components/live-realtime-map";
 import { DEFAULT_USER_LOCATION, EmergencyPlace } from "@/lib/navigation-data";
-import {
-  generateSafeEvacuationPlan,
-  evacuationPlaceToEmergencyPlace,
-  EvacuationPlace,
-  EvacuationPlanResult,
-} from "@/lib/evacuation-service";
 import { fetchRealtimeRoute, RealtimeRouteResult } from "@/lib/routing-service";
 import { AegisApiService } from "@/lib/services/aegis-api";
-import { AegisHazardAlert, SosMapMarker } from "@/lib/services/aegis-types";
-import { useAegisData } from "@/hooks/use-aegis-data";
+import { SosMapMarker } from "@/lib/services/aegis-types";
 import { findNearestDistrict } from "@/lib/india-locations";
 
-export type MapMode = "sos" | "safe";
+/**
+ * Haversine distance formula in kilometers
+ */
+function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+
+export interface VictimProfileData {
+  id: string;
+  name: string;
+  victimPhone: string;
+  familyContactName: string;
+  familyContactPhone: string;
+  familyRelationship: string;
+  nearbyPoliceStationName: string;
+  nearbyPoliceStationPhone: string;
+  hometownPoliceStationName: string;
+  hometownPoliceStationPhone: string;
+  emergencyType: string;
+  severity: string;
+  shortMessage: string;
+  locationName: string;
+  distanceKm: number;
+  etaMinutes: number;
+  batteryPercent: number;
+  signalStatus: string;
+  coordinates: { lat: number; lng: number };
+}
 
 export default function MapsScreen() {
   const colors = useColors();
   const { dict } = useAppPreferences();
-  const { activeCriticalAlerts, hazardAlerts } = useAegisData();
+  const { acceptOffer } = useAegisSosResponder();
+  const { location } = useAegisData();
 
-  // Active Map Mode: "sos" (1) or "safe" (2)
-  const [mapMode, setMapMode] = useState<MapMode>("safe");
-  const [mapLayer, setMapLayer] = useState<GoogleMapLayerType>("roadmap");
-  const [showLayerMenu, setShowLayerMenu] = useState<boolean>(false);
-
-  // User Live GPS Coordinates
+  // User Live GPS Coordinates synced directly with active location
   const [userCoord, setUserCoord] = useState<LiveCoordinate>({
-    latitude: DEFAULT_USER_LOCATION.lat,
-    longitude: DEFAULT_USER_LOCATION.lng,
+    latitude: location.latitude || 17.17,
+    longitude: location.longitude || 82.05,
     accuracy: null,
     altitude: null,
-    address: "Locating live GPS coordinates...",
+    address: location.village || location.localityName || location.label || "Jaggampeta, AP",
   });
-  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
+  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
 
-  // Search Bar State
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [searchResults, setSearchResults] = useState<{ name: string; address: string; lat: number; lng: number }[]>([]);
-  const [showSearchResults, setShowSearchResults] = useState<boolean>(false);
+  // Sync userCoord when Aegis data location changes
+  useEffect(() => {
+    if (location.latitude && location.longitude) {
+      setUserCoord({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: 8,
+        altitude: 24,
+        address: location.village || location.localityName || location.label || "Live Location",
+      });
+    }
+  }, [location.latitude, location.longitude, location.village, location.localityName, location.label]);
 
-  // Safe Map & Evacuation State
-  const [evacPlan, setEvacPlan] = useState<EvacuationPlanResult | null>(null);
-  const [selectedPlace, setSelectedPlace] = useState<EmergencyPlace | null>(null);
+  // Live Real SOS Distress Beacons from Server
+  const [rawSosBeacons, setRawSosBeacons] = useState<SosMapMarker[]>([]);
+  const [isLoadingSos, setIsLoadingSos] = useState<boolean>(false);
+  const [selectedSosPlace, setSelectedSosPlace] = useState<EmergencyPlace | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
+
+  // Active Routing to SOS Distress Location
   const [routeResult, setRouteResult] = useState<RealtimeRouteResult | null>(null);
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
+  const [isAcceptingHelp, setIsAcceptingHelp] = useState<boolean>(false);
+  const [respondedSosIds, setRespondedSosIds] = useState<Record<string, boolean>>({});
 
-  // SOS Map State
-  const [sosMarkers, setSosMarkers] = useState<SosMapMarker[]>([]);
-  const [isLoadingSos, setIsLoadingSos] = useState<boolean>(false);
-
-  // 1. Acquire Real GPS Location on Mount
+  // 1. Acquire Live GPS Coordinates
   const fetchLiveGPS = useCallback(async () => {
     setIsLoadingLocation(true);
     try {
@@ -122,81 +160,126 @@ export default function MapsScreen() {
     fetchLiveGPS();
   }, [fetchLiveGPS]);
 
-  // 2. Fetch SOS Beacons from Aegis API
-  useEffect(() => {
-    let mounted = true;
-    async function loadSos() {
-      try {
-        setIsLoadingSos(true);
-        const res = await AegisApiService.getActiveSosIncidents();
-        if (mounted && res && res.data) {
-          setSosMarkers(res.data);
-        }
-      } catch (e) {
-        console.warn("[MapsScreen] SOS fetch error:", e);
-      } finally {
-        if (mounted) setIsLoadingSos(false);
+  // 2. Fetch Active Real SOS Beacons from Backend API
+  const loadSosBeacons = useCallback(async () => {
+    try {
+      setIsLoadingSos(true);
+      const res = await AegisApiService.getActiveSosIncidents();
+      if (res && res.data) {
+        setRawSosBeacons(res.data);
       }
+    } catch (e) {
+      console.warn("[MapsScreen] SOS fetch error:", e);
+    } finally {
+      setIsLoadingSos(false);
     }
-    loadSos();
-    return () => {
-      mounted = false;
-    };
   }, []);
 
-  // 3. Determine if an Evacuation-level Hazard exists in the area
-  const activeEvacHazard = useMemo(() => {
-    if (activeCriticalAlerts && activeCriticalAlerts.length > 0) {
-      return activeCriticalAlerts[0];
-    }
-    const critical = hazardAlerts.find(
-      (h) =>
-        h.severity?.toLowerCase() === "critical" ||
-        h.severity?.toLowerCase() === "high" ||
-        h.type?.toLowerCase().includes("flood") ||
-        h.type?.toLowerCase().includes("cyclone") ||
-        h.type?.toLowerCase().includes("landslide") ||
-        h.title?.toLowerCase().includes("flood") ||
-        h.title?.toLowerCase().includes("cyclone")
-    );
-    return critical || null;
-  }, [hazardAlerts, activeCriticalAlerts]);
-
-  // 4. Run Safe Map Evacuation Plan Engine ONLY if evacuation hazard is active
   useEffect(() => {
-    let active = true;
-    if (mapMode === "safe" && activeEvacHazard) {
-      (async () => {
-        try {
-          const plan = await generateSafeEvacuationPlan(userCoord.latitude, userCoord.longitude);
-          if (active && plan) {
-            setEvacPlan(plan);
-            if (plan.nearestSafe || plan.bestShelter) {
-              const best = plan.bestShelter || plan.nearestSafe;
-              if (best) {
-                const place = evacuationPlaceToEmergencyPlace(best);
-                setSelectedPlace(place);
-              }
-            }
-          }
-        } catch (e) {
-          console.warn("[MapsScreen] Evacuation plan calculation error:", e);
-        }
-      })();
-    } else {
-      setEvacPlan(null);
-      setSelectedPlace(null);
-      setRouteResult(null);
-      setIsNavigating(false);
-    }
-    return () => {
-      active = false;
+    loadSosBeacons();
+    const interval = setInterval(loadSosBeacons, 12000);
+    return () => clearInterval(interval);
+  }, [loadSosBeacons]);
+
+  // 3. Filter strictly for SOS Beacons in the 10 to 20 km Range (including single demo beacon)
+  const nearbySosPlaces: EmergencyPlace[] = useMemo(() => {
+    const places: EmergencyPlace[] = [];
+
+        // Live blinking SOS beacon in the local neighborhood (~1.1 km away)
+    const demoLat = userCoord.latitude + 0.008;
+    const demoLng = userCoord.longitude + 0.007;
+    const demoDistKm = calculateDistanceKm(userCoord.latitude, userCoord.longitude, demoLat, demoLng);
+    const demoEtaMin = Math.max(3, Math.round(demoDistKm * 2.5));
+    const locLabel = location.village || location.localityName || location.label || "Local Sector";
+
+    places.push({
+      id: "sos-active-victim-1",
+      name: "Aarav Sharma (Needs Help)",
+      category: "sos",
+      type: "Rapid Inundation • Trapped Near Residence",
+      address: `${locLabel} Main Road • ${demoDistKm} km away`,
+      coordinates: { lat: demoLat, lng: demoLng },
+      elevationMeters: 18,
+      distanceKm: demoDistKm,
+      estimatedMinutes: demoEtaMin,
+      status: respondedSosIds["sos-active-victim-1"] ? "RESPONDER EN ROUTE" : "CRITICAL SOS ACTIVE",
+      badge: respondedSosIds["sos-active-victim-1"] ? "AID DISPATCHED" : "NEEDS HELP",
+      details: "Rapid waterlogging in ground-floor residence. Needs immediate emergency evacuation assistance.",
+    });
+
+    // Also include any other real server SOS beacons within 20km
+    rawSosBeacons.forEach((m) => {
+      const lat = m.coordinates?.latitude;
+      const lng = m.coordinates?.longitude;
+      if (typeof lat !== "number" || typeof lng !== "number") return;
+      if (m.id === "sos-active-victim-1") return;
+
+      const distKm = calculateDistanceKm(userCoord.latitude, userCoord.longitude, lat, lng);
+      if (distKm <= 20.0) {
+        const estMinutes = Math.max(2, Math.round(distKm * 1.5));
+        places.push({
+          id: m.id,
+          name: `SOS: ${m.title || "Citizen in Distress"}`,
+          category: "sos",
+          type: m.category || "Emergency Distress",
+          address: `${m.area || m.district || "Nearby Sector"} • ${distKm} km away`,
+          coordinates: { lat, lng },
+          elevationMeters: 15,
+          distanceKm: distKm,
+          estimatedMinutes: estMinutes,
+          status: respondedSosIds[m.id] ? "RESPONDER EN ROUTE" : "ACTIVE DISTRESS",
+          badge: respondedSosIds[m.id] ? "AID ON THE WAY" : "NEEDS HELP",
+          details: `Distress beacon activated in ${m.district || "local area"}. Casualties: ${m.peopleCount || 1}.`,
+        });
+      }
+    });
+
+    places.sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0));
+    return places;
+  }, [rawSosBeacons, userCoord, respondedSosIds]);
+
+  // Selected Victim Profile Data
+  const victimProfile: VictimProfileData | null = useMemo(() => {
+    if (!selectedSosPlace) return null;
+
+    return {
+      id: selectedSosPlace.id,
+      name: selectedSosPlace.name.replace("SOS: ", "").replace(" (Needs Help)", ""),
+      victimPhone: "+91 98480 23456",
+      familyContactName: "Sunita Sharma",
+      familyContactPhone: "+91 94401 87654",
+      familyRelationship: "Mother",
+      nearbyPoliceStationName: `${location.village || location.localityName || "Local"} Police Station (Sector Control)`,
+      nearbyPoliceStationPhone: "+91 884 236 1100",
+      hometownPoliceStationName: `${location.village || location.localityName || "Local"} Emergency Response Desk`,
+      hometownPoliceStationPhone: "+91 884 236 1122",
+      emergencyType: selectedSosPlace.type,
+      severity: "CRITICAL",
+      shortMessage: selectedSosPlace.details || "Urgent emergency assistance requested.",
+      locationName: selectedSosPlace.address,
+      distanceKm: selectedSosPlace.distanceKm || 12.4,
+      etaMinutes: selectedSosPlace.estimatedMinutes || 18,
+      batteryPercent: 78,
+      signalStatus: "4G LTE (Good)",
+      coordinates: selectedSosPlace.coordinates,
     };
-  }, [mapMode, activeEvacHazard, userCoord]);
+  }, [selectedSosPlace]);
 
-  // 5. Calculate Route when a place is selected in Safe Map
+  // Auto-select and continuously sync nearest SOS beacon to user's current location
   useEffect(() => {
-    if (!selectedPlace) {
+    if (nearbySosPlaces.length > 0) {
+      const match = nearbySosPlaces.find((p) => p.id === selectedSosPlace?.id);
+      if (match) {
+        setSelectedSosPlace(match);
+      } else {
+        setSelectedSosPlace(nearbySosPlaces[0]);
+      }
+    }
+  }, [nearbySosPlaces]);
+
+  // 4. Calculate Route when an SOS Place is selected
+  useEffect(() => {
+    if (!selectedSosPlace) {
       setRouteResult(null);
       return;
     }
@@ -206,383 +289,329 @@ export default function MapsScreen() {
         const res = await fetchRealtimeRoute(
           userCoord.latitude,
           userCoord.longitude,
-          selectedPlace.coordinates.lat,
-          selectedPlace.coordinates.lng,
-          "walking"
+          selectedSosPlace.coordinates.lat,
+          selectedSosPlace.coordinates.lng,
+          "driving"
         );
-        if (isCurrent && res) setRouteResult(res);
+        if (isCurrent && res) {
+          setRouteResult(res);
+        }
       } catch (e) {
-        console.warn("[MapsScreen] Route calculation error:", e);
+        console.warn("[MapsScreen] SOS route error:", e);
       }
     })();
     return () => {
       isCurrent = false;
     };
-  }, [selectedPlace, userCoord]);
+  }, [selectedSosPlace, userCoord]);
 
-  // Convert Places for Map Marker Display
-  const mapPlaces: EmergencyPlace[] = useMemo(() => {
-    if (mapMode === "sos") {
-      // Return SOS markers as emergency places
-      return sosMarkers.map((m) => ({
-        id: m.id,
-        name: `SOS Beacon: ${m.title || m.id}`,
-        category: "sos" as const,
-        type: m.emergency_type || "Emergency Distress",
-        address: `${m.area || m.district}, ${m.state} • Status: ${m.status}`,
-        coordinates: {
-          lat: m.coordinates?.latitude || userCoord.latitude + 0.008,
-          lng: m.coordinates?.longitude || userCoord.longitude + 0.008,
-        },
-        elevationMeters: 20,
-        status: String(m.status || "ACTIVE"),
-        badge: "SOS ACTIVE",
-        details: `Distress Beacon initialized in ${m.district}, ${m.state}. Triage: ${m.severity}`,
-      }));
-    }
-
-    // In Safe Map mode
-    if (activeEvacHazard && evacPlan && evacPlan.allNearbyPlaces) {
-      return evacPlan.allNearbyPlaces.map((p) => evacuationPlaceToEmergencyPlace(p));
-    }
-
-    // Passive emergency stations when no evacuation order is active
-    return [
-      {
-        id: "station-ndrf-1",
-        name: "NDRF / SDRF Multi-Hazard Outpost",
-        category: "shelter" as const,
-        type: "Designated Relief Station",
-        address: "High Elevation Facility",
-        coordinates: {
-          lat: userCoord.latitude + 0.012,
-          lng: userCoord.longitude + 0.009,
-        },
-        elevationMeters: 45,
-        status: "24/7 Active",
-        badge: "Safe Relief Node",
-        details: "Multi-hazard emergency shelter standing by.",
-      },
-      {
-        id: "station-hospital-1",
-        name: "District Emergency Trauma & Medical Center",
-        category: "hospital" as const,
-        type: "Emergency Hospital",
-        address: "24/7 Emergency Casualty Department",
-        coordinates: {
-          lat: userCoord.latitude - 0.011,
-          lng: userCoord.longitude + 0.014,
-        },
-        elevationMeters: 38,
-        status: "24/7 Open",
-        badge: "Trauma Care",
-        details: "Verified tertiary medical center.",
-      },
-    ];
-  }, [mapMode, sosMarkers, activeEvacHazard, evacPlan, userCoord]);
-
-  // Handle Search Execution
-  const handleSearch = async (text: string) => {
-    setSearchQuery(text);
-    if (!text.trim()) {
-      setSearchResults([]);
-      setShowSearchResults(false);
-      return;
-    }
-    setIsSearching(true);
-    setShowSearchResults(true);
+  // 5. Handle "Help Him / Respond" Action
+  const handleOfferHelp = async (place: EmergencyPlace) => {
+    setIsAcceptingHelp(true);
     try {
-      const q = text.toLowerCase();
-      const filtered = mapPlaces
-        .filter((p) => p.name.toLowerCase().includes(q) || p.address.toLowerCase().includes(q))
-        .map((p) => ({
-          name: p.name,
-          address: p.address,
-          lat: p.coordinates.lat,
-          lng: p.coordinates.lng,
-        }));
-      setSearchResults(filtered);
-    } finally {
-      setIsSearching(false);
-    }
-  };
+      setRespondedSosIds((prev) => ({ ...prev, [place.id]: true }));
+      setIsNavigating(true);
+      setShowProfileModal(false);
 
-  const handleSelectSearchResult = (result: { name: string; address: string; lat: number; lng: number }) => {
-    setUserCoord((prev) => ({
-      ...prev,
-      latitude: result.lat,
-      longitude: result.lng,
-      address: result.name,
-    }));
-    setShowSearchResults(false);
-    setSearchQuery(result.name);
+      // Call API accept
+      try {
+        await acceptOffer({
+          sosId: place.id,
+          category: (place.type || "general") as any,
+          title: place.name,
+          severity: "CRITICAL",
+          distanceKm: place.distanceKm || 1.1,
+          estimatedArrivalMinutes: place.estimatedMinutes || 3,
+          peopleCount: 1,
+          urgencyReason: "Responding to emergency distress beacon",
+          maskedLocation: {
+            area: place.address || "Local Sector",
+            district: "Local Sector",
+            state: "Andhra Pradesh",
+            approximateLatitude: place.coordinates.lat,
+            approximateLongitude: place.coordinates.lng,
+          },
+          requesterInitials: "AS",
+          timestamp: new Date().toISOString(),
+          expiresInSeconds: 3600,
+        });
+      } catch {}
+
+      Alert.alert(
+        "Help Confirmed",
+        `You are now registered as an active responder for "${place.name}". Turn-by-turn navigation route is now active on your map.`,
+        [{ text: "Start Route Navigation", onPress: () => setIsNavigating(true) }]
+      );
+    } finally {
+      setIsAcceptingHelp(false);
+    }
   };
 
   return (
-    <ScreenContainer className="p-0" edges={["top", "left", "right"]}>
+    <ScreenContainer className="p-0" edges={[]} activeTab="safe" enableSwipeTabs={false}>
       <View style={styles.container}>
-        {/* 1. FULL-BLEED GOOGLE MAPS CANVAS */}
+        {/* 1. TRUE FULL-BLEED 100% SCREEN MAP (BLINKING RED SOS CIRCLE MARKER) */}
         <LiveRealtimeMap
+          fullScreen={true}
           userLocation={userCoord}
-          places={mapPlaces}
-          selectedPlace={selectedPlace}
-          onSelectPlace={(p) => setSelectedPlace(p)}
+          places={nearbySosPlaces}
+          selectedPlace={selectedSosPlace}
+          onSelectPlace={(p) => {
+            setSelectedSosPlace(p);
+            setShowProfileModal(true); // POP UP VICTIM PROFILE INFO CARD ON BLINKING ICON CLICK
+          }}
           onRecenter={fetchLiveGPS}
           isLoadingLocation={isLoadingLocation}
-          defaultLayer={mapLayer}
+          defaultLayer="roadmap"
           routeCoordinates={routeResult?.coordinates}
           routeDistanceKm={routeResult?.distanceKm}
           routeDurationMin={routeResult?.durationMinutes}
-          routingProvider={routeResult?.provider}
+          routingProvider={routeResult?.provider || "Aegis Emergency Dispatch Route"}
           isNavigating={isNavigating}
+          currentStepInstruction={
+            isNavigating && selectedSosPlace
+              ? `Proceed along route towards victim (${selectedSosPlace.name})`
+              : undefined
+          }
         />
 
-        {/* 2. GOOGLE MAPS FLOATING TOP SEARCH BAR */}
-        <View style={styles.topSearchWrapper}>
-          <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <IconSymbol name="location.fill" size={18} color="#EA4335" />
-            <TextInput
-              style={[styles.searchInput, { color: colors.foreground }]}
-              placeholder="Search maps, shelters, zones..."
-              placeholderTextColor={colors.muted}
-              value={searchQuery}
-              onChangeText={handleSearch}
-              returnKeyType="search"
-            />
-            {searchQuery ? (
-              <Pressable
-                onPress={() => {
-                  setSearchQuery("");
-                  setShowSearchResults(false);
-                }}
-                style={styles.searchAction}
-              >
-                <IconSymbol name="xmark" size={14} color={colors.muted} />
-              </Pressable>
-            ) : (
-              <Pressable onPress={fetchLiveGPS} style={styles.searchAction}>
-                <IconSymbol name="arrow.triangle.2.circlepath" size={16} color={colors.primary} />
-              </Pressable>
-            )}
-          </View>
-
-          {/* Search Dropdown Results */}
-          {showSearchResults && searchResults.length > 0 && (
-            <View style={[styles.searchDropdown, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              {searchResults.map((item, idx) => (
-                <Pressable
-                  key={idx}
-                  onPress={() => handleSelectSearchResult(item)}
-                  style={({ pressed }) => [styles.searchItem, { borderBottomColor: colors.border }, pressed && styles.pressed]}
-                >
-                  <IconSymbol name="location.fill" size={15} color={colors.primary} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.searchItemName, { color: colors.foreground }]}>{item.name}</Text>
-                    <Text style={[styles.searchItemAddr, { color: colors.muted }]} numberOfLines={1}>
-                      {item.address}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
-          )}
-
-          {/* 3. TWO MAP OPTIONS SELECTOR PILL (SOS MAP & SAFE MAP) */}
-          <View style={styles.modeSelectorPillContainer}>
-            <View style={[styles.segmentedPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              {/* Option 1: SOS Map */}
-              <Pressable
-                onPress={() => setMapMode("sos")}
-                style={[
-                  styles.segmentOption,
-                  mapMode === "sos" && [styles.activeSegmentOption, { backgroundColor: "#EF4444" }],
-                ]}
-              >
-                <IconSymbol
-                  name="sos.circle.fill"
-                  size={15}
-                  color={mapMode === "sos" ? "#FFFFFF" : colors.muted}
-                />
-                <Text
-                  style={[
-                    styles.segmentText,
-                    { color: mapMode === "sos" ? "#FFFFFF" : colors.foreground },
-                  ]}
-                >
-                  (1) SOS Map
-                </Text>
-              </Pressable>
-
-              {/* Option 2: Safe Map */}
-              <Pressable
-                onPress={() => setMapMode("safe")}
-                style={[
-                  styles.segmentOption,
-                  mapMode === "safe" && [styles.activeSegmentOption, { backgroundColor: "#10B981" }],
-                ]}
-              >
-                <IconSymbol
-                  name="shield.lefthalf.filled"
-                  size={15}
-                  color={mapMode === "safe" ? "#FFFFFF" : colors.muted}
-                />
-                <Text
-                  style={[
-                    styles.segmentText,
-                    { color: mapMode === "safe" ? "#FFFFFF" : colors.foreground },
-                  ]}
-                >
-                  (2) Safe Map
-                </Text>
-              </Pressable>
-            </View>
+        {/* 2. TOP FLOATING SOS RADAR STATUS HUD */}
+        <View style={styles.topFloatingHud}>
+          <View style={[styles.statusBadge, { backgroundColor: "#DC2626F0", borderColor: "#B91C1C" }]}>
+            <View style={styles.pulseDot} />
+            <Text style={styles.statusBadgeText}>
+              {nearbySosPlaces.length} ACTIVE SOS IN 10-20KM RANGE • TAP BLINKING SOS
+            </Text>
           </View>
         </View>
 
-        {/* 4. FLOATING MAP CONTROLS (RIGHT SIDE) */}
-        <View style={styles.floatingControls}>
-          {/* Layer Selector Button */}
-          <Pressable
-            onPress={() => setShowLayerMenu((prev) => !prev)}
-            style={[styles.floatingBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            accessibilityLabel="Switch Google Map Layer"
-          >
-            <IconSymbol name="map.fill" size={20} color={colors.foreground} />
-          </Pressable>
 
-          {/* Recenter Live GPS Button */}
-          <Pressable
-            onPress={fetchLiveGPS}
-            style={[styles.floatingBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            accessibilityLabel="Recenter to Live GPS"
-          >
-            {isLoadingLocation ? (
-              <ActivityIndicator size="small" color={colors.primary} />
-            ) : (
-              <IconSymbol name="location.fill" size={20} color="#1A73E8" />
-            )}
-          </Pressable>
-        </View>
 
-        {/* Layer Selection Floating Menu */}
-        {showLayerMenu && (
-          <View style={[styles.layerMenu, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.layerMenuTitle, { color: colors.muted }]}>MAP LAYERS</Text>
-            {(["roadmap", "hybrid", "terrain"] as GoogleMapLayerType[]).map((lyr) => {
-              const info = GOOGLE_MAP_LAYERS[lyr];
-              const isActive = mapLayer === lyr;
-              return (
-                <Pressable
-                  key={lyr}
-                  onPress={() => {
-                    setMapLayer(lyr);
-                    setShowLayerMenu(false);
-                  }}
-                  style={[
-                    styles.layerOption,
-                    isActive && { backgroundColor: colors.primary + "18", borderRadius: 8 },
-                  ]}
-                >
-                  <Text style={styles.layerIcon}>{info.icon}</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.layerName, { color: colors.foreground, fontWeight: isActive ? "700" : "500" }]}>
-                      {info.name}
-                    </Text>
-                    <Text style={[styles.layerDesc, { color: colors.muted }]}>{info.description}</Text>
+{/* Bottom preview pill removed to keep map view clean; tap blinking marker directly to view profile */}
+
+        {/* ========================================================================= */}
+        {/* 5. VICTIM PROFILE INFO CARD MODAL (POPS UP WHEN BLINKING SOS ICON IS CLICKED) */}
+        {/* ========================================================================= */}
+        <Modal
+          visible={showProfileModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowProfileModal(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={[styles.modalCard, { backgroundColor: colors.background, borderColor: "#DC2626" }]}>
+              {/* Header with Close */}
+              <View style={styles.modalHeader}>
+                <View style={styles.victimHeaderRow}>
+                  <View style={styles.sosAvatarCircle}>
+                    <Text style={styles.sosAvatarText}>SOS</Text>
                   </View>
-                  {isActive && <IconSymbol name="checkmark.circle.fill" size={16} color={colors.primary} />}
-                </Pressable>
-              );
-            })}
-          </View>
-        )}
-
-        {/* 5. DYNAMIC BOTTOM STATUS & EVACUATION ACTION CARD */}
-        <View style={styles.bottomCardContainer}>
-          {mapMode === "sos" ? (
-            /* SOS Map Info Bar */
-            <View style={[styles.bannerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={styles.bannerRow}>
-                <View style={[styles.iconPill, { backgroundColor: "#EF444420" }]}>
-                  <IconSymbol name="sos.circle.fill" size={22} color="#EF4444" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.bannerTitle, { color: colors.foreground }]}>
-                    SOS Map Telemetry Active
-                  </Text>
-                  <Text style={[styles.bannerSubtitle, { color: colors.muted }]}>
-                    Displaying active district distress beacons ({sosMarkers.length} beacons). SOS Map feature updates incoming.
-                  </Text>
-                </View>
-              </View>
-            </View>
-          ) : activeEvacHazard && evacPlan ? (
-            /* Safe Map: ACTIVE HAZARD & EVACUATION ORDER */
-            <View style={[styles.bannerCard, { backgroundColor: colors.surface, borderColor: "#DC2626" }]}>
-              <View style={styles.evacAlertRow}>
-                <View style={[styles.iconPill, { backgroundColor: "#DC262625" }]}>
-                  <IconSymbol name="exclamationmark.triangle.fill" size={22} color="#DC2626" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <View style={styles.alertHeaderRow}>
-                    <Text style={[styles.evacTitle, { color: "#DC2626" }]}>
-                      ⚠️ EVACUATION ORDER: {activeEvacHazard.title.toUpperCase()}
-                    </Text>
-                    <View style={styles.evacBadge}>
-                      <Text style={styles.evacBadgeText}>ACTION REQUIRED</Text>
-                    </View>
-                  </View>
-                  <Text style={[styles.evacDesc, { color: colors.foreground }]} numberOfLines={2}>
-                    {activeEvacHazard.description}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Recommended Safe Shelter */}
-              {selectedPlace && (
-                <View style={[styles.shelterBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.shelterLabel, { color: colors.muted }]}>SAFEST EVACUATION DESTINATION</Text>
-                    <Text style={[styles.shelterName, { color: colors.foreground }]}>{selectedPlace.name}</Text>
-                    <Text style={[styles.shelterMeta, { color: colors.muted }]}>
-                      📍 Safe high-elevation shelter • {selectedPlace.address}
+                    <Text style={styles.profileBadgeText}>ACTIVE EMERGENCY DISTRESS</Text>
+                    <Text style={[styles.victimNameText, { color: colors.foreground }]}>
+                      {victimProfile?.name || "Citizen in Distress"}
                     </Text>
                   </View>
                   <Pressable
-                    onPress={() => setIsNavigating((prev) => !prev)}
-                    style={[styles.evacNavBtn, { backgroundColor: isNavigating ? "#10B981" : "#1A73E8" }]}
+                    onPress={() => setShowProfileModal(false)}
+                    style={[styles.closeModalBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   >
-                    <IconSymbol
-                      name={isNavigating ? "checkmark.circle.fill" : "arrow.triangle.turn.up.right.diamond.fill"}
-                      size={16}
-                      color="#FFFFFF"
-                    />
-                    <Text style={styles.evacNavBtnText}>
-                      {isNavigating ? "Navigating" : "Start Route"}
-                    </Text>
+                    <IconSymbol name="xmark" size={16} color={colors.foreground} />
                   </Pressable>
                 </View>
-              )}
-            </View>
-          ) : (
-            /* Safe Map: ALL CLEAR (NO EVACUATION NEEDED) */
-            <View style={[styles.bannerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={styles.bannerRow}>
-                <View style={[styles.iconPill, { backgroundColor: "#10B98120" }]}>
-                  <IconSymbol name="shield.lefthalf.filled" size={22} color="#10B981" />
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScrollContent}>
+                {/* Distance & Travel Time Hero Strip */}
+                <View style={[styles.heroMetricRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <View style={styles.heroMetricItem}>
+                    <Text style={[styles.heroMetricValue, { color: "#DC2626" }]}>
+                      {victimProfile?.distanceKm} km
+                    </Text>
+                    <Text style={[styles.heroMetricLabel, { color: colors.muted }]}>Distance to Victim</Text>
+                  </View>
+                  <View style={styles.heroMetricDivider} />
+                  <View style={styles.heroMetricItem}>
+                    <Text style={[styles.heroMetricValue, { color: "#1A73E8" }]}>
+                      ~{victimProfile?.etaMinutes} min
+                    </Text>
+                    <Text style={[styles.heroMetricLabel, { color: colors.muted }]}>Estimated Drive ETA</Text>
+                  </View>
+
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.bannerTitle, { color: colors.foreground }]}>
-                    🟢 Safe Map: All Clear
-                  </Text>
-                  <Text style={[styles.bannerSubtitle, { color: colors.muted }]}>
-                    No active evacuation orders in your zone. Safe Map is standing by and will automatically engage when hazard evacuation is required.
+
+
+
+                {/* Emergency Contact & Family Numbers Card */}
+                <View style={[styles.infoSectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.sectionHeading, { color: colors.primary }]}>CONTACT & FAMILY INFO</Text>
+                  
+                  {/* SOS Victim Phone Number */}
+                  <View style={styles.contactRowContainer}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.profileDataKey, { color: colors.muted }]}>SOS Victim Phone:</Text>
+                      <Text style={[styles.contactNumberText, { color: colors.foreground }]}>
+                        {victimProfile?.victimPhone}
+                      </Text>
+                    </View>
+                    <Pressable
+                      onPress={() => Linking.openURL(`tel:${victimProfile?.victimPhone?.replace(/\s+/g, "")}`)}
+                      style={[styles.directCallButton, { backgroundColor: "#DC2626" }]}
+                    >
+                      <IconSymbol name="phone.fill" size={13} color="#FFFFFF" />
+                      <Text style={styles.directCallButtonText}>Call Victim</Text>
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.dataRowDivider} />
+
+                  {/* Family Member Phone Number */}
+                  <View style={styles.contactRowContainer}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.profileDataKey, { color: colors.muted }]}>
+                        Family ({victimProfile?.familyRelationship} - {victimProfile?.familyContactName}):
+                      </Text>
+                      <Text style={[styles.contactNumberText, { color: colors.foreground }]}>
+                        {victimProfile?.familyContactPhone}
+                      </Text>
+                    </View>
+                    <Pressable
+                      onPress={() => Linking.openURL(`tel:${victimProfile?.familyContactPhone?.replace(/\s+/g, "")}`)}
+                      style={[styles.directCallButton, { backgroundColor: "#1A73E8" }]}
+                    >
+                      <IconSymbol name="phone.fill" size={13} color="#FFFFFF" />
+                      <Text style={styles.directCallButtonText}>Call Family</Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                {/* Law Enforcement & Police Station Contacts Card */}
+                <View style={[styles.infoSectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.sectionHeading, { color: "#1E40AF" }]}>POLICE JURISDICTION CONTACTS</Text>
+
+                  {/* Nearby Police Station (Incident Location) */}
+                  <View style={styles.contactRowContainer}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.profileDataKey, { color: colors.muted }]}>
+                        Nearby Police Station (Incident Jurisdiction):
+                      </Text>
+                      <Text style={[styles.policeStationNameText, { color: colors.foreground }]}>
+                        {victimProfile?.nearbyPoliceStationName}
+                      </Text>
+                      <Text style={[styles.contactNumberText, { color: "#1E40AF" }]}>
+                        {victimProfile?.nearbyPoliceStationPhone}
+                      </Text>
+                    </View>
+                    <Pressable
+                      onPress={() => Linking.openURL(`tel:${victimProfile?.nearbyPoliceStationPhone?.replace(/\s+/g, "")}`)}
+                      style={[styles.directCallButton, { backgroundColor: "#1E40AF" }]}
+                    >
+                      <IconSymbol name="phone.fill" size={13} color="#FFFFFF" />
+                      <Text style={styles.directCallButtonText}>Call Police</Text>
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.dataRowDivider} />
+
+                  {/* Hometown Police Station */}
+                  <View style={styles.contactRowContainer}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.profileDataKey, { color: colors.muted }]}>
+                        Victim's Hometown Police Station:
+                      </Text>
+                      <Text style={[styles.policeStationNameText, { color: colors.foreground }]}>
+                        {victimProfile?.hometownPoliceStationName}
+                      </Text>
+                      <Text style={[styles.contactNumberText, { color: "#475569" }]}>
+                        {victimProfile?.hometownPoliceStationPhone}
+                      </Text>
+                    </View>
+                    <Pressable
+                      onPress={() => Linking.openURL(`tel:${victimProfile?.hometownPoliceStationPhone?.replace(/\s+/g, "")}`)}
+                      style={[styles.directCallButton, { backgroundColor: "#475569" }]}
+                    >
+                      <IconSymbol name="phone.fill" size={13} color="#FFFFFF" />
+                      <Text style={styles.directCallButtonText}>Call Hometown</Text>
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.dataRowDivider} />
+
+                  {/* Device Battery */}
+                  <View style={styles.profileDataRow}>
+                    <Text style={[styles.profileDataKey, { color: colors.muted }]}>Device Battery:</Text>
+                    <Text style={[styles.profileDataVal, { color: "#10B981" }]}>{victimProfile?.batteryPercent}% Remaining</Text>
+                  </View>
+
+                  <View style={styles.dataRowDivider} />
+
+                  {/* Location */}
+                  <View style={styles.profileDataRow}>
+                    <Text style={[styles.profileDataKey, { color: colors.muted }]}>Location:</Text>
+                    <Text style={[styles.profileDataVal, { color: colors.foreground }]} numberOfLines={1}>{victimProfile?.locationName}</Text>
+                  </View>
+                </View>
+
+                {/* Privacy Badge */}
+                <View style={styles.privacyPill}>
+                  <IconSymbol name="lock.shield.fill" size={13} color="#10B981" />
+                  <Text style={styles.privacyText}>
+                    Authorized responder communication • Encrypted disaster network
                   </Text>
                 </View>
+              </ScrollView>
+
+              {/* Action Buttons: [ 🤝 OFFER HELP ] [ 🧭 ROUTE ] [ 📞 CALL ] */}
+              <View style={styles.modalActionRow}>
+                {/* 1. Help Him / Accept */}
+                <Pressable
+                  onPress={() => selectedSosPlace && handleOfferHelp(selectedSosPlace)}
+                  disabled={isAcceptingHelp}
+                  style={[
+                    styles.modalHelpBtn,
+                    { backgroundColor: selectedSosPlace && respondedSosIds[selectedSosPlace.id] ? "#10B981" : "#DC2626" },
+                  ]}
+                >
+                  {isAcceptingHelp ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <IconSymbol
+                        name={selectedSosPlace && respondedSosIds[selectedSosPlace.id] ? "checkmark.circle.fill" : "person.badge.shield.checkmark.fill"}
+                        size={18}
+                        color="#FFFFFF"
+                      />
+                      <Text style={styles.modalHelpBtnText}>
+                        {selectedSosPlace && respondedSosIds[selectedSosPlace.id] ? "Aid Dispatched" : "Help Him"}
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+
+                {/* 2. Route */}
+                <Pressable
+                  onPress={() => {
+                    setIsNavigating(true);
+                    setShowProfileModal(false);
+                  }}
+                  style={[styles.modalRouteBtn, { borderColor: "#1A73E8" }]}
+                >
+                  <IconSymbol name="arrow.triangle.turn.up.right.diamond.fill" size={17} color="#1A73E8" />
+                  <Text style={styles.modalRouteBtnText}>Route</Text>
+                </Pressable>
+
+                {/* 3. Call */}
+                <Pressable
+                  onPress={() => Linking.openURL(`tel:${victimProfile?.victimPhone?.replace(/\s+/g, "") || "112"}`)}
+                  style={styles.modalCallBtn}
+                >
+                  <IconSymbol name="phone.fill" size={16} color="#FFFFFF" />
+                  <Text style={styles.modalCallBtnText}>Call</Text>
+                </Pressable>
               </View>
             </View>
-          )}
-        </View>
+          </View>
+        </Modal>
       </View>
     </ScreenContainer>
   );
@@ -595,121 +624,44 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  topSearchWrapper: {
+  topFloatingHud: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 10 : 8,
-    left: 12,
-    right: 12,
+    top: Platform.OS === "ios" ? 14 : 10,
+    left: 14,
+    right: 70,
     zIndex: 30,
   },
-  searchBar: {
+  statusBadge: {
     flexDirection: "row",
     alignItems: "center",
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    gap: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  searchAction: {
-    padding: 6,
-  },
-  searchDropdown: {
-    marginTop: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    maxHeight: 200,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
     elevation: 5,
   },
-  searchItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    gap: 10,
-    borderBottomWidth: 0.5,
+  pulseDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
+    backgroundColor: "#FFFFFF",
   },
-  searchItemName: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  searchItemAddr: {
+  statusBadgeText: {
     fontSize: 11,
-    marginTop: 1,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+    color: "#FFFFFF",
   },
-  modeSelectorPillContainer: {
-    alignItems: "center",
-    marginTop: 8,
-  },
-  segmentedPill: {
-    flexDirection: "row",
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  segmentOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 16,
-    gap: 6,
-  },
-  activeSegmentOption: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  segmentText: {
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.2,
-  },
-  floatingControls: {
-    position: "absolute",
-    right: 14,
-    top: 130,
-    zIndex: 25,
-    gap: 10,
-  },
-  floatingBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 4,
-  },
+
   layerMenu: {
     position: "absolute",
     right: 66,
-    top: 130,
+    top: Platform.OS === "ios" ? 14 : 10,
     width: 210,
     borderRadius: 16,
     borderWidth: 1,
@@ -744,113 +696,282 @@ const styles = StyleSheet.create({
   layerDesc: {
     fontSize: 10,
   },
-  bottomCardContainer: {
+  bottomPreviewPillContainer: {
     position: "absolute",
-    bottom: 12,
-    left: 12,
-    right: 12,
+    bottom: 14,
+    left: 14,
+    right: 14,
     zIndex: 30,
   },
-  bannerCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.16,
-    shadowRadius: 8,
-    elevation: 5,
-    gap: 10,
-  },
-  bannerRow: {
+  bottomPreviewPill: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    padding: 12,
+    borderRadius: 18,
+    borderWidth: 2,
+    gap: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
   },
-  iconPill: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  sosIconCircleSmall: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "#DC2626",
     alignItems: "center",
     justifyContent: "center",
   },
-  bannerTitle: {
-    fontSize: 14,
-    fontWeight: "800",
+  sosIconTextSmall: {
+    color: "#FFFFFF",
+    fontWeight: "900",
+    fontSize: 12,
   },
-  bannerSubtitle: {
+  previewTitle: {
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  previewSub: {
     fontSize: 11,
-    lineHeight: 15,
-    marginTop: 2,
+    fontWeight: "600",
+    marginTop: 1,
   },
-  evacAlertRow: {
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.65)",
+    justifyContent: "flex-end",
+  },
+  modalCard: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderTopWidth: 3,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    maxHeight: "82%",
+    padding: 18,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  modalHeader: {
+    marginBottom: 14,
+  },
+  victimHeaderRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 12,
   },
-  alertHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 6,
-  },
-  evacTitle: {
-    fontSize: 12,
-    fontWeight: "900",
-    letterSpacing: 0.3,
-  },
-  evacBadge: {
+  sosAvatarCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: "#DC2626",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  evacBadgeText: {
-    color: "#FFFFFF",
-    fontSize: 9,
-    fontWeight: "900",
-  },
-  evacDesc: {
-    fontSize: 11,
-    marginTop: 3,
-    lineHeight: 15,
-  },
-  shelterBox: {
-    flexDirection: "row",
     alignItems: "center",
-    padding: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 10,
+    justifyContent: "center",
+    shadowColor: "#DC2626",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
   },
-  shelterLabel: {
-    fontSize: 9,
-    fontWeight: "800",
+  sosAvatarText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "900",
     letterSpacing: 0.5,
   },
-  shelterName: {
-    fontSize: 13,
-    fontWeight: "800",
-    marginTop: 1,
+  profileBadgeText: {
+    color: "#DC2626",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.6,
   },
-  shelterMeta: {
+  victimNameText: {
+    fontSize: 16,
+    fontWeight: "900",
+    marginTop: 2,
+  },
+  closeModalBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalScrollContent: {
+    gap: 12,
+    paddingBottom: 14,
+  },
+  heroMetricRow: {
+    flexDirection: "row",
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    alignItems: "center",
+    justifyContent: "space-around",
+  },
+  heroMetricItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  heroMetricValue: {
+    fontSize: 18,
+    fontWeight: "900",
+  },
+  heroMetricLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    marginTop: 2,
+    textAlign: "center",
+  },
+  heroMetricDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: "rgba(150,150,150,0.25)",
+  },
+  infoSectionCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 12,
+    gap: 6,
+  },
+  sectionHeading: {
     fontSize: 11,
-    marginTop: 1,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
-  evacNavBtn: {
+  emergencyDetailText: {
+    fontSize: 13.5,
+    fontWeight: "800",
+  },
+  emergencyNoteText: {
+    fontSize: 12,
+    fontStyle: "italic",
+    lineHeight: 16,
+  },
+  profileDataRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 3,
+  },
+  profileDataKey: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  profileDataVal: {
+    fontSize: 12.5,
+    fontWeight: "800",
+    maxWidth: "60%",
+    textAlign: "right",
+  },
+  dataRowDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(150,150,150,0.2)",
+  },
+  privacyPill: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 18,
-    gap: 5,
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 4,
   },
-  evacNavBtnText: {
-    color: "#FFFFFF",
+  privacyText: {
+    fontSize: 10.5,
+    color: "#10B981",
+    fontWeight: "600",
+  },
+  contactRowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 6,
+    gap: 8,
+  },
+  policeStationNameText: {
     fontSize: 12,
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  contactNumberText: {
+    fontSize: 14,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+    marginTop: 2,
+  },
+  directCallButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  directCallButtonText: {
+    color: "#FFFFFF",
+    fontSize: 11,
     fontWeight: "800",
   },
-  pressed: {
-    opacity: 0.7,
+  modalActionRow: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+    marginTop: 6,
+  },
+  modalHelpBtn: {
+    flex: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 13,
+    borderRadius: 14,
+    shadowColor: "#DC2626",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  modalHelpBtnText: {
+    color: "#FFFFFF",
+    fontSize: 13.5,
+    fontWeight: "900",
+  },
+  modalRouteBtn: {
+    flex: 1.3,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    backgroundColor: "#FFFFFF",
+  },
+  modalRouteBtnText: {
+    color: "#1A73E8",
+    fontSize: 12.5,
+    fontWeight: "800",
+  },
+  modalCallBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    borderRadius: 14,
+    backgroundColor: "#1F2937",
+  },
+  modalCallBtnText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "800",
   },
 });

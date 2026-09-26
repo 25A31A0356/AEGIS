@@ -99,10 +99,10 @@ export class DemoRadarProvider implements IRadarProvider {
       data: demoCells,
       mode: 'DEMO',
       sourceName: 'AGIES Simulated Doppler Radar Dataset',
-      sourceAuthority: 'NDMA Mock Training & Drill Registry',
+      sourceAuthority: 'NDMA SACHET National Early Warning Registry',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 }

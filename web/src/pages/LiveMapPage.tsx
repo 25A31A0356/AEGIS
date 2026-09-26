@@ -1,193 +1,331 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLocation } from '../context/LocationContext';
 import { useSOS } from '../context/SOSContext';
 import { HazardService } from '../services/hazardService';
 import { IndiaSafetyMap, MapLayersState } from '../components/map/IndiaSafetyMap';
-import { DEMO_STATES } from '../data/demoStates';
-import { DEMO_SHELTERS } from '../data/demoShelters';
-import { SOSBeacon } from '../types/sos';
-import { ShieldCheck, Radio } from 'lucide-react';
+import { STATE_VICTIM_BEACONS, StateVictimProfile } from '../data/stateVictimBeacons';
+import { VictimProfileModal } from '../components/sos/VictimProfileModal';
+import { normalizeBeaconState } from '../services/sosService';
+import {
+  Maximize2,
+  Minimize2,
+  RefreshCw,
+  PhoneCall,
+  Radio,
+  AlertTriangle,
+  Users,
+} from 'lucide-react';
 
 export const LiveMapPage: React.FC = () => {
   const { selectedLocation } = useLocation();
-  const { beacons, updateBeaconTriage } = useSOS();
+  const {
+    beacons,
+    refreshBeacons,
+    isLiveLoading,
+  } = useSOS();
   const hazards = HazardService.getAllHazards();
 
-  const [mapMode, setMapMode] = useState<'weather' | 'sos'>('weather');
-  const [selectedBeacon, setSelectedBeacon] = useState<SOSBeacon | null>(null);
+  const [selectedVictim, setSelectedVictim] = useState<StateVictimProfile | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedStateFilter, setSelectedStateFilter] = useState<string>('all');
+  const [severityFilter, setSeverityFilter] = useState<'all' | 'critical' | 'warning' | 'moderate'>('all');
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
-  const [mapLayers, setMapLayers] = useState<MapLayersState>({
-    weatherRadar: true,
+  // Dedicated SOS Map Layer Configuration (100% Isolated)
+  const mapLayers: MapLayersState = {
+    cycloneTrack: false,
     isobarWinds: false,
-    floodInundation: true,
-    cycloneTrack: true,
+    weatherMap: false,
+    weatherRadar: false,
+    floodInundation: false,
     wildfireHotspots: false,
-    earthquakes: true,
+    earthquakes: false,
+    safeShelters: false,
     sosBeacons: true,
-    safeShelters: true,
-    baseLayer: 'dark',
-  });
-
-  const city = selectedLocation?.name || 'Visakhapatnam';
-  const coords: [number, number] = selectedLocation?.coordinates && selectedLocation.coordinates.length === 2
-    ? [selectedLocation.coordinates[0], selectedLocation.coordinates[1]]
-    : [17.6868, 83.2185];
-
-  const toggleLayer = (key: keyof Omit<MapLayersState, 'baseLayer'>) => {
-    setMapLayers((prev) => ({ ...prev, [key]: !prev[key] }));
+    baseLayer: 'light',
   };
 
-  const toggleBaseLayer = () => {
-    setMapLayers((prev) => ({
-      ...prev,
-      baseLayer: prev.baseLayer === 'satellite' ? 'dark' : prev.baseLayer === 'dark' ? 'light' : 'satellite',
-    }));
+  const coords: [number, number] =
+    selectedLocation?.coordinates && selectedLocation.coordinates.length === 2
+      ? [selectedLocation.coordinates[0], selectedLocation.coordinates[1]]
+      : [17.6868, 83.2185];
+
+  // Merge context beacons with state victim beacons
+  const allVictimBeacons: StateVictimProfile[] = useMemo(() => {
+    const list = [...STATE_VICTIM_BEACONS];
+    beacons.forEach((b) => {
+      const exists = list.some((item) => item.id === b.id);
+      const normalizedState = normalizeBeaconState(b.state, b.district, b.coordinates);
+
+      if (!exists) {
+        list.unshift({
+          ...b,
+          victimName: (b as any).victimName || b.anonymousAlias || 'Citizen in Distress',
+          familyContactName: (b as any).familyContactName || 'Family Member',
+          familyContactPhone: (b as any).familyContactPhone || b.phoneMasked || '+91 91100 00000',
+          familyRelationship: (b as any).familyRelationship || 'Relative',
+          nearbyPoliceStationName: (b as any).nearbyPoliceStationName || `${b.district || 'Local'} Police Station Control Desk`,
+          nearbyPoliceStationPhone: (b as any).nearbyPoliceStationPhone || '112',
+          hometownPoliceStationName: (b as any).hometownPoliceStationName || 'District Police Headquarters',
+          hometownPoliceStationPhone: (b as any).hometownPoliceStationPhone || '100',
+          signalStatus: (b as any).signalStatus || '4G Active (Good)',
+          elevationMeters: (b as any).elevationMeters || 22,
+          state: normalizedState,
+        });
+      }
+    });
+    return list;
+  }, [beacons]);
+
+  // Filter beacons by state and severity level
+  const filteredBeacons = useMemo(() => {
+    return allVictimBeacons.filter((b) => {
+      const stateMatch =
+        selectedStateFilter === 'all' ||
+        b.state.toLowerCase() === selectedStateFilter.toLowerCase() ||
+        (selectedStateFilter === 'andhra pradesh' && b.state.toLowerCase().includes('andhra')) ||
+        (selectedStateFilter === 'odisha' && b.state.toLowerCase().includes('odisha')) ||
+        (selectedStateFilter === 'maharashtra' && b.state.toLowerCase().includes('maharashtra')) ||
+        (selectedStateFilter === 'kerala' && b.state.toLowerCase().includes('kerala')) ||
+        (selectedStateFilter === 'tamil nadu' && b.state.toLowerCase().includes('tamil')) ||
+        (selectedStateFilter === 'west bengal' && b.state.toLowerCase().includes('bengal'));
+
+      const severityMatch =
+        severityFilter === 'all' || b.severity === severityFilter;
+
+      return stateMatch && severityMatch;
+    });
+  }, [allVictimBeacons, selectedStateFilter, severityFilter]);
+
+  // Counts
+  const criticalCount = allVictimBeacons.filter(b => b.severity === 'critical').length;
+  const warningCount = allVictimBeacons.filter(b => b.severity === 'warning').length;
+  const moderateCount = allVictimBeacons.filter(b => b.severity === 'moderate').length;
+
+  const handleSelectSOS = (sosId: string) => {
+    const found = allVictimBeacons.find((b) => b.id === sosId);
+    if (found) {
+      setSelectedVictim(found);
+      setIsModalOpen(true);
+    }
   };
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto pb-12 font-sans">
-      {/* Top Header & Tactical Mode Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-[#27272a]">
+    <div className={`space-y-4 max-w-7xl mx-auto pb-12 font-sans ${isFullscreen ? 'fixed inset-0 z-[1000] bg-white dark:bg-black p-4 m-0 max-w-none overflow-y-auto' : ''}`}>
+      {/* Top Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-white/10">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              AEGIS Operational GIS Maps
+            <span className="w-3 h-3 rounded-full bg-red-600 animate-ping"></span>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+              SOS Maps
             </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-800">
+              {filteredBeacons.length} ACTIVE BEACONS
+            </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-[#a1a1aa] mt-0.5">
-            Real-time multi-hazard geospatial intelligence & tactical distress grid.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Real-time citizen distress beacon tracking, triage assessment & emergency rescue coordination across Indian states.
           </p>
         </div>
 
-        {/* Mode Toggle: Weather & Hazard GIS vs SOS Command Map */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#111111] p-1.5 rounded-xl border border-slate-200 dark:border-[#27272a] shadow-xs">
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 self-start lg:self-auto">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Live GPS Stream</span>
+          </div>
+
           <button
-            onClick={() => {
-              setMapMode('weather');
-              setMapLayers((prev) => ({ ...prev, weatherRadar: true, floodInundation: true, sosBeacons: false }));
-            }}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              mapMode === 'weather'
-                ? 'bg-slate-900 dark:bg-white text-white dark:text-black shadow-xs'
-                : 'text-slate-600 dark:text-[#a1a1aa] hover:text-slate-900 dark:hover:text-white'
-            }`}
+            onClick={() => refreshBeacons()}
+            disabled={isLiveLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 dark:border-white/10 bg-white dark:bg-[#18181b] hover:bg-slate-50 dark:hover:bg-[#27272a] text-slate-800 dark:text-slate-200 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+            title="Refresh Live SOS Stream"
           >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Weather & Hazard GIS</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-600 dark:text-slate-300 ${isLiveLoading ? 'animate-spin' : ''}`} />
+            <span>Sync</span>
           </button>
+
           <button
-            onClick={() => {
-              setMapMode('sos');
-              setMapLayers((prev) => ({ ...prev, sosBeacons: true, weatherRadar: false }));
-            }}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-              mapMode === 'sos'
-                ? 'bg-red-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-[#a1a1aa] hover:text-slate-900 dark:hover:text-white'
-            }`}
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="p-1.5 rounded-xl text-xs font-bold border border-slate-200 dark:border-white/10 bg-white dark:bg-[#18181b] hover:bg-slate-50 dark:hover:bg-[#27272a] text-slate-800 dark:text-slate-200 transition-all cursor-pointer shadow-xs"
+            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Map'}
           >
-            <Radio className="w-3.5 h-3.5" />
-            <span>SOS Tactical Map</span>
-            {beacons.length > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-red-700 text-white">
-                {beacons.length}
-              </span>
-            )}
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
-      {/* Layer Pills Filter Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
-        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
-          Active Overlays:
-        </span>
-        {[
-          { key: 'weatherRadar', label: 'Doppler Radar', icon: '🌧️' },
-          { key: 'floodInundation', label: 'Flood Zones', icon: '🌊' },
-          { key: 'cycloneTrack', label: 'Cyclone Cones', icon: '🌀' },
-          { key: 'earthquakes', label: 'Seismic', icon: '⚡' },
-          { key: 'safeShelters', label: 'Relief Shelters', icon: '🏥' },
-          { key: 'sosBeacons', label: 'SOS Beacons', icon: '🚨' },
-        ].map(({ key, label, icon }) => {
-          const isActive = mapLayers[key as keyof typeof mapLayers];
-          return (
+      {/* Triage Overview & State Selector Controls */}
+      <div className="p-3.5 rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+          {/* State Dropdown Selector */}
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+              Filter State:
+            </span>
+            <select
+              value={selectedStateFilter}
+              onChange={(e) => setSelectedStateFilter(e.target.value)}
+              className="w-full md:w-64 p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-bold text-slate-800 dark:text-slate-100 cursor-pointer shadow-xs focus:ring-2 focus:ring-red-500"
+            >
+              <option value="all">All India ({allVictimBeacons.length} Distress Beacons)</option>
+              <option value="andhra pradesh">Andhra Pradesh (Coastal Zone)</option>
+              <option value="odisha">Odisha (Coastal Zone)</option>
+              <option value="maharashtra">Maharashtra</option>
+              <option value="tamil nadu">Tamil Nadu</option>
+              <option value="kerala">Kerala</option>
+              <option value="karnataka">Karnataka</option>
+              <option value="west bengal">West Bengal</option>
+              <option value="gujarat">Gujarat</option>
+              <option value="rajasthan">Rajasthan</option>
+              <option value="telangana">Telangana</option>
+              <option value="delhi ncr">Delhi NCR</option>
+              <option value="uttar pradesh">Uttar Pradesh</option>
+              <option value="bihar">Bihar</option>
+              <option value="assam">Assam</option>
+              <option value="punjab">Punjab</option>
+              <option value="haryana">Haryana</option>
+              <option value="madhya pradesh">Madhya Pradesh</option>
+              <option value="himachal pradesh">Himachal Pradesh</option>
+              <option value="uttarakhand">Uttarakhand</option>
+              <option value="jammu & kashmir">Jammu & Kashmir</option>
+              <option value="goa">Goa</option>
+            </select>
+          </div>
+
+          {/* Severity Filter Buttons */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 text-xs w-full md:w-auto">
             <button
-              key={key}
-              onClick={() => toggleLayer(key as any)}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer ${
-                isActive
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-black border-transparent shadow-xs'
-                  : 'bg-white dark:bg-[#111111] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#27272a] hover:border-slate-400'
+              onClick={() => setSeverityFilter('all')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-[11px] ${
+                severityFilter === 'all'
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-black shadow-xs'
+                  : 'bg-slate-100 dark:bg-[#18181b] text-slate-700 dark:text-slate-300 hover:bg-slate-200'
               }`}
             >
-              <span>{icon}</span>
-              <span>{label}</span>
+              All ({allVictimBeacons.length})
             </button>
-          );
-        })}
+            <button
+              onClick={() => setSeverityFilter('critical')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-[11px] ${
+                severityFilter === 'critical'
+                  ? 'bg-red-600 text-white shadow-xs'
+                  : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 hover:bg-red-100'
+              }`}
+            >
+              Critical ({criticalCount})
+            </button>
+            <button
+              onClick={() => setSeverityFilter('warning')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-[11px] ${
+                severityFilter === 'warning'
+                  ? 'bg-orange-600 text-white shadow-xs'
+                  : 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-900/50 hover:bg-orange-100'
+              }`}
+            >
+              Warning ({warningCount})
+            </button>
+            <button
+              onClick={() => setSeverityFilter('moderate')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-[11px] ${
+                severityFilter === 'moderate'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50 hover:bg-emerald-100'
+              }`}
+            >
+              Moderate ({moderateCount})
+            </button>
+          </div>
+        </div>
+
+        {/* Quick State Chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+          {[
+            { id: 'all', label: 'All India' },
+            { id: 'andhra pradesh', label: 'Andhra Pradesh' },
+            { id: 'odisha', label: 'Odisha' },
+            { id: 'maharashtra', label: 'Maharashtra' },
+            { id: 'tamil nadu', label: 'Tamil Nadu' },
+            { id: 'kerala', label: 'Kerala' },
+            { id: 'karnataka', label: 'Karnataka' },
+            { id: 'west bengal', label: 'West Bengal' },
+            { id: 'gujarat', label: 'Gujarat' },
+            { id: 'rajasthan', label: 'Rajasthan' },
+            { id: 'telangana', label: 'Telangana' },
+            { id: 'delhi ncr', label: 'Delhi NCR' },
+            { id: 'uttar pradesh', label: 'Uttar Pradesh' },
+          ].map((st) => (
+            <button
+              key={st.id}
+              onClick={() => setSelectedStateFilter(st.id)}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap cursor-pointer text-[11px] ${
+                selectedStateFilter === st.id
+                  ? 'bg-red-600 text-white shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+              }`}
+            >
+              {st.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Interactive Map Canvas */}
-      <div className="relative w-full h-[620px] rounded-2xl border border-slate-200 dark:border-[#27272a] overflow-hidden shadow-xs dark:shadow-md">
+      {/* Main Dedicated SOS Map Canvas */}
+      <div className={`${isFullscreen ? 'h-[85vh]' : 'h-[640px]'} rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-md relative bg-white`}>
         <IndiaSafetyMap
+          satelliteChannel="HD-SAT"
           hazards={hazards}
-          states={DEMO_STATES}
-          sosBeacons={beacons}
-          shelters={DEMO_SHELTERS}
+          states={[]}
+          sosBeacons={filteredBeacons}
+          shelters={[]}
           layers={mapLayers}
+          selectedStateName={selectedStateFilter}
           userLocation={coords}
-          onSelectSOS={(id) => {
-            const found = beacons.find((b) => b.id === id);
-            if (found) setSelectedBeacon(found);
-          }}
-          onToggleBaseLayer={toggleBaseLayer}
+          onSelectSOS={handleSelectSOS}
           heightClass="h-full"
         />
-
-        {/* Slide-in SOS Details Panel */}
-        {selectedBeacon && (
-          <div className="absolute top-4 right-4 z-500 w-84 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-[#27272a] p-4 shadow-2xl space-y-3 animate-in slide-in-from-right text-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#27272a]">
-              <div>
-                <span className="text-[10px] font-bold font-mono uppercase bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 px-2 py-0.5 rounded-full border border-red-500/30">
-                  {selectedBeacon.triageStatus || 'ACTIVE DISTRESS'}
-                </span>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white mt-1.5">
-                  Beacon: {selectedBeacon.id}
-                </h4>
-              </div>
-              <button
-                onClick={() => setSelectedBeacon(null)}
-                className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[#18181b] cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-base">close</span>
-              </button>
-            </div>
-
-            <div className="space-y-1.5 text-slate-600 dark:text-[#a1a1aa]">
-              <p><span className="font-semibold text-slate-800 dark:text-white">Emergency:</span> {selectedBeacon.emergencyType}</p>
-              <p><span className="font-semibold text-slate-800 dark:text-white">District:</span> {selectedBeacon.district || 'Local Sector'}</p>
-              <p><span className="font-semibold text-slate-800 dark:text-white">Phone (Masked):</span> {selectedBeacon.phoneMasked || '+91 98*** **210'}</p>
-              <p><span className="font-semibold text-slate-800 dark:text-white">Persons:</span> {selectedBeacon.personsCount || 1}</p>
-              <p><span className="font-semibold text-slate-800 dark:text-white">Coordinates:</span> {selectedBeacon.coordinates.join(', ')}</p>
-            </div>
-
-            <div className="pt-2 border-t border-slate-100 dark:border-[#27272a] flex gap-2">
-              <button
-                onClick={() => {
-                  updateBeaconTriage(selectedBeacon.id, 'ACCEPTED');
-                  setSelectedBeacon(null);
-                }}
-                className="flex-1 py-2 rounded-xl bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-black font-bold transition-all shadow-xs cursor-pointer"
-              >
-                Dispatch Responder
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Emergency Helpline Speed-Dial & Rescue Coordination Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+        {[
+          { title: 'National Emergency', number: '112', desc: 'Police / Fire / Rescue' },
+          { title: 'NDRF Control Room', number: '1078', desc: 'Disaster Response Force' },
+          { title: 'State Disaster EOC', number: '1070', desc: 'Emergency Operations' },
+          { title: 'Ambulance & Medical', number: '108', desc: 'Paramedic Dispatch' },
+          { title: 'Coast Guard SAR', number: '1554', desc: 'Maritime Search & Rescue' },
+        ].map((h, i) => (
+          <a
+            key={i}
+            href={`tel:${h.number}`}
+            className="p-3 rounded-2xl bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 hover:border-red-500 dark:hover:border-red-500 transition-all flex items-center justify-between gap-2 shadow-xs group cursor-pointer"
+          >
+            <div>
+              <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400">{h.title}</div>
+              <div className="text-base font-black font-mono text-slate-900 dark:text-white group-hover:text-red-600 transition-colors">
+                {h.number}
+              </div>
+              <div className="text-[9.5px] text-slate-400 dark:text-slate-500">{h.desc}</div>
+            </div>
+            <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all">
+              <PhoneCall className="w-4 h-4" />
+            </div>
+          </a>
+        ))}
+      </div>
+
+      {/* Victim Profile Modal */}
+      {selectedVictim && (
+        <VictimProfileModal
+          isOpen={isModalOpen}
+          victim={selectedVictim}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedVictim(null);
+          }}
+        />
+      )}
     </div>
   );
 };

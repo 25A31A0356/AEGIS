@@ -26,7 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems: Array<{ id: string; label: string; icon: string; desc: string; badge?: string }> = [
     { id: 'home', label: dict.home || 'Home', icon: 'home', desc: dict.conditions || 'Weather & Risk Telemetry' },
     { id: 'analysis', label: dict.forecast || 'Analysis', icon: 'monitoring', desc: dict.outlook || 'Trends & Outlook' },
-    { id: 'maps', label: dict.liveLocation || 'Maps', icon: 'map', desc: dict.usedWeatherRoutes || 'Weather & SOS Map' },
+    { id: 'maps', label: 'SOS Maps', icon: 'emergency', desc: 'Citizen Distress Beacons', badge: activeSOSCount > 0 ? `${activeSOSCount}` : undefined },
     { id: 'reports', label: dict.reports || 'Community Reports', icon: 'campaign', desc: dict.reportHazardShort || 'Incident Reporting' },
     { id: 'research-maps', label: dict.readiness || 'Research Maps', icon: 'science', desc: dict.climate || 'Environmental Layers' },
     { id: 'safety', label: dict.safetyHub || 'Safety Hub', icon: 'medical_services', desc: dict.offlineGuidance || '72h Go-Bag & Help' },
@@ -73,17 +73,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-slate-700 dark:text-[#a1a1aa] hover:bg-slate-100 dark:hover:bg-[#18181b] hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-xl">{item.icon}</span>
-                  <div>
-                    <div className="text-xs font-bold leading-tight">{item.label}</div>
-                    <div className={`text-[10px] leading-none mt-0.5 ${isActive ? 'opacity-80' : 'text-slate-400 dark:text-[#71717a]'}`}>
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className={`material-symbols-outlined text-xl shrink-0 ${
+                    item.id === 'maps' ? (isActive ? 'text-red-400 dark:text-red-600' : 'text-red-600 dark:text-red-500') : ''
+                  }`}>
+                    {item.icon}
+                  </span>
+                  <div className="truncate">
+                    <p className="text-sm leading-tight">{item.label}</p>
+                    <p className={`text-[11px] truncate mt-0.5 ${isActive ? 'text-slate-300 dark:text-slate-600' : 'text-slate-400 dark:text-[#71717a]'}`}>
                       {item.desc}
-                    </div>
+                    </p>
                   </div>
                 </div>
+
                 {item.badge && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-red-600 text-white animate-pulse">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold shrink-0 ${
+                    isActive ? 'bg-red-600 text-white' : 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50'
+                  }`}>
                     {item.badge}
                   </span>
                 )}
@@ -93,16 +100,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Footer Info */}
-      <div className="pt-4 border-t border-slate-200 dark:border-[#27272a] text-xs text-slate-500 dark:text-[#71717a] space-y-1">
-        <div className="flex items-center justify-between font-mono text-[11px]">
-          <span>AEGIS ALERT</span>
-          <span className="text-emerald-600 dark:text-emerald-400 font-bold">{dict.live || 'LIVE'}</span>
+      {/* Footer / System Status */}
+      <div className="pt-4 border-t border-slate-200 dark:border-[#27272a] space-y-3">
+        <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-[#18181b] border border-slate-100 dark:border-[#27272a]">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-800 dark:text-white truncate">NDMA SACHET Active</p>
+            <p className="text-[10px] text-slate-500 dark:text-[#71717a] font-mono">2h Synoptic Met Engine</p>
+          </div>
         </div>
-        <p className="text-[10px]">{dict.appExperience || 'Citizen Intelligence & Multi-Hazard Sentinel'}</p>
       </div>
     </aside>
   );
 };
-
-export default Sidebar;

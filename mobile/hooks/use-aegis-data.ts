@@ -28,7 +28,13 @@ export interface UseAegisDataReturn {
   source: string;
   error: string | null;
   refresh: () => Promise<void>;
-  updateLocation: (lat: number, lng: number, label: string, mode?: "gps" | "custom") => Promise<void>;
+    updateLocation: (
+    lat: number,
+    lng: number,
+    label: string,
+    mode?: "gps" | "custom",
+    extra?: Partial<AegisLocationResult>
+  ) => Promise<void>;
 }
 
 export function useAegisData(): UseAegisDataReturn {
@@ -113,14 +119,33 @@ export function useAegisData(): UseAegisDataReturn {
     await loadData(location.latitude, location.longitude, true);
   }, [loadData, location.latitude, location.longitude]);
 
-  const updateLocation = useCallback(
-    async (latitude: number, longitude: number, label: string, mode: "gps" | "custom" = "custom") => {
+  // Automatic 30-second silent background polling & telemetry sync
+  useEffect(() => {
+    const autoRefreshTimer = setInterval(() => {
+      if (location.latitude && location.longitude) {
+        void loadData(location.latitude, location.longitude, true);
+      }
+    }, 30000);
+
+    return () => clearInterval(autoRefreshTimer);
+  }, [loadData, location.latitude, location.longitude]);
+
+    const updateLocation = useCallback(
+    async (
+      latitude: number,
+      longitude: number,
+      label: string,
+      mode: "gps" | "custom" = "custom",
+      extra?: Partial<AegisLocationResult>
+    ) => {
       const updated: AegisLocationResult = {
         latitude,
         longitude,
         label,
         source: mode,
-        permissionGranted: location.permissionGranted,
+        permissionGranted: mode === "gps" ? true : location.permissionGranted,
+        isPinned: mode === "custom",
+        ...(extra || {}),
       };
       setLocation(updated);
       await saveLastKnownLocation(updated);

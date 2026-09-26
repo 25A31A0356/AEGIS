@@ -1,0 +1,1 @@
+console.log('test verbatim string in powershell works!');

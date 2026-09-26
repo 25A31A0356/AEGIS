@@ -89,7 +89,7 @@ export default function AskScreen() {
   };
 
   return (
-    <ScreenContainer className="px-4" edges={["top", "left", "right"]}>
+    <ScreenContainer className="px-4" edges={["top", "left", "right"]} activeTab="ask">
       <View style={styles.wrap}>
         {/* Header */}
         <View style={styles.header}>

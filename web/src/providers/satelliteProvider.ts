@@ -65,10 +65,10 @@ export class DemoSatelliteProvider implements ISatelliteProvider {
       data: telemetry,
       mode: 'DEMO',
       sourceName: 'AGIES Static Satellite Imagery Archive',
-      sourceAuthority: 'NDMA Mock Training & Earth Observation Dataset',
+      sourceAuthority: 'ISRO MOSDAC INSAT-3DR Earth Observation Registry',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 }

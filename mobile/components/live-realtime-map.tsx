@@ -86,6 +86,8 @@ interface LiveRealtimeMapProps {
   sasGridSectors?: SasGridSector[];
   responderTrack?: ResponderLiveTrack | null;
   defaultLayer?: GoogleMapLayerType;
+  fullScreen?: boolean;
+  height?: string | number;
 }
 
 export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
@@ -110,6 +112,8 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
   sasGridSectors = [],
   responderTrack,
   defaultLayer = "roadmap",
+  fullScreen = true,
+  height,
 }) => {
   const containerId = useRef(`gmaps-canvas-${Math.random().toString(36).substring(2, 9)}`).current;
 
@@ -124,6 +128,8 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
   const sasGridLayerGroupRef = useRef<any>(null);
   const routeGroupRef = useRef<any>(null);
   const responderGroupRef = useRef<any>(null);
+  const userInteractedRef = useRef<boolean>(false);
+  const hasAutoFittedRouteRef = useRef<string>("");
 
   const onMapClickLocationRef = useRef(onMapClickLocation);
   onMapClickLocationRef.current = onMapClickLocation;
@@ -188,6 +194,11 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
       routeGroupRef.current = L.layerGroup().addTo(map);
       responderGroupRef.current = L.layerGroup().addTo(map);
 
+      // Capture user manual panning and zooming to preserve view during 30s auto-refreshes
+      map.on("dragstart zoomstart movestart", () => {
+        userInteractedRef.current = true;
+      });
+
       // Map Click to drop a custom pin anywhere like Google Maps
       map.on("click", (e: any) => {
         if (onMapClickLocationRef.current && e.latlng) {
@@ -227,6 +238,19 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
             </div>
           </div>`
         );
+
+      // Trigger map resize so it fills 100% of the viewport immediately
+      setTimeout(() => {
+        try {
+          map.invalidateSize();
+        } catch {}
+      }, 150);
+
+      window.addEventListener("resize", () => {
+        try {
+          map.invalidateSize();
+        } catch {}
+      });
     };
 
     initMap();
@@ -427,6 +451,54 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
     filteredPlaces.forEach((place) => {
       const isSelected = selectedPlace?.id === place.id;
 
+      // Distinct Blinking Red Circle Named SOS with expanding radar wave rings
+      if (place.category === "sos") {
+        const isEnRoute = place.status?.includes("RESPONDER") || place.status?.includes("EN ROUTE") || place.status?.includes("AID");
+        const sosIcon = L.divIcon({
+          className: `sos-blinking-marker-${place.id}`,
+          html: `
+            <div style="position:relative; width:58px; height:58px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+              <!-- Pulsing Expanding Red Radar Wave Rings -->
+              <div style="position:absolute; width:58px; height:58px; border-radius:50%; background:rgba(220, 38, 38, 0.32); animation: sosRadarRing 1.8s infinite ease-out;"></div>
+              <div style="position:absolute; width:42px; height:42px; border-radius:50%; background:rgba(220, 38, 38, 0.5); animation: sosRadarRing 1.8s infinite ease-out 0.45s;"></div>
+
+              <!-- Inner Blinking Solid Red Circle Named SOS -->
+              <div style="width:36px; height:36px; border-radius:50%; background:#DC2626; border:3px solid #FFFFFF; box-shadow:0 4px 12px rgba(220,38,38,0.7); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:5; animation: sosBlinkGlow 1.2s infinite alternate;">
+                <span style="color:#FFFFFF; font-family:system-ui, -apple-system, sans-serif; font-weight:900; font-size:11px; letter-spacing:0.8px; line-height:1;">SOS</span>
+              </div>
+
+              <!-- Top Floating Distance & Status Badge -->
+              <div style="position:absolute; top:-24px; background:#DC2626; color:#FFFFFF; font-family:system-ui, -apple-system, sans-serif; font-weight:900; font-size:10px; padding:2px 8px; border-radius:12px; border:1.5px solid #FFFFFF; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.35); z-index:6;">
+                ${place.distanceKm ? `${place.distanceKm} km` : "SOS"} • ${isEnRoute ? "AID EN ROUTE" : "NEEDS HELP"}
+              </div>
+            </div>
+            <style>
+              @keyframes sosRadarRing {
+                0% { transform: scale(0.5); opacity: 1; }
+                100% { transform: scale(2.4); opacity: 0; }
+              }
+              @keyframes sosBlinkGlow {
+                0% { transform: scale(0.95); filter: brightness(1); box-shadow: 0 0 4px rgba(220,38,38,0.5); }
+                100% { transform: scale(1.1); filter: brightness(1.3); box-shadow: 0 0 16px rgba(220,38,38,0.9); }
+              }
+            </style>
+          `,
+          iconSize: [58, 58],
+          iconAnchor: [29, 29],
+        });
+
+        const marker = L.marker([place.coordinates.lat, place.coordinates.lng], {
+          icon: sosIcon,
+        });
+
+        marker.on("click", () => {
+          onSelectPlaceRef.current(place);
+        });
+
+        placesGroupRef.current.addLayer(marker);
+        return;
+      }
+
       // Color coding per category
       let pinColor = "#1A73E8"; // Blue default
       let iconSymbol = "📍";
@@ -444,7 +516,7 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
         pinColor = isSelected ? "#EA4335" : "#5F6368";
         iconSymbol = "🛡️";
         badgeTag = `+${place.elevationMeters}m`;
-      } else if (place.category === "sos") {
+      } else if ((place as any).category === "sos") {
         pinColor = "#DC2626"; // Vibrant Red
         iconSymbol = "🚨";
         badgeTag = place.badge || "ACTIVE SOS";
@@ -495,15 +567,21 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
 
     routeGroupRef.current.clearLayers();
 
-    const pathPoints =
-      routeCoordinates && routeCoordinates.length > 0
-        ? routeCoordinates
-        : selectedPlace
-        ? [
-            [userLocation.latitude, userLocation.longitude],
-            [selectedPlace.coordinates.lat, selectedPlace.coordinates.lng],
-          ]
-        : [];
+    // Only draw route if explicit routeCoordinates provided or local destination selected (<35km)
+    let pathPoints: [number, number][] = [];
+    if (routeCoordinates && routeCoordinates.length > 0) {
+      pathPoints = routeCoordinates;
+    } else if (selectedPlace) {
+      const dLat = Math.abs(userLocation.latitude - selectedPlace.coordinates.lat);
+      const dLng = Math.abs(userLocation.longitude - selectedPlace.coordinates.lng);
+      // Rough distance check: if within ~0.35 degrees (~38 km), draw local connector
+      if (dLat < 0.35 && dLng < 0.35) {
+        pathPoints = [
+          [userLocation.latitude, userLocation.longitude],
+          [selectedPlace.coordinates.lat, selectedPlace.coordinates.lng],
+        ];
+      }
+    }
 
     if (pathPoints.length > 0) {
       // Outer Dark Blue Border Casing (Google Maps Style)
@@ -526,14 +604,21 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
       });
       routeGroupRef.current.addLayer(routeLine);
 
-      try {
-        const bounds = L.latLngBounds(pathPoints);
-        mapInstanceRef.current.fitBounds(bounds, {
-          padding: [50, 50],
-          maxZoom: 16,
-          animate: false,
-        });
-      } catch {}
+      const routeSig = pathPoints.map(p => `${p[0].toFixed(3)},${p[1].toFixed(3)}`).join("|");
+      const isNewRoute = hasAutoFittedRouteRef.current !== routeSig;
+
+      // Only auto-fit camera bounds on initial destination selection, NOT during 30s periodic auto-refresh
+      if (isNewRoute && !userInteractedRef.current) {
+        hasAutoFittedRouteRef.current = routeSig;
+        try {
+          const bounds = L.latLngBounds(pathPoints);
+          mapInstanceRef.current.fitBounds(bounds, {
+            padding: [45, 45],
+            maxZoom: 16,
+            animate: false,
+          });
+        } catch {}
+      }
     }
   }, [routeCoordinates, selectedPlace, userLocation.latitude, userLocation.longitude]);
 
@@ -554,6 +639,8 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
   };
 
   const handleRecenterClick = () => {
+    userInteractedRef.current = false;
+    hasAutoFittedRouteRef.current = "";
     if (mapInstanceRef.current) {
       try {
         mapInstanceRef.current.setView(
@@ -566,17 +653,24 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
     onRecenter();
   };
 
+  const mapHeightStyle = height
+    ? { height }
+    : fullScreen
+    ? { flex: 1, width: "100%", height: "100%" }
+    : { height: isNavigating ? 340 : 310 };
+
   return (
     <View
       style={[
-        styles.mapCard,
+        fullScreen ? styles.fullScreenContainer : styles.mapCard,
         {
           backgroundColor: "#FFFFFF",
-          borderColor: "#DADCE0",
+          borderColor: fullScreen ? "transparent" : "#DADCE0",
         },
       ]}
     >
-      {/* Top Header Filter Chips Bar on Map */}
+      {/* Top Header Filter Chips Bar on Map (shown only if not fullScreen or when explicitly filtered) */}
+      {!fullScreen && (
       <View style={styles.categoryFilterRow}>
         <Pressable
           style={[
@@ -663,6 +757,7 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
           </Text>
         </Pressable>
       </View>
+      )}
 
       {/* Google Maps Navigation Mode Green HUD Banner (When Active) */}
       {isNavigating && (
@@ -691,13 +786,19 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
       )}
 
       {/* Real-time Map Canvas View */}
-      <View style={styles.mapViewport}>
+      <View style={[styles.mapViewport, fullScreen && styles.fullScreenViewport]}>
         {Platform.OS === "web" ? (
           <div
             id={containerId}
             style={{
               width: "100%",
-              height: isNavigating ? "340px" : "310px",
+              height: "100%",
+              minHeight: fullScreen ? "100vh" : isNavigating ? "340px" : "310px",
+              position: fullScreen ? "absolute" : "relative",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               background: "#E8EAED",
               zIndex: 1,
             }}
@@ -712,51 +813,7 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
           </View>
         )}
 
-        {/* Google Maps Layer Switcher Floating Button (Top Right of Canvas) */}
-        <View style={styles.topRightControls}>
-          <Pressable
-            style={[styles.layerToggleButton, showLayerMenu && styles.layerToggleButtonActive]}
-            onPress={() => setShowLayerMenu((prev) => !prev)}
-          >
-            <Text style={styles.layerToggleIcon}>{GOOGLE_MAP_LAYERS[activeLayer].icon}</Text>
-            <Text style={styles.layerToggleText}>{GOOGLE_MAP_LAYERS[activeLayer].shortName}</Text>
-            <IconSymbol name="chevron.right" size={10} color="#3C4043" style={{ transform: [{ rotate: showLayerMenu ? "270deg" : "90deg" }] }} />
-          </Pressable>
 
-          {/* Layer Popover Menu */}
-          {showLayerMenu && (
-            <View style={styles.layerMenuPopover}>
-              {(Object.keys(GOOGLE_MAP_LAYERS) as GoogleMapLayerType[]).map((layerKey) => {
-                const layer = GOOGLE_MAP_LAYERS[layerKey];
-                const isCurrent = activeLayer === layerKey;
-                return (
-                  <Pressable
-                    key={layerKey}
-                    onPress={() => {
-                      setActiveLayer(layerKey);
-                      setShowLayerMenu(false);
-                    }}
-                    style={[
-                      styles.layerMenuItem,
-                      isCurrent && styles.layerMenuItemActive,
-                    ]}
-                  >
-                    <Text style={styles.layerMenuIcon}>{layer.icon}</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.layerMenuTitle, isCurrent && { color: "#1A73E8" }]}>
-                        {layer.name}
-                      </Text>
-                      <Text numberOfLines={1} style={styles.layerMenuDesc}>
-                        {layer.description}
-                      </Text>
-                    </View>
-                    {isCurrent && <Text style={{ color: "#1A73E8", fontWeight: "900" }}>✓</Text>}
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
-        </View>
 
         {/* Google Maps Trip ETA Floating Pill (Bottom Left of Canvas) */}
         {routeDistanceKm !== undefined && !isNavigating && (
@@ -772,12 +829,12 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
           </View>
         )}
 
-        {/* Floating Google Maps Control Buttons (Bottom Right) */}
+        {/* Floating Single Location Refresh Button (Bottom Right) */}
         <View style={styles.floatingControlsContainer}>
-          {/* My Location / Crosshair Target Button */}
           <Pressable
             style={styles.gmapFabButton}
             onPress={handleRecenterClick}
+            accessibilityLabel="Refresh Location"
           >
             {isLoadingLocation ? (
               <ActivityIndicator size="small" color="#1A73E8" />
@@ -785,17 +842,6 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
               <IconSymbol name="location.fill" size={18} color="#1A73E8" />
             )}
           </Pressable>
-
-          {/* Zoom In / Zoom Out Stack */}
-          <View style={styles.zoomStack}>
-            <Pressable style={styles.zoomStackBtn} onPress={handleZoomIn}>
-              <IconSymbol name="plus.circle.fill" size={16} color="#3C4043" />
-            </Pressable>
-            <View style={styles.zoomDivider} />
-            <Pressable style={styles.zoomStackBtn} onPress={handleZoomOut}>
-              <IconSymbol name="xmark" size={13} color="#3C4043" />
-            </Pressable>
-          </View>
         </View>
       </View>
 
@@ -878,6 +924,22 @@ export const LiveRealtimeMap: React.FC<LiveRealtimeMapProps> = ({
 };
 
 const styles = StyleSheet.create({
+  fullScreenContainer: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    position: "relative",
+    borderWidth: 0,
+    borderRadius: 0,
+    marginBottom: 0,
+    overflow: "hidden",
+  },
+  fullScreenViewport: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    position: "relative",
+  },
   mapCard: {
     borderRadius: 20,
     borderWidth: 1,

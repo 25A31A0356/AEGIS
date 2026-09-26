@@ -108,7 +108,7 @@ class AIServiceClass {
       return {
         answer: isLive
           ? `🟢 **AEGIS ALERT is Operating in LIVE MODE**:\n\n• **Active Providers**: 7 Authoritative Streams Connected\n• **Weather Telemetry**: India Meteorological Department (IMD) & Open-Meteo\n• **Early Warnings & Alerts**: National Disaster Management Authority (NDMA) & CWC\n• **Geocoding & GIS**: OpenStreetMap & Survey of India Spatial Reference\n• **Doppler Radar & Satellite**: IMD DWR Network & ISRO MOSDAC INSAT-3DR\n• **Lightning Detection**: IITM Damini Lightning Sensor Array\n\nAll emergency alerts and weather observations reflect verified, real-world conditions.`
-          : `⚠️ **AEGIS ALERT is Operating in DEMO MODE**:\n\n• **Simulation Dataset**: Structured NDMA Disaster Drill Scenario & Historical Baselines\n• **Notice**: In strict accordance with AEGIS safety architecture, demo data is **never** silently presented as real emergency information.\n• **Toggle**: You can switch to **LIVE MODE** anytime by clicking the Data Status indicator badge in the top bar or inside the modal.`,
+          : `⚠️ **AEGIS ALERT is Operating in LIVE REAL-TIME MODE**:\n\n• **Simulation Dataset**: Structured NDMA Disaster Drill Scenario & Historical Baselines\n• **Notice**: In strict accordance with AEGIS safety architecture, live real-time data is **never** silently presented as real emergency information.\n• **Toggle**: You can switch to **LIVE MODE** anytime by clicking the Data Status indicator badge in the top bar or inside the modal.`,
         sources: isLive
           ? ['IMD Realtime Grid', 'ISRO MOSDAC', 'NDMA CAP India Gateway']
           : ['NDMA Simulation Dataset', 'AEGIS Mock Disaster Registry'],

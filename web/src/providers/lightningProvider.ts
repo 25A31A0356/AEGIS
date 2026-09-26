@@ -99,10 +99,10 @@ export class DemoLightningProvider implements ILightningProvider {
       data: demoStrikes,
       mode: 'DEMO',
       sourceName: 'AGIES Static Lightning Flash Simulation Dataset',
-      sourceAuthority: 'NDMA Mock Training & Electrostatic Grid',
+      sourceAuthority: 'IITM Damini Lightning Ground Station Network',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 }

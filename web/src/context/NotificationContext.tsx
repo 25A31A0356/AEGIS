@@ -17,8 +17,20 @@ export interface AlertNotification {
 
 const INITIAL_NOTIFICATIONS: AlertNotification[] = [
   {
-    id: 'NOTIF-01',
+    id: 'NOTIF-SOS-AARAV',
     timestamp: 'Just now',
+    severity: 'critical',
+    title: '🚨 SOS: Aarav Sharma (Needs Help)',
+    message: '1.2 km away • Rapid Inundation • Trapped Near Residence. Tap to view victim profile & help him.',
+    source: 'Aegis SOS Beacon Network',
+    location: 'Local Sector Main Road (1.2 km away)',
+    read: false,
+    linkTab: 'sos',
+    sosId: 'sos-aarav-sharma',
+  },
+  {
+    id: 'NOTIF-01',
+    timestamp: '10m ago',
     severity: 'critical',
     title: 'Severe Cyclone "VAYU" Landfall Red Alert',
     message: 'Gale wind gusts 120-135 km/h expected along Puri-Gopalpur coast. Evacuations in progress.',

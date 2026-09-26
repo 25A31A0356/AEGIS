@@ -22,7 +22,15 @@ export function useAegisCommunityReports() {
 
     try {
       const response = await AegisApiService.getCommunityReports();
-      setReports(response.data);
+      // Strictly filter out any old legacy mock or baseline items
+      const genuine = (response.data || []).filter((r: any) => {
+        const id = String(r.id || "");
+        const title = String(r.title || "").toLowerCase();
+        if (id.startsWith("rep-baseline") || id.startsWith("rep-offline")) return false;
+        if (title.includes("substation") || title.includes("highway lane 2") || title.includes("storm surge")) return false;
+        return true;
+      });
+      setReports(genuine);
       setLastUpdatedFormatted(response.lastUpdatedFormatted || "Just now");
 
       // Check offline queue for pending reports

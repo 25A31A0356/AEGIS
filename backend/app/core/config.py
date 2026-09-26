@@ -61,8 +61,8 @@ class Settings(BaseSettings):
         ]
 
     # Database & Storage
-    DATABASE_URL: str = "postgresql+asyncpg://aegis_user:aegis_secure_password_2026@postgres:5432/aegis_db"
-    DATABASE_SYNC_URL: Optional[str] = "postgresql://aegis_user:aegis_secure_password_2026@postgres:5432/aegis_db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./aegis_local.db"
+    DATABASE_SYNC_URL: Optional[str] = "sqlite:///./aegis_local.db"
     DB_POOL_SIZE: int = 10
     DB_MAX_OVERFLOW: int = 20
 

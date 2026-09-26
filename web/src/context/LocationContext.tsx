@@ -38,6 +38,7 @@ interface LocationContextType {
   selectLocationItem: (target: LocationSearchResult | SavedLocationItem | string) => void;
   saveLocationItem: (location: Omit<SavedLocationItem, 'id'>) => void;
   removeLocationItem: (id: string) => void;
+  speakLocation: (customText?: string) => void;
 
   // Backward compatibility helpers
   setSelectedCity: (cityKey: string) => void;
@@ -130,7 +131,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       const locResult: LocationSearchResult = {
         id: 'user-current-gps',
-        name: result.address.formattedVillage || result.address.cityName,
+        name: result.address.localityName || result.address.cityName,
         stateName: result.address.stateName,
         district: result.address.district,
         stateId: result.address.stateId,
@@ -141,6 +142,10 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         village: result.address.village,
         subdistrict: result.address.subdistrict,
         formattedVillage: result.address.formattedVillage,
+        localityType: result.address.localityType || 'District',
+        localityName: result.address.localityName || result.address.cityName,
+        nearbyPlace: result.address.nearbyPlace,
+        speechSummary: result.address.speechSummary,
         isVillageLevel: result.address.isVillageLevel ?? Boolean(result.address.village),
       };
 
@@ -254,11 +259,27 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     requestCurrentGPS();
   }, [requestCurrentGPS]);
 
+  const speakLocation = useCallback((customText?: string) => {
+    LocationService.speakLocation(customText);
+  }, []);
+
   // Initial load: Attempt automatic GPS acquisition on launch, fallback to saved or Mumbai
   useEffect(() => {
     let isMounted = true;
 
     const initLocation = async () => {
+      // 0. Check if user already pinned/selected a custom location
+      const savedStored = typeof window !== 'undefined' ? localStorage.getItem('aegis_selected_location') : null;
+      if (savedStored) {
+        try {
+          const parsed = JSON.parse(savedStored);
+          if (parsed && parsed.coordinates && isMounted) {
+            selectLocationItem(parsed);
+            return;
+          }
+        } catch {}
+      }
+
       // 1. Check if browser supports geolocation and try live GPS
       if (typeof window !== 'undefined' && navigator.geolocation) {
         try {
@@ -269,9 +290,14 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       }
 
-      // 2. Fallback to default/saved station if GPS was unavailable or denied
+      // 2. Fallback to saved location if available
       if (isMounted) {
-        selectLocationItem('Mumbai');
+        const saved = LocationService.getSelectedLocation();
+        if (saved) {
+          selectLocationItem(saved);
+        } else {
+          selectLocationItem('Amaravati');
+        }
       }
     };
 
@@ -281,6 +307,21 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       isMounted = false;
     };
   }, [requestCurrentGPS, selectLocationItem]);
+
+  // Automatic 30-second background polling & telemetry refresh for Web
+  useEffect(() => {
+    const webRefreshTimer = setInterval(() => {
+      if (selectedLocation && selectedLocation.coordinates) {
+        void syncLocationTelemetry(
+          selectedLocation.coordinates,
+          selectedLocation.name,
+          selectedLocation.stateId
+        );
+      }
+    }, 30000);
+
+    return () => clearInterval(webRefreshTimer);
+  }, [selectedLocation, syncLocationTelemetry]);
 
   return (
     <LocationContext.Provider
@@ -302,6 +343,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         selectLocationItem,
         saveLocationItem,
         removeLocationItem,
+        speakLocation,
         setSelectedCity,
         setSelectedStateById,
         detectCurrentLocation,

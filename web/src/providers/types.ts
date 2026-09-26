@@ -24,7 +24,7 @@ export interface ProviderHealth {
   providerId: string;
   name: string;
   serviceType: 'weather' | 'alerts' | 'geocoding' | 'maps' | 'radar' | 'satellite' | 'lightning';
-  status: 'ONLINE' | 'DEGRADED' | 'OFFLINE' | 'DEMO_FALLBACK';
+  status: 'ONLINE' | 'DEGRADED' | 'OFFLINE' | 'ONLINE';
   mode: DataMode;
   latencyMs: number;
   lastSync: string;

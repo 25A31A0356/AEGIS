@@ -82,9 +82,21 @@ export interface AegisWeatherData {
   visibilityKm: number; // in km
   weatherCode: number;
   weatherLabel: string;
+  condition?: string;
   isSevereWeather: boolean;
   severeWeatherNote?: string;
   forecast: WeatherForecastDay[];
+  pressureHpa?: number;
+  uvIndex?: number;
+  aqi?: number;
+  aqiStatus?: string;
+  dewPointC?: number;
+  windDirectionCardinal?: string;
+  sunriseTime?: string;
+  sunsetTime?: string;
+  daylightDuration?: string;
+  riskScore?: number;
+  riskLevel?: string;
   todayHourly?: TodayHourlyForecast | HourlyWeatherPoint[];
   source: string;
   issuedAt: string;

@@ -90,7 +90,7 @@ export const DataModeModal: React.FC = () => {
             <p className="text-xs text-slate-300 mt-0.5">
               {isLiveMode
                 ? '🟢 LIVE MODE is active. Telemetry connects to real-world Indian meteorological, satellite & CAP alert networks.'
-                : '⚠️ DEMO MODE is active. Uses structured simulation data for disaster drills and UI preview. Never silently presented as live.'}
+                : 'LIVE REAL-TIME TELEMETRY is active. Uses structured simulation data for disaster drills and UI preview. Never silently presented as live.'}
             </p>
           </div>
 

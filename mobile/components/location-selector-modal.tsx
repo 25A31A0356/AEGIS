@@ -31,6 +31,13 @@ export interface SelectedLocationResult {
   label: string;
   district?: string;
   state?: string;
+  village?: string;
+  subdistrict?: string;
+  localityType?: "Village" | "Town" | "City" | "Locality" | "District";
+  localityName?: string;
+  nearbyPlace?: string;
+  speechText?: string;
+  isPinned?: boolean;
   mode: "gps" | "district" | "custom";
 }
 
@@ -56,11 +63,65 @@ export const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
   const [isLoadingGps, setIsLoadingGps] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Instant fuzzy/prefix filtered districts
-  const searchResults = useMemo(() => {
+  const [onlineResults, setOnlineResults] = useState<any[]>([]);
+  const [isSearchingOnline, setIsSearchingOnline] = useState(false);
+
+  // Instant local district matches
+  const localResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    return searchIndianLocations(searchQuery, 40);
+    return searchIndianLocations(searchQuery, 30);
   }, [searchQuery]);
+
+  // Online village search effect
+  React.useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q || q.length < 3) {
+      setOnlineResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchingOnline(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q + ', India')}&addressdetails=1&limit=5`,
+          { headers: { 'User-Agent': 'AEGIS-Disaster/1.0' }, signal: AbortSignal.timeout(3500) }
+        );
+        if (res.ok) {
+          const items = await res.json();
+          if (Array.isArray(items)) {
+            const mapped = items.map((item: any) => {
+              const addr = item.address || {};
+              const village = addr.village || addr.hamlet || addr.suburb || addr.town || item.name;
+              const district = addr.state_district || addr.district || addr.county || '';
+              const state = addr.state || 'India';
+              return {
+                id: `online-${item.place_id}`,
+                name: village ? `${village} (${district || state})` : item.name,
+                state: state,
+                latitude: parseFloat(item.lat),
+                longitude: parseFloat(item.lon),
+                isVillage: true,
+                rawName: village || item.name,
+                districtName: district,
+              };
+            });
+            setOnlineResults(mapped);
+          }
+        }
+      } catch {
+        // Fallback to local
+      } finally {
+        setIsSearchingOnline(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const searchResults = useMemo(() => {
+    return [...localResults, ...onlineResults];
+  }, [localResults, onlineResults]);
 
   // Districts for currently selected state
   const stateDistricts = useMemo(() => {
@@ -77,14 +138,38 @@ export const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
             const { latitude, longitude } = pos.coords;
-            const nearest = findNearestDistrict(latitude, longitude);
-            const label = `${nearest.district.name}, ${nearest.district.state}`;
+            let label = `${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`;
+            let district = "Local District";
+            let state = "India";
+            try {
+              const nomRes = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+                { headers: { 'User-Agent': 'AEGIS-Disaster/1.0' }, signal: AbortSignal.timeout(3500) }
+              );
+              if (nomRes.ok) {
+                const nomData = await nomRes.json();
+                const addr = nomData.address || {};
+                const village = addr.village || addr.hamlet || addr.suburb || addr.town || addr.city;
+                const mandal = addr.county || addr.subdistrict || addr.taluk;
+                district = addr.state_district || addr.district || mandal || district;
+                state = addr.state || state;
+                const primary = village || mandal || district;
+                const parts = [mandal && mandal !== primary ? mandal : undefined, district && district !== primary ? district : undefined, state].filter(Boolean);
+                label = parts.length > 0 ? `${primary} • ${parts.join(', ')}` : primary;
+              }
+            } catch {
+              const nearest = findNearestDistrict(latitude, longitude);
+              district = nearest.district.name;
+              state = nearest.district.state;
+              label = `${district}, ${state}`;
+            }
+
             await onSelectLocation({
               latitude,
               longitude,
               label,
-              district: nearest.district.name,
-              state: nearest.district.state,
+              district,
+              state,
               mode: "gps",
             });
             setIsLoadingGps(false);
@@ -158,14 +243,32 @@ export const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
     }
   };
 
-  const handleSelectDistrict = async (district: IndiaDistrict) => {
+    const handleSelectDistrict = async (d: any) => {
+    const isOnlineVillage = d.isVillage || d.id?.startsWith("online-") || d.id?.startsWith("geo-");
+    const vName = d.rawName || (isOnlineVillage ? d.name.split(" (")[0] : undefined);
+    const dName = d.districtName || d.district || d.name;
+    const sName = d.state || "India";
+    const locType = isOnlineVillage ? "Village" : "District";
+    const locName = vName || d.name;
+    const nearby = dName && dName !== locName ? `Near ${dName}` : undefined;
+    const formatted = isOnlineVillage ? `${locName} (Village) • ${nearby ? nearby + ', ' : ''}${sName}` : `${d.name}, ${sName}`;
+    const speech = isOnlineVillage
+      ? `Your current location is ${locName} Village${nearby ? ', ' + nearby : ''}, in ${sName}.`
+      : `Your current location is ${d.name}, in ${sName}.`;
+
     await onSelectLocation({
-      latitude: district.latitude,
-      longitude: district.longitude,
-      label: `${district.name}, ${district.state}`,
-      district: district.name,
-      state: district.state,
-      mode: "district",
+      latitude: d.latitude,
+      longitude: d.longitude,
+      label: formatted,
+      district: dName,
+      state: sName,
+      village: vName,
+      localityType: locType,
+      localityName: locName,
+      nearbyPlace: nearby ? nearby.replace("Near ", "") : undefined,
+      speechText: speech,
+      isPinned: true,
+      mode: isOnlineVillage ? "custom" : "district",
     });
     onClose();
   };
@@ -223,6 +326,41 @@ export const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
               </Text>
             </View>
             <IconSymbol name="chevron.right" size={16} color="#FFFFFF" />
+          </Pressable>
+
+          <Pressable
+            onPress={() => {
+              onClose();
+              router.push("/gps-diagnostics");
+            }}
+            style={({ pressed }) => [
+              {
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+                borderRadius: 12,
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: colors.border,
+                marginTop: 8,
+              },
+              pressed && { opacity: 0.8 },
+            ]}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Text style={{ fontSize: 16 }}>🛰️</Text>
+              <View>
+                <Text style={{ fontSize: 12, fontWeight: "700", color: colors.foreground }}>
+                  GPS Diagnostics & Sensor Validator
+                </Text>
+                <Text style={{ fontSize: 10, color: colors.muted }}>
+                  View live measured accuracy, satellites & provider telemetry
+                </Text>
+              </View>
+            </View>
+            <IconSymbol name="chevron.right" size={14} color={colors.muted} />
           </Pressable>
 
           {errorMessage && (

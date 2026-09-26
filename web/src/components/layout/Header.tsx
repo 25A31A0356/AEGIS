@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
   const navItems: Array<{ id: string; label: string; icon: any; badge?: string; badgeColor?: string }> = [
     { id: 'dashboard', label: 'Dashboard', icon: Compass },
     { id: 'live-map', label: 'Live Map', icon: Radio, badge: 'GIS' },
-    { id: 'forecasts', label: 'Forecasts', icon: CloudRain },
+    { id: 'forecasts', label: 'Analysis', icon: CloudRain },
     { id: 'hazards', label: 'Hazards & Intel', icon: AlertTriangle, badge: '08' },
     { id: 'activity', label: 'Activity Stream', icon: Activity },
   ];
@@ -98,21 +98,23 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Section: Location Pill, Search, Notifications, Profile Button */}
           <div className="flex items-center gap-2.5">
-            {/* Auto-detected Live GPS Location Pill */}
-            <div
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] text-xs font-medium text-slate-800 dark:text-slate-200 shadow-xs select-none"
-              title="Auto-detected live GPS coordinates and local telemetry"
+            {/* Auto-detected Live GPS / Chosen Location Pill (Clickable) */}
+            <button
+              onClick={onOpenSearch}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-[#18181b] dark:hover:bg-[#27272a] border border-slate-200 dark:border-[#27272a] text-xs font-medium text-slate-800 dark:text-slate-200 shadow-xs cursor-pointer transition-all active:scale-95"
+              title="Click to change or search your exact village or city"
             >
               <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 animate-pulse" />
               <div className="text-left hidden md:block">
-                <div className="font-bold text-[11px] leading-tight text-slate-900 dark:text-white">
-                  {weather.cityName || 'Live GPS Location'}
+                <div className="font-bold text-[11px] leading-tight text-slate-900 dark:text-white flex items-center gap-1">
+                  <span>{weather.cityName || 'Live Sector'}</span>
+                  <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">✏️</span>
                 </div>
                 <div className="text-[10px] text-slate-500 dark:text-[#a1a1aa] font-mono leading-none mt-0.5">
                   {weather.temp}°C • Live Telemetry
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Global Search Shortcut Button */}
             <button

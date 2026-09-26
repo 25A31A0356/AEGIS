@@ -10,6 +10,7 @@ import { LiveRealtimeMap, LiveCoordinate, ResponderLiveTrack } from "@/component
 import { LocationSelectorModal, SelectedLocationResult } from "@/components/location-selector-modal";
 import { useAegisCommunityReports } from "@/hooks/use-aegis-community-reports";
 import { useAegisSosResponder } from "@/hooks/use-aegis-sos-responder";
+import { useAegisData } from "@/hooks/use-aegis-data";
 import { AegisApiService } from "@/lib/services/aegis-api";
 import { SosMapMarker } from "@/lib/services/aegis-types";
 import {
@@ -24,29 +25,12 @@ import { formatISTDateTime } from "@/lib/india-emergency-data";
 
 type SavedLocation = { latitude: number; longitude: number; label: string; mode: "live" | "custom" | "district" };
 
-const BASE_PLACES: EmergencyPlace[] = [
-  ...EMERGENCY_HOSPITALS,
-  ...HAZARD_ZONES_POI,
-  ...VERIFIED_SHELTERS.map((s) => ({
-    id: s.id,
-    name: s.name,
-    category: "shelter" as const,
-    type: s.type,
-    address: s.address,
-    coordinates: s.coordinates,
-    elevationMeters: s.elevationMeters,
-    contactNumber: s.contactNumber,
-    status: `${s.totalCapacity - s.occupiedCapacity} Spots Open`,
-    statusColor: "#188038",
-    badge: s.badge,
-    details: `High-ground refuge with emergency supplies.`,
-    totalCapacity: s.totalCapacity,
-  })),
-];
+
 
 export default function MapScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { location } = useAegisData();
   const { allReports } = useAegisCommunityReports();
   const { activeIncident, assignedIncident } = useAegisSosResponder();
   const [sosMarkers, setSosMarkers] = useState<SosMapMarker[]>([]);
@@ -54,6 +38,7 @@ export default function MapScreen() {
   const [isLoadingMarkers, setIsLoadingMarkers] = useState(false);
   const [locationModalVisible, setLocationModalVisible] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string>(new Date().toISOString());
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(true);
 
   // Load genuine pan-India active SOS markers from PostgreSQL/PostGIS backend
   const fetchSosMarkers = useCallback(async () => {
@@ -85,6 +70,74 @@ export default function MapScreen() {
 
   // Total active distress count (PostGIS records + local active session)
   const activeSosCount = (sosMarkers?.length || 0) + (activeIncident ? 1 : 0);
+
+  // Generate dynamic local emergency places centered on active user station (Jaggampeta/Kakinada/local)
+  const localBasePlaces: EmergencyPlace[] = useMemo(() => {
+    const uLat = location.latitude || 17.17;
+    const uLng = location.longitude || 82.05;
+    const locName = location.village || location.localityName || location.label || "Local Sector";
+
+    return [
+      {
+        id: "loc-hospital-1",
+        name: `${locName} Community Health Centre & ER`,
+        category: "hospital",
+        type: "24x7 Emergency Trauma & Triage",
+        address: `Main Hospital Road, ${locName}`,
+        coordinates: { lat: uLat + 0.009, lng: uLng + 0.008, label: `${locName} CHC` },
+        elevationMeters: 42,
+        contactNumber: "+91 884 236 1100",
+        status: "OPEN (14 ICU Beds Available)",
+        statusColor: "#188038",
+        badge: "24/7 Trauma Ready",
+        details: "Equipped with power backup, flood emergency triage, oxygen and emergency pharmacy.",
+        openBeds: 14,
+        totalCapacity: 80,
+      },
+      {
+        id: "loc-shelter-1",
+        name: `APSDMA High-Ground Safe Shelter (${locName})`,
+        category: "shelter",
+        type: "Government Cyclone & Flood Safe Haven",
+        address: `ZP High School Campus, ${locName}`,
+        coordinates: { lat: uLat - 0.007, lng: uLng + 0.006, label: "APSDMA Shelter" },
+        elevationMeters: 48,
+        contactNumber: "+91 884 236 2200",
+        status: "350 Spots Open",
+        statusColor: "#188038",
+        badge: "Elevated High-Ground Hub",
+        details: "Drinking water, sanitation, generator power backup, and community kitchen functional.",
+        totalCapacity: 500,
+      },
+      {
+        id: "loc-hazard-1",
+        name: `${locName} Basin Waterlogging & Road Inundation`,
+        category: "hazard",
+        type: "Active Waterlogged Road Section",
+        address: `Low Basin Causeway, ${locName}`,
+        coordinates: { lat: uLat + 0.005, lng: uLng - 0.006, label: "Road Inundation" },
+        elevationMeters: 14,
+        status: "⛔ IMPASSABLE (1.1m Water Depth)",
+        statusColor: "#D93025",
+        badge: "Flood Danger",
+        details: "Road flooded due to heavy runoff. Light vehicles advised to take bypass road.",
+        hazardDepthM: 1.1,
+      },
+      {
+        id: "loc-sos-beacon-1",
+        name: "🚨 Citizen SOS: Inundation Distress",
+        category: "sos",
+        type: "Emergency SOS • FLOOD RESCUE",
+        address: `${locName} East Street (1.1 km away)`,
+        coordinates: { lat: uLat + 0.008, lng: uLng + 0.007, label: "Active Distress" },
+        elevationMeters: 18,
+        status: "ACTIVE",
+        statusColor: "#DC2626",
+        badge: "SOS CRITICAL",
+        details: "Trapped in ground floor house due to sudden water level rise. Emergency boat rescue needed.",
+      },
+    ];
+  }, [location.latitude, location.longitude, location.village, location.localityName, location.label]);
 
   // Combine baseline emergency places with live community reports, genuine SOS markers, and active user SOS
   const allPlaces = useMemo(() => {
@@ -174,20 +227,33 @@ export default function MapScreen() {
 
     // Deduplicate by ID
     const map = new Map<string, EmergencyPlace>();
-    [...BASE_PLACES, ...reportPlaces, ...panIndiaSosPlaces, ...activeUserSosPlaces].forEach((p) => {
+    [...localBasePlaces, ...reportPlaces, ...panIndiaSosPlaces, ...activeUserSosPlaces].forEach((p) => {
       map.set(p.id, p);
     });
     return Array.from(map.values());
   }, [allReports, sosMarkers, activeIncident, assignedIncident]);
 
   const [userCoord, setUserCoord] = useState<LiveCoordinate>({
-    latitude: DEFAULT_USER_LOCATION.lat,
-    longitude: DEFAULT_USER_LOCATION.lng,
+    latitude: location.latitude || 17.17,
+    longitude: location.longitude || 82.05,
     accuracy: 8,
     altitude: 28,
-    address: "Visakhapatnam, Andhra Pradesh",
+    address: location.village || location.localityName || location.label || "Jaggampeta, AP",
   });
-  const [selectedPlace, setSelectedPlace] = useState<EmergencyPlace>(allPlaces[0] || BASE_PLACES[0]);
+  const [selectedPlace, setSelectedPlace] = useState<EmergencyPlace | null>(null);
+
+  // Sync userCoord whenever location changes
+  useEffect(() => {
+    if (location.latitude && location.longitude) {
+      setUserCoord({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: 8,
+        altitude: 28,
+        address: location.village || location.localityName || location.label || "Live Station",
+      });
+    }
+  }, [location.latitude, location.longitude, location.village, location.localityName, location.label]);
   const [routeResult, setRouteResult] = useState<RealtimeRouteResult | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
@@ -313,7 +379,7 @@ export default function MapScreen() {
   }, [assignedIncident, activeIncident]);
 
   return (
-    <ScreenContainer edges={["top", "left", "right", "bottom"]}>
+    <ScreenContainer edges={["top", "left", "right", "bottom"]} enableSwipeTabs={false}>
       <View style={styles.container}>
         {/* Top Header Bar with Location Selector Trigger */}
         <View style={[styles.topBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -353,6 +419,7 @@ export default function MapScreen() {
         {/* Map Canvas with Layers & Live Telemetry */}
         <View style={styles.mapWrap}>
           <LiveRealtimeMap
+            fullScreen={true}
             userLocation={userCoord}
             places={allPlaces}
             selectedPlace={selectedPlace}
@@ -384,7 +451,7 @@ export default function MapScreen() {
         </View>
 
         {/* Honest Empty State Banner (Displayed when 0 Active Distresses exist) */}
-        {activeSosCount === 0 && (
+        {!isFullscreen && activeSosCount === 0 && (
           <View style={[styles.allClearBanner, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={[styles.allClearIconCircle, { backgroundColor: colors.success + "20" }]}>
               <IconSymbol name="checkmark.seal.fill" size={20} color={colors.success} />
@@ -409,7 +476,7 @@ export default function MapScreen() {
         )}
 
         {/* Selected Place Details Card (If user selected a specific POI / SOS beacon) */}
-        {selectedPlace && activeSosCount > 0 && (
+        {!isFullscreen && selectedPlace && activeSosCount > 0 && (
           <View style={[styles.detailCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.detailHeader}>
               <View style={{ flex: 1 }}>

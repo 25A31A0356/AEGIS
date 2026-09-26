@@ -8,7 +8,7 @@ import signal
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def check_port(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

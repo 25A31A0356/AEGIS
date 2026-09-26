@@ -792,3 +792,37 @@ class AIDecisionAudit(Base):
     authorization_notes: Mapped[Optional[str]] = mapped_column(Text, default="", nullable=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)
+
+
+class DeviceLocationTelemetry(Base):
+    """
+    Authoritative native hardware GPS & Fused Location Provider telemetry readings.
+    Stores high-precision latitude & longitude, accuracy in meters, speed, bearing,
+    mock detection flag, and timestamp.
+    """
+    __tablename__ = "aegis_device_locations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    device_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
+    user_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    
+    # Authoritative GPS Coordinates
+    latitude: Mapped[float] = mapped_column(Float, nullable=False, index=True)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False, index=True)
+    accuracy_meters: Mapped[float] = mapped_column(Float, nullable=False)
+    altitude_meters: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    speed_mps: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    bearing_degrees: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    
+    # Hardware Provider & Diagnostics
+    provider: Mapped[str] = mapped_column(String(50), default="GPS/FUSED", nullable=False)
+    is_mock_location: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    accuracy_tier: Mapped[str] = mapped_column(String(30), default="HIGH_QUALITY", nullable=False)
+    
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, index=True)
+
+    __table_args__ = (
+        Index("idx_device_location_geo", "latitude", "longitude"),
+        Index("idx_device_location_time", "device_id", "recorded_at"),
+    )

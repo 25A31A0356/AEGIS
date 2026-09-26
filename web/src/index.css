@@ -191,3 +191,17 @@ html.light ::-webkit-scrollbar-thumb {
 .animate-drawer-right {
   animation: slideInFromRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Animated Wind Streamlines & Atmospheric Flow */
+@keyframes windFlowDash {
+  0% {
+    stroke-dashoffset: 50;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.wind-animated-streamline {
+  animation: windFlowDash 1.4s linear infinite;
+}

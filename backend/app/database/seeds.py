@@ -306,9 +306,10 @@ DEFAULT_SHELTERS = [
 
 async def seed_database():
     """Seeds default providers, field mappings, verified alerts, shelters, and emergency services."""
+    from backend.app.database import session as sess_module
     now = datetime.now(timezone.utc)
 
-    async with async_session_factory() as session:
+    async with sess_module.async_session_factory() as session:
         # 1. Seed Data Sources
         for src_data in DEFAULT_SOURCES:
             stmt = select(DataSource).where(DataSource.provider_code == src_data["provider_code"])

@@ -2,7 +2,7 @@ import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { Platform } from "react-native";
@@ -21,6 +21,8 @@ import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import { registerForPushNotificationsAsync } from "@/lib/notifications";
+import { useAegisSosResponder } from "@/hooks/use-aegis-sos-responder";
+import { NearbySosRequestModal } from "@/components/NearbySosRequestModal";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -28,6 +30,33 @@ const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
 function ThemedStatusBar() {
   const { colorScheme } = useThemeContext();
   return <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />;
+}
+
+/**
+ * Global Nearby SOS Responder Listener:
+ * Broadcasts emergency distress modals to all mobiles in 10-20km radius of the requester
+ */
+function GlobalNearbySosListener() {
+  const {
+    incomingOffers,
+    isAccepting,
+    acceptError,
+    acceptOffer,
+    declineOffer,
+  } = useAegisSosResponder();
+
+  if (incomingOffers.length === 0) return null;
+
+  return (
+    <NearbySosRequestModal
+      visible={incomingOffers.length > 0}
+      offer={incomingOffers[0] || null}
+      isAccepting={isAccepting}
+      errorMessage={acceptError}
+      onAccept={acceptOffer}
+      onDecline={declineOffer}
+    />
+  );
 }
 
 export const unstable_settings = {
@@ -64,9 +93,7 @@ export default function RootLayout() {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Disable automatic refetching on window focus for mobile
             refetchOnWindowFocus: false,
-            // Retry failed requests once
             retry: 1,
           },
         },
@@ -91,13 +118,12 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
-          {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
-          {/* in order for ios apps tab switching to work properly, use presentation: "fullScreenModal" for login page, whenever you decide to use presentation: "modal*/}
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="hazards" />
             <Stack.Screen name="oauth/callback" />
           </Stack>
+          <GlobalNearbySosListener />
           <ThemedStatusBar />
         </QueryClientProvider>
       </trpc.Provider>

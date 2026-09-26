@@ -74,9 +74,9 @@ export interface InundationRiskZone {
 }
 
 export const DEFAULT_USER_LOCATION: GeoPoint = {
-  lat: 17.6868,
-  lng: 83.2185,
-  label: "Sector 04 • High Risk Basin Zone",
+  lat: 17.170,
+  lng: 82.050,
+  label: "Jaggampeta Station",
 };
 
 export interface EmergencyPlace {
@@ -98,6 +98,8 @@ export interface EmergencyPlace {
   sosId?: string;
   deepLinkUrl?: string;
   isMasked?: boolean;
+  distanceKm?: number;
+  estimatedMinutes?: number;
 }
 
 export const EMERGENCY_HOSPITALS: EmergencyPlace[] = [

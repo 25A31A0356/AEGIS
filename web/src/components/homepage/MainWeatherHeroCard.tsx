@@ -12,22 +12,26 @@ import {
   Umbrella,
   ArrowUp,
   ArrowDown,
+  Volume2,
 } from 'lucide-react';
 import { useLocation } from '../../context/LocationContext';
 import { useProfile } from '../../context/ProfileContext';
 import { DataStatusIndicator } from '../common/DataStatusIndicator';
 
 export const MainWeatherHeroCard: React.FC = () => {
-  const { weather, selectedLocation, selectedState, isGpsActive } = useLocation();
+  const { weather, selectedLocation, selectedState, isGpsActive, speakLocation } = useLocation();
   const { profile } = useProfile();
   const userName = profile?.fullName?.trim() ? profile.fullName.trim().split(' ')[0] : 'Friend';
-  const rawVillage = selectedLocation?.village || selectedLocation?.formattedVillage || weather.cityName || 'Your Village';
-  const cleanVillageName = rawVillage
-    .replace(/^Village:?\s*/i, '')
+  const locType = selectedLocation?.localityType || (selectedLocation?.village ? 'Village' : (selectedLocation?.isVillageLevel ? 'Village' : 'District'));
+  const locName = selectedLocation?.localityName || selectedLocation?.village || selectedLocation?.name || weather.cityName || 'Local Area';
+  const cleanLocName = locName
+    .replace(/^(Village|Town|City|Locality|District):?\s*/i, '')
     .replace(/^Rural Sector\s*•\s*/i, '')
     .split('•')[0]
     .split('(')[0]
     .trim();
+  const nearbyPlace = selectedLocation?.nearbyPlace || selectedLocation?.subdistrict;
+  const locEmoji = locType === 'Village' ? '🏡' : locType === 'Town' ? '🏘️' : locType === 'City' ? '🏙️' : '📍';
 
   const getWeatherIcon = (code: string) => {
     switch (code) {
@@ -52,15 +56,25 @@ export const MainWeatherHeroCard: React.FC = () => {
       <div className="absolute bottom-0 left-0 w-60 h-60 bg-[#E94B68]/10 rounded-full blur-2xl pointer-events-none" />
 
       {/* Top Bar: Location Tag & Data Source Badge */}
-      <div className="flex items-center justify-between gap-2 pb-4 mb-4 border-b border-white/10 relative z-10">
+      <div className="flex items-center justify-between gap-2 pb-4 mb-4 border-b border-white/10 relative z-10 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-bold text-white flex items-center gap-1.5">
-            Hi {userName}! 👋 &bull; Village: {cleanVillageName}
+            Hi {userName}! 👋 &bull; {locEmoji} {locType}: <span className="underline decoration-[#18C3D0] underline-offset-4 font-extrabold">{cleanLocName}</span>
           </span>
-          <span className="text-white/40">•</span>
-          <span className="text-[11px] font-mono text-[#D3E8F4] bg-white/15 px-2 py-0.5 rounded-full border border-white/20">
-            📍 Auto GPS
-          </span>
+          {nearbyPlace && (
+            <span className="text-xs text-[#D3E8F4] bg-white/10 px-2 py-0.5 rounded-full border border-white/15">
+              Near {nearbyPlace}
+            </span>
+          )}
+          <button
+            onClick={() => speakLocation()}
+            className="flex items-center gap-1 px-2.5 py-0.5 bg-[#18C3D0]/20 hover:bg-[#18C3D0]/40 text-[#EDFAFC] hover:text-white rounded-full text-xs font-semibold border border-[#18C3D0]/40 transition-all cursor-pointer"
+            title="Hear exact location and weather spoken out"
+            aria-label="Speak exact location"
+          >
+            <Volume2 className="w-3.5 h-3.5 text-[#18C3D0]" />
+            <span>Say Location</span>
+          </button>
         </div>
 
         {/* Dynamic Source & Mode Badge */}
@@ -94,10 +108,13 @@ export const MainWeatherHeroCard: React.FC = () => {
           </div>
 
           {/* Condition Headline */}
-          <p className="text-sm sm:text-base font-semibold text-[#EDFAFC] pt-2 leading-relaxed">
-            {weather.condition.includes('Thunderstorm') || weather.condition.includes('Rain')
-              ? 'Thunderstorms likely with heavy rain in the evening'
-              : weather.condition}
+          <p className="text-sm sm:text-base font-bold text-[#EDFAFC] pt-2 leading-relaxed flex items-center gap-2">
+            <span>{weather.condition}</span>
+            {weather.rainfallExpectedMm > 0 && (
+              <span className="text-xs font-mono font-normal bg-white/20 px-2 py-0.5 rounded-full border border-white/25">
+                {weather.rainfallExpectedMm} mm ({weather.rainProbability}%)
+              </span>
+            )}
           </p>
         </div>
 

@@ -27,6 +27,7 @@ vi.mock("react-native", () => ({
     OS: "web",
     select: (obj: any) => obj.web || obj.default,
   },
+  NativeModules: {},
   Linking: {
     openURL: vi.fn(async () => {}),
     canOpenURL: vi.fn(async () => true),

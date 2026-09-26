@@ -308,3 +308,19 @@ async def authorize_ai_decision(
             processing_version="2.0.0"
         )
     )
+
+
+class AIChatDirectRequest(BaseModel):
+    prompt: Optional[str] = None
+    message: Optional[str] = None
+    location_name: Optional[str] = "Regional Sector"
+    conversation_id: Optional[str] = None
+
+@router.post("/chat", response_model=ApiResponse[Dict[str, Any]], dependencies=[Depends(rate_limit_check)])
+async def chat_with_aegis_ai(
+    payload: AIChatDirectRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    query_text = payload.prompt or payload.message or "Give me a current emergency status update."
+    syn_req = AIChatRequest(message=query_text, location_name=payload.location_name or "Regional Sector")
+    return await synthesize_emergency_overview(syn_req, db)

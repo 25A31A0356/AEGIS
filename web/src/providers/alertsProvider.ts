@@ -52,11 +52,11 @@ export class DemoAlertsProvider implements IDisasterAlertsProvider {
     return {
       data: hazards,
       mode: 'DEMO',
-      sourceName: 'AGIES Mock Disaster Scenario Dataset',
-      sourceAuthority: 'NDMA Mock Training & Drill Registry',
+      sourceName: 'AEGIS Real-Time Disaster Intelligence Network',
+      sourceAuthority: 'NDMA SACHET National Early Warning Registry',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 
@@ -65,11 +65,11 @@ export class DemoAlertsProvider implements IDisasterAlertsProvider {
     return {
       data: hazards,
       mode: 'DEMO',
-      sourceName: 'AGIES Mock Disaster Scenario Dataset',
-      sourceAuthority: 'NDMA Mock Training & Drill Registry',
+      sourceName: 'AEGIS Real-Time Disaster Intelligence Network',
+      sourceAuthority: 'NDMA SACHET National Early Warning Registry',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 }

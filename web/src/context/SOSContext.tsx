@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { SOSService } from '../services/sosService';
 import { RoutingService, SimulatedRoute } from '../services/routingService';
 import { RealtimeService, RealtimeEvent } from '../services/realtimeService';
@@ -11,12 +11,15 @@ interface SOSContextType {
   activeRoute: SimulatedRoute | null;
   isRouteSimulating: boolean;
   isLiveLoading: boolean;
+  lastRefreshed: Date;
+  secondsUntilNextRefresh: number;
   setSelectedBeacon: (beacon: SOSBeacon | null) => void;
   updateBeaconTriage: (id: string, newStatus: SOSTriageStatus, notes?: string) => Promise<void>;
   triggerEmergencyRouteSimulation: (beacon: SOSBeacon) => void;
   clearActiveRoute: () => void;
   createNewSOSBeacon: (data: Partial<SOSBeacon>) => Promise<SOSBeacon>;
   refreshBeacons: () => Promise<void>;
+  clearStaleBeacons: () => void;
 }
 
 const SOSContext = createContext<SOSContextType | undefined>(undefined);
@@ -27,13 +30,50 @@ export const SOSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeRoute, setActiveRoute] = useState<SimulatedRoute | null>(null);
   const [isRouteSimulating, setIsRouteSimulating] = useState<boolean>(false);
   const [isLiveLoading, setIsLiveLoading] = useState<boolean>(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(() => new Date());
+  const [secondsUntilNextRefresh, setSecondsUntilNextRefresh] = useState<number>(60);
 
   const { addNotification } = useNotifications();
+
+  const refreshBeacons = useCallback(async () => {
+    setIsLiveLoading(true);
+    try {
+      SOSService.pruneStaleBeacons();
+      const fresh = await SOSService.fetchBeaconsFromApi(true);
+      setBeacons(fresh);
+      setLastRefreshed(new Date());
+      setSecondsUntilNextRefresh(60);
+    } finally {
+      setTimeout(() => setIsLiveLoading(false), 400);
+    }
+  }, []);
+
+  const clearStaleBeacons = useCallback(() => {
+    SOSService.pruneStaleBeacons();
+    refreshBeacons();
+  }, [refreshBeacons]);
+
+  // 1-minute auto-refresh interval with 1-second countdown tick
+  useEffect(() => {
+    const countdownTimer = setInterval(() => {
+      setSecondsUntilNextRefresh((prev) => {
+        if (prev <= 1) {
+          // Trigger automatic 1-minute refresh
+          refreshBeacons();
+          return 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdownTimer);
+  }, [refreshBeacons]);
 
   useEffect(() => {
     // Initial fetch from backend
     SOSService.fetchBeaconsFromApi().then((list) => {
       setBeacons(list);
+      setLastRefreshed(new Date());
     });
 
     const unsubscribe = SOSService.subscribe((updatedList) => {
@@ -97,16 +137,6 @@ export const SOSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [selectedBeacon, addNotification]);
 
-  const refreshBeacons = async () => {
-    setIsLiveLoading(true);
-    try {
-      const fresh = await SOSService.fetchBeaconsFromApi(true);
-      setBeacons(fresh);
-    } finally {
-      setTimeout(() => setIsLiveLoading(false), 400);
-    }
-  };
-
   const updateBeaconTriage = async (id: string, newStatus: SOSTriageStatus, notes?: string) => {
     const updated = await SOSService.updateTriageStatus(id, newStatus, 'Operator #419 (AEGIS Web Desk)', notes);
     if (updated && selectedBeacon?.id === id) {
@@ -118,7 +148,6 @@ export const SOSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSelectedBeacon(beacon);
     setIsRouteSimulating(true);
 
-    // If beacon already has assigned unit with real coords and route, use it
     if (beacon.assignedUnit?.responderCoordinates && beacon.routeCoordinates) {
       setActiveRoute({
         originCoordinates: beacon.assignedUnit.responderCoordinates,
@@ -144,7 +173,6 @@ export const SOSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    // Staging depot coordinates (offset slightly for realistic response routing)
     const stagingCoords: [number, number] = [
       beacon.coordinates[0] + 0.018,
       beacon.coordinates[1] - 0.021,
@@ -179,12 +207,15 @@ export const SOSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activeRoute,
         isRouteSimulating,
         isLiveLoading,
+        lastRefreshed,
+        secondsUntilNextRefresh,
         setSelectedBeacon,
         updateBeaconTriage,
         triggerEmergencyRouteSimulation,
         clearActiveRoute,
         createNewSOSBeacon,
         refreshBeacons,
+        clearStaleBeacons,
       }}
     >
       {children}

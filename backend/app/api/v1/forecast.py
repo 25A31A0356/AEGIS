@@ -81,6 +81,7 @@ WEATHER_CODE_MAP = {
 
 
 @router.get("", response_model=ApiResponse[ForecastResponsePayload], dependencies=[Depends(rate_limit_check)])
+@router.get("/daily", response_model=ApiResponse[ForecastResponsePayload], dependencies=[Depends(rate_limit_check)])
 async def get_forecast(
     lat: float = Query(default=19.0760, ge=-90.0, le=90.0, description="Latitude"),
     lng: float = Query(default=72.8777, ge=-180.0, le=180.0, description="Longitude"),

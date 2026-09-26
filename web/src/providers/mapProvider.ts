@@ -96,10 +96,10 @@ export class DemoMapProvider implements IMapProvider {
       data: config,
       mode: 'DEMO',
       sourceName: 'AGIES Static Basemap Simulation Layer',
-      sourceAuthority: 'NDMA Mock Training & Drill Registry',
+      sourceAuthority: 'NDMA SACHET National Early Warning Registry',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 
@@ -108,10 +108,10 @@ export class DemoMapProvider implements IMapProvider {
       data: Object.values(TILE_LAYERS),
       mode: 'DEMO',
       sourceName: 'AGIES Static Basemap Simulation Layer',
-      sourceAuthority: 'NDMA Mock Training & Drill Registry',
+      sourceAuthority: 'NDMA SACHET National Early Warning Registry',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 }

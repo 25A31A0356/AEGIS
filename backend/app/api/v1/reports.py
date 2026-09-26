@@ -348,7 +348,16 @@ async def list_community_reports(
     """
     List, filter, and search community incident reports with geospatial bounds and radial queries.
     """
-    query = select(IncidentReport).order_by(desc(IncidentReport.created_at))
+    query = select(IncidentReport).where(
+        IncidentReport.title.not_like('%[Mobile-E2E%'),
+        IncidentReport.title.not_like('%[Web-Portal-E2E%'),
+        IncidentReport.title.not_like('%Idempotency Test%'),
+        IncidentReport.title.not_like('%Live Inundation Test%'),
+        IncidentReport.description.not_like('%Tree down across expressway%'),
+        IncidentReport.description.not_like('%Water entering low-ground homes%'),
+        IncidentReport.description.not_like('%Over 3.5 feet of fast moving stormwater accumulation%'),
+        IncidentReport.reporter_name != 'Ananya Sharma'
+    ).order_by(desc(IncidentReport.created_at))
 
     # Status filter
     if status and status.upper() != "ALL":
@@ -864,6 +873,69 @@ async def upload_report_media(
         provenance=ProvenanceMetadata(
             data_type="report_media_asset",
             source_authority="AEGIS Secure Asset Vault",
+            processing_version="2.0.0"
+        )
+    )
+
+
+@router.delete("/purge/test-data", response_model=ApiResponse[Dict[str, Any]])
+async def purge_unwanted_test_reports(
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Purges unwanted test seed reports, keeping only genuine reports posted by users.
+    """
+    res = await db.execute(select(IncidentReport))
+    all_reps = res.scalars().all()
+    deleted_count = 0
+    for r in all_reps:
+        if (
+            "Ananya Sharma" in (r.reporter_name or "")
+            or "Madhapur" in (r.location_name or "")
+            or "Tree down across expressway" in (r.description or "")
+            or "Water entering low-ground homes" in (r.description or "")
+            or "Test" in (r.title or "")
+            or "Idempotency" in (r.title or "")
+            or "E2E" in (r.title or "")
+            or "Minto Bridge" in (r.location_name or "")
+            or "Substation" in (r.title or "")
+            or "Highway Lane" in (r.title or "")
+            or "Storm Surge" in (r.title or "")
+        ):
+            await db.delete(r)
+            deleted_count += 1
+    await db.commit()
+    return ApiResponse(
+        success=True,
+        data={"deleted_count": deleted_count, "message": f"Successfully purged {deleted_count} unwanted test seed reports."},
+        freshness=FreshnessMetadata(status="fresh", age_seconds=0),
+        provenance=ProvenanceMetadata(
+            data_type="report_purge",
+            source_authority="AEGIS Operations Moderation",
+            processing_version="2.0.0"
+        )
+    )
+
+
+@router.delete("/{report_id}", response_model=ApiResponse[Dict[str, Any]])
+async def delete_community_report(
+    report_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Deletes an incident report by ID."""
+    res = await db.execute(select(IncidentReport).where(IncidentReport.id == report_id))
+    report = res.scalars().first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Community report not found.")
+    await db.delete(report)
+    await db.commit()
+    return ApiResponse(
+        success=True,
+        data={"deleted_id": report_id, "message": "Report deleted successfully."},
+        freshness=FreshnessMetadata(status="fresh", age_seconds=0),
+        provenance=ProvenanceMetadata(
+            data_type="report_deletion",
+            source_authority="AEGIS Operations Moderation",
             processing_version="2.0.0"
         )
     )

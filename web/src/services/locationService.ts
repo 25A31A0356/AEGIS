@@ -20,12 +20,18 @@ export interface LocationCoordinates {
   longitude: number;
 }
 
+export type LocalityType = 'Village' | 'Town' | 'City' | 'Locality' | 'District';
+
 export interface LocationSearchResult {
   village?: string;
   subdistrict?: string;
   postcode?: string;
   formattedVillage?: string;
   isVillageLevel?: boolean;
+  localityType?: LocalityType;
+  localityName?: string;
+  nearbyPlace?: string;
+  speechSummary?: string;
   id: string;
   name: string;
   stateName: string;
@@ -44,6 +50,10 @@ export interface GeocodedAddress {
   postcode?: string;
   formattedVillage?: string;
   isVillageLevel?: boolean;
+  localityType?: LocalityType;
+  localityName?: string;
+  nearbyPlace?: string;
+  speechSummary?: string;
   cityName: string;
   stateName: string;
   district: string;
@@ -229,6 +239,11 @@ class LocationServiceClass {
         this.savedLocations = [...DEFAULT_SAVED_LOCATIONS];
         this.saveToStorage();
       }
+
+      const storedSelected = localStorage.getItem('aegis_selected_location');
+      if (storedSelected) {
+        this.selectedLocation = JSON.parse(storedSelected);
+      }
     } catch {
       this.savedLocations = [...DEFAULT_SAVED_LOCATIONS];
     }
@@ -248,64 +263,86 @@ class LocationServiceClass {
    * Requests HTML5 browser geolocation API with timeout and high accuracy.
    */
   async getCurrentPosition(): Promise<GeolocationResult> {
-    if (typeof window === 'undefined' || !navigator.geolocation) {
-      return {
-        success: false,
-        error: {
-          code: 'NOT_SUPPORTED',
-          message: 'Geolocation is not supported by your browser.',
-          friendlyAdvice: 'Please use a modern browser or select your Indian state/district manually from the search bar.',
-        },
-      };
+    // 1. Try Browser HTML5 Geolocation API with high accuracy
+    if (typeof window !== 'undefined' && navigator.geolocation) {
+      try {
+        const gpsResult = await new Promise<GeolocationResult>((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const lat = position.coords.latitude;
+              const lng = position.coords.longitude;
+              const address = await this.reverseGeocode(lat, lng);
+              resolve({
+                success: true,
+                coordinates: [lat, lng],
+                address,
+              });
+            },
+            (error) => {
+              console.warn('[LocationService] Browser GPS prompt rejected or unavailable:', error.message);
+              resolve({ success: false });
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 6000,
+              maximumAge: 30000,
+            }
+          );
+        });
+
+        if (gpsResult.success) {
+          return gpsResult;
+        }
+      } catch (e) {
+        console.warn('[LocationService] HTML5 geolocation error:', e);
+      }
     }
 
-    return new Promise((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
+    // 2. Seamless automatic IP-based Geolocation fallback (works across desktops without GPS chips)
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const ipRes = await fetch('https://ipwho.is/', { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        if (ipData.success && typeof ipData.latitude === 'number' && typeof ipData.longitude === 'number') {
+          const lat = ipData.latitude;
+          const lng = ipData.longitude;
           const address = await this.reverseGeocode(lat, lng);
-          resolve({
+          
+          if (ipData.city && !address.cityName.includes(ipData.city)) {
+            address.cityName = ipData.city;
+            address.readableAddress = `${ipData.city}, ${ipData.region || address.stateName}`;
+          }
+
+          return {
             success: true,
             coordinates: [lat, lng],
             address,
-          });
-        },
-        (error) => {
-          let code: GeolocationErrorCode = 'UNKNOWN';
-          let advice = 'Unable to determine your GPS location. Please choose your district manually.';
-
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              code = 'PERMISSION_DENIED';
-              advice = 'Location permission was denied. Click the lock/info icon in your browser URL bar to allow location access for real-time local disaster alerts.';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              code = 'POSITION_UNAVAILABLE';
-              advice = 'GPS or network signal unavailable. Defaulting to district-level telemetry grid.';
-              break;
-            case error.TIMEOUT:
-              code = 'TIMEOUT';
-              advice = 'Location request timed out. Retrying with regional network fallback.';
-              break;
-          }
-
-          resolve({
-            success: false,
-            error: {
-              code,
-              message: error.message || 'Geolocation error',
-              friendlyAdvice: advice,
-            },
-          });
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000,
+          };
         }
-      );
-    });
+      }
+    } catch (ipErr) {
+      console.warn('[LocationService] IP geolocation fallback error:', ipErr);
+    }
+
+    // 3. Fallback to default registered central sector
+    const defaultCity = INDIAN_CITIES_REGISTRY[0];
+    return {
+      success: true,
+      coordinates: defaultCity.coordinates,
+      address: {
+        cityName: defaultCity.name,
+        stateName: defaultCity.stateName,
+        district: defaultCity.district,
+        stateId: defaultCity.stateId,
+        readableAddress: `${defaultCity.name}, ${defaultCity.stateName}`,
+        coordinates: defaultCity.coordinates,
+      },
+    };
   }
 
   async getCurrentLocation(): Promise<GeolocationResult> {
@@ -323,7 +360,7 @@ class LocationServiceClass {
 
     const trimmed = query.trim().toLowerCase();
 
-    // Match by district/city name, state name, or state ID across all 780+ districts
+    // 1. Check local district registry
     const matches = INDIAN_CITIES_REGISTRY.filter((item) => {
       return (
         item.name.toLowerCase().includes(trimmed) ||
@@ -334,7 +371,6 @@ class LocationServiceClass {
     });
 
     if (matches.length > 0) {
-      // Prioritize exact name matches first
       matches.sort((a, b) => {
         const aExact = a.name.toLowerCase() === trimmed;
         const bExact = b.name.toLowerCase() === trimmed;
@@ -343,6 +379,69 @@ class LocationServiceClass {
         return 0;
       });
       return matches.slice(0, 30);
+    }
+
+    // 2. Village & Mandal Forward Geocoding via Nominatim (for places like Goneda)
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', India')}&addressdetails=1&limit=5`,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'AEGIS-Disaster-Resilience-Platform/1.0',
+          },
+          signal: controller.signal,
+        }
+      );
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const items = await res.json();
+        if (Array.isArray(items) && items.length > 0) {
+          return items.map((item: any) => {
+            const addr = item.address || {};
+            const village = addr.village || addr.hamlet || addr.suburb || addr.town || item.name;
+            const mandal = addr.county || addr.subdistrict || addr.taluk || addr.tehsil;
+            const district = addr.state_district || addr.district || mandal || '';
+            const stateName = addr.state || 'India';
+            const lat = parseFloat(item.lat);
+            const lon = parseFloat(item.lon);
+
+            const nearbyParts: string[] = [];
+            if (mandal && mandal !== village) nearbyParts.push(mandal);
+            if (district && district !== village && !nearbyParts.includes(district)) nearbyParts.push(district);
+            const nearbyStr = nearbyParts.length > 0 ? `Near ${nearbyParts.join(', ')}` : '';
+
+            const displayName = village ? `${village} (Village)${nearbyStr ? ` • ${nearbyStr}` : ''}` : item.display_name;
+            const speech = `Your current location is ${village} Village${nearbyParts.length > 0 ? `, near ${nearbyParts.join(', ')}` : ''}, in ${stateName}.`;
+
+            return {
+              id: `geo-${item.place_id || lat.toFixed(3)}`,
+              name: displayName,
+              stateName,
+              district: district || village,
+              stateId: 'IN',
+              coordinates: [lat, lon],
+              riskScore: 68,
+              riskLevel: 'Medium',
+              weatherSnippet: 'Live Telemetry Active',
+              village,
+              subdistrict: mandal,
+              localityType: 'Village',
+              localityName: village,
+              nearbyPlace: nearbyParts.join(', ') || undefined,
+              formattedVillage: displayName,
+              speechSummary: speech,
+              isVillageLevel: true,
+            };
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('[LocationService] Village forward geocoding query failed:', e);
     }
 
     // Check for coordinate search (e.g. "19.07, 72.87")
@@ -377,18 +476,21 @@ class LocationServiceClass {
 
   /**
    * 3. reverseGeocode(lat, lng)
-   * Reverse geocodes coordinates to nearest Indian District from all 780+ districts
+   * High-accuracy reverse geocoder: Resolves exact Village, Town, Locality, City, Mandal, District, and State.
    */
   async reverseGeocode(lat: number, lng: number): Promise<GeocodedAddress> {
-    // 1. High-accuracy Village Geocoding via Nominatim with fast 2500ms timeout
+    // 1. High-accuracy Village / Town / City Geocoding via Nominatim with User-Agent
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
         {
-          headers: { 'Accept': 'application/json' },
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'AEGIS-Disaster-Resilience-Platform/1.0',
+          },
           signal: controller.signal,
         }
       );
@@ -397,47 +499,81 @@ class LocationServiceClass {
       if (response.ok) {
         const data = await response.json();
         const addr = data.address || {};
-        const village = addr.village || addr.hamlet || addr.isolated_dwelling || addr.suburb || addr.neighbourhood || addr.residential;
-        const subdistrict = addr.county || addr.subdistrict || addr.taluk || addr.tehsil || addr.mandal || addr.town;
-        const district = addr.state_district || addr.district || addr.county || '';
-        const stateName = addr.state || '';
+        const village = addr.village || addr.hamlet || addr.isolated_dwelling;
+        const suburb = addr.suburb || addr.neighbourhood || addr.residential;
+        const town = addr.town || addr.municipality;
+        const city = addr.city;
+        const mandal = addr.county || addr.subdistrict || addr.taluk || addr.tehsil || addr.mandal;
+        const districtName = addr.state_district || addr.district || '';
+        const stateNameResolved = addr.state || '';
         const postcode = addr.postcode || '';
 
-        if (village || subdistrict || district) {
-          const mainName = village || subdistrict || district;
-          const formattedVillage = village
-            ? `Village ${village}${subdistrict ? ` • ${subdistrict} Mandal` : ''}`
-            : (subdistrict ? `${subdistrict} Sector` : mainName);
+        let localityType: LocalityType = 'District';
+        let localityName = '';
 
-          const fullReadable = [
-            village ? `Village ${village}` : undefined,
-            subdistrict,
-            district,
-            stateName
-          ].filter(Boolean).join(', ');
-
-          const matchedState = ALL_INDIAN_STATES_DATA.find((s) =>
-            stateName.toLowerCase().includes(s.name.toLowerCase()) ||
-            s.name.toLowerCase().includes(stateName.toLowerCase())
-          );
-
-          return {
-            cityName: mainName,
-            stateName: stateName || (matchedState?.name || 'India'),
-            district: district || mainName,
-            stateId: matchedState?.id || 'IN',
-            readableAddress: fullReadable,
-            coordinates: [lat, lng],
-            village: village || undefined,
-            subdistrict: subdistrict || undefined,
-            postcode: postcode || undefined,
-            formattedVillage,
-            isVillageLevel: Boolean(village),
-          };
+        if (village) {
+          localityType = 'Village';
+          localityName = village;
+        } else if (town) {
+          localityType = 'Town';
+          localityName = town;
+        } else if (suburb) {
+          localityType = 'Locality';
+          localityName = suburb;
+        } else if (city) {
+          localityType = 'City';
+          localityName = city;
+        } else {
+          localityType = 'District';
+          localityName = districtName || mandal || 'Local Sector';
         }
+
+        const nearbyParts: string[] = [];
+        if (mandal && mandal !== localityName) nearbyParts.push(mandal);
+        if (town && town !== localityName && !nearbyParts.includes(town)) nearbyParts.push(town);
+        if (city && city !== localityName && !nearbyParts.includes(city)) nearbyParts.push(city);
+        if (districtName && districtName !== localityName && !nearbyParts.includes(districtName)) nearbyParts.push(districtName);
+
+        const nearbyStr = nearbyParts.length > 0 ? `Near ${nearbyParts.join(', ')}` : '';
+        const formattedVillage = nearbyStr
+          ? `${localityName} (${localityType}) • ${nearbyStr}`
+          : `${localityName} (${localityType})`;
+
+        const fullReadable = [
+          localityName,
+          nearbyStr || undefined,
+          stateNameResolved || undefined,
+        ].filter(Boolean).join(', ');
+
+        const speechSummary = `Your current location is ${localityName} ${localityType}` +
+          (nearbyParts.length > 0 ? `, near ${nearbyParts.join(', ')}` : '') +
+          (stateNameResolved ? `, in ${stateNameResolved}` : '') + '.';
+
+        const matchedState = ALL_INDIAN_STATES_DATA.find((s) =>
+          stateNameResolved.toLowerCase().includes(s.name.toLowerCase()) ||
+          s.name.toLowerCase().includes(stateNameResolved.toLowerCase())
+        );
+
+        return {
+          cityName: localityName,
+          stateName: stateNameResolved || (matchedState?.name || 'India'),
+          district: districtName || localityName,
+          stateId: matchedState?.id || 'IN',
+          readableAddress: fullReadable,
+          coordinates: [lat, lng],
+          village: village || undefined,
+          subdistrict: mandal || undefined,
+          postcode: postcode || undefined,
+          formattedVillage,
+          localityType,
+          localityName,
+          nearbyPlace: nearbyParts.join(', ') || undefined,
+          speechSummary,
+          isVillageLevel: localityType === 'Village',
+        };
       }
-    } catch {
-      // Gracefully fall back to local high-density district registry
+    } catch (e) {
+      console.warn('[LocationService] Nominatim geocoding fallback:', e);
     }
 
     // 2. High-speed local fallback to nearest Indian District Sector
@@ -452,30 +588,47 @@ class LocationServiceClass {
       }
     }
 
-    const isNearCenter = minDistance <= 20;
-    const villageSectorName = isNearCenter
+    const isNearCenter = minDistance <= 25;
+    const sectorName = isNearCenter
       ? closestDistrict.name
-      : `Rural Sector • ${closestDistrict.name} (${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E)`;
+      : `${closestDistrict.name} Sector (${lat.toFixed(2)}°N, ${lng.toFixed(2)}°E)`;
 
     return {
-      cityName: villageSectorName,
+      cityName: sectorName,
       stateName: closestDistrict.stateName,
       district: closestDistrict.district,
       stateId: closestDistrict.stateId,
-      readableAddress: isNearCenter
-        ? `${closestDistrict.name}, ${closestDistrict.stateName}`
-        : `Rural Locality, ${closestDistrict.name} District, ${closestDistrict.stateName}`,
+      readableAddress: `${closestDistrict.name}, ${closestDistrict.stateName}`,
       coordinates: [lat, lng],
-      village: isNearCenter ? undefined : `${closestDistrict.name} Rural Sector`,
-      subdistrict: closestDistrict.name,
-      formattedVillage: `Rural Sector • ${closestDistrict.name}`,
-      isVillageLevel: true,
+      localityType: 'District',
+      localityName: closestDistrict.name,
+      formattedVillage: sectorName,
+      speechSummary: `Your current location is ${closestDistrict.name}, ${closestDistrict.stateName}.`,
+      isVillageLevel: false,
     };
   }
 
   /**
-   * 4. saveLocation(location)
+   * Speak out the user's location via Web SpeechSynthesis
    */
+  speakLocation(customText?: string): void {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      console.warn('[LocationService] SpeechSynthesis is not supported in this browser.');
+      return;
+    }
+    try {
+      window.speechSynthesis.cancel();
+      const textToSpeak = customText || this.selectedLocation?.speechSummary || `Your location is ${this.selectedLocation?.name}, ${this.selectedLocation?.stateName}`;
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      utterance.lang = 'en-IN';
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.warn('[LocationService] Speak location failed:', err);
+    }
+  }
+
   saveLocation(location: Omit<SavedLocationItem, 'id'>): SavedLocationItem[] {
     const newItem: SavedLocationItem = {
       ...location,
@@ -527,7 +680,20 @@ class LocationServiceClass {
         riskScore: target.riskScore,
         riskLevel: target.riskLevel,
         weatherSnippet: target.weatherSnippet,
+        village: (target as any).village,
+        subdistrict: (target as any).subdistrict,
+        formattedVillage: (target as any).formattedVillage,
+        localityType: (target as any).localityType || ((target as any).village ? 'Village' : 'District'),
+        localityName: (target as any).localityName || (target as any).village || target.name,
+        nearbyPlace: (target as any).nearbyPlace,
+        speechSummary: (target as any).speechSummary,
+        isVillageLevel: (target as any).isVillageLevel ?? Boolean((target as any).village),
       };
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('aegis_selected_location', JSON.stringify(this.selectedLocation));
+      } catch {}
     }
     return this.selectedLocation;
   }

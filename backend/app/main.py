@@ -177,11 +177,16 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 # 6. Include Master API v1 Router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+# Direct /v1 prefix for POST /v1/locations and related endpoints
+app.include_router(api_router, prefix="/v1")
+
 # Also mount on /api for seamless backward compatibility with existing frontend
 app.include_router(api_router, prefix="/api")
 
 # Mount tRPC compatibility router for mobile/web client bridges
 app.include_router(trpc_router, prefix="/api")
+app.include_router(trpc_router, prefix=settings.API_V1_STR)
+app.include_router(trpc_router, prefix="/v1")
 
 
 @app.get("/")

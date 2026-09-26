@@ -1,7 +1,7 @@
-import { View, type ViewProps } from "react-native";
+﻿import { View, type ViewProps } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
-
 import { cn } from "@/lib/utils";
+import { useSwipeTabs, TabName } from "@/hooks/use-swipe-tabs";
 
 export interface ScreenContainerProps extends ViewProps {
   /**
@@ -21,22 +21,24 @@ export interface ScreenContainerProps extends ViewProps {
    * Additional className for the SafeAreaView (content layer).
    */
   safeAreaClassName?: string;
+  /**
+   * Enable horizontal swipe navigation across main tabs (Home <-> Maps <-> Beacon <-> Reports <-> Ask).
+   * Default: true
+   */
+  enableSwipeTabs?: boolean;
+  /**
+   * Specific active tab name (optional override)
+   */
+  activeTab?: TabName;
+  /**
+   * If true, swipe gesture only triggers when starting from screen edges.
+   */
+  edgeOnlySwipe?: boolean;
 }
 
 /**
- * A container component that properly handles SafeArea and background colors.
- *
- * The outer View extends to full screen (including status bar area) with the background color,
- * while the inner SafeAreaView ensures content is within safe bounds.
- *
- * Usage:
- * ```tsx
- * <ScreenContainer className="p-4">
- *   <Text className="text-2xl font-bold text-foreground">
- *     Welcome
- *   </Text>
- * </ScreenContainer>
- * ```
+ * A container component that properly handles SafeArea, background colors,
+ * and high-performance horizontal swipe navigation across all main tabs.
  */
 export function ScreenContainer({
   children,
@@ -44,16 +46,22 @@ export function ScreenContainer({
   className,
   containerClassName,
   safeAreaClassName,
+  enableSwipeTabs = true,
+  activeTab,
+  edgeOnlySwipe = false,
   style,
   ...props
 }: ScreenContainerProps) {
+  const { panHandlers } = useSwipeTabs({
+    enabled: enableSwipeTabs,
+    activeTab,
+    edgeOnly: edgeOnlySwipe,
+  });
+
   return (
     <View
-      className={cn(
-        "flex-1",
-        "bg-background",
-        containerClassName
-      )}
+      className={cn("flex-1 bg-background", containerClassName)}
+      {...panHandlers}
       {...props}
     >
       <SafeAreaView

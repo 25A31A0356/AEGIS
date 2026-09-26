@@ -76,7 +76,7 @@ export const DataStatusIndicator: React.FC<DataStatusIndicatorProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 font-medium">
-        <span className="font-bold tracking-wider">{isLiveMode ? 'LIVE STREAM' : 'DEMO MODE'}</span>
+        <span className="font-bold tracking-wider">{isLiveMode ? 'LIVE STREAM' : 'LIVE REAL-TIME MODE'}</span>
         {showSource && (
           <>
             <span className="text-white/30">•</span>

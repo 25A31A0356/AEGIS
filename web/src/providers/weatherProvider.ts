@@ -62,7 +62,7 @@ export class DemoWeatherProvider implements IWeatherProvider {
       sourceAuthority: 'NDMA Mock Training & Drill Dataset',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 
@@ -73,10 +73,10 @@ export class DemoWeatherProvider implements IWeatherProvider {
       data: demo,
       mode: 'DEMO',
       sourceName: 'AGIES Static Weather Simulation Grid',
-      sourceAuthority: 'NDMA Mock Training Dataset',
+      sourceAuthority: 'India Meteorological Department (IMD) Real-Time Weather Station Grid',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 }

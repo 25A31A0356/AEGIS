@@ -11,6 +11,7 @@ import { AlertTicker } from '../components/common/AlertTicker';
 import { WeatherIllustration } from '../components/dashboard/WeatherIllustration';
 
 export interface DashboardPageProps {
+  onOpenSearch?: () => void;
   onOpenAIModal?: () => void;
   onNavigate?: (tab: string, opt?: { sosId?: string; hazardId?: string }) => void;
   onSelectHazardById?: (hazardId: string) => void;
@@ -33,20 +34,17 @@ function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: num
 export const DashboardPage: React.FC<DashboardPageProps> = ({
   onNavigate,
   onSelectHazardById,
+  onOpenSearch,
 }) => {
-  const { selectedLocation, weather: contextWeather, isGpsActive } = useLocation();
+  const { selectedLocation, weather: contextWeather, isGpsActive, requestCurrentGPS } = useLocation();
   const { profile } = useProfile();
   const { beacons } = useSOS();
   const { dict } = useTranslation();
 
   const userName = profile?.fullName?.trim() ? profile.fullName.trim().split(' ')[0] : 'Friend';
-  const rawVillage = selectedLocation?.village || selectedLocation?.formattedVillage || selectedLocation?.name || 'Your Village';
-  const cleanVillageName = rawVillage
-    .replace(/^Village:?\s*/i, '')
-    .replace(/^Rural Sector\s*•\s*/i, '')
-    .split('•')[0]
-    .split('(')[0]
-    .trim();
+  const locType = selectedLocation?.localityType || (selectedLocation?.village ? 'Village' : 'District');
+  const locName = selectedLocation?.localityName || selectedLocation?.village || selectedLocation?.name || 'Your Area';
+  const cleanVillageName = locName.split('•')[0].trim();
 
   const [hazards, setHazards] = useState<HazardItem[]>(() => HazardService.getAllHazards());
   const [dailyForecast, setDailyForecast] = useState<DailyForecastItem[]>([]);
@@ -67,10 +65,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     let mounted = true;
     const fetchForecast = async () => {
       try {
-        const city = selectedLocation?.name || 'Visakhapatnam';
-        const daily = WeatherService.getDailyForecast(city.toLowerCase());
-        const hourly = WeatherService.getHourlyForecast(city.toLowerCase());
-        const live = await WeatherService.fetchLiveCityWeather(city.toLowerCase());
+        const coords = selectedLocation?.coordinates || [17.228, 82.046];
+        const cityName = selectedLocation?.name || 'Local Station';
+        const stateName = selectedLocation?.stateName || 'India';
+        const live = await WeatherService.fetchLiveWeatherByCoordinates(coords[0], coords[1], cityName, stateName);
+        const daily = WeatherService.getDailyForecast(cityName.toLowerCase());
+        const hourly = WeatherService.getHourlyForecast(cityName.toLowerCase());
         if (mounted) {
           setDailyForecast(daily || []);
           setHourlyForecast(hourly || []);
@@ -89,10 +89,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const city = selectedLocation?.name || 'Visakhapatnam';
-      const live = await WeatherService.fetchLiveCityWeather(city.toLowerCase());
-      const daily = WeatherService.getDailyForecast(city.toLowerCase());
-      const hourly = WeatherService.getHourlyForecast(city.toLowerCase());
+      if (typeof requestCurrentGPS === 'function') {
+        await requestCurrentGPS();
+      }
+      const coords = selectedLocation?.coordinates || [17.228, 82.046];
+      const cityName = selectedLocation?.name || 'Local Station';
+      const stateName = selectedLocation?.stateName || 'India';
+      const live = await WeatherService.fetchLiveWeatherByCoordinates(coords[0], coords[1], cityName, stateName);
+      const daily = WeatherService.getDailyForecast(cityName.toLowerCase());
+      const hourly = WeatherService.getHourlyForecast(cityName.toLowerCase());
       setLiveWeather(live);
       setDailyForecast(daily || []);
       setHourlyForecast(hourly || []);
@@ -181,16 +186,25 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       {/* Top Banner Alert Ticker */}
       <AlertTicker onSelectHazard={onSelectHazardById} />
 
-      {/* 1. TOP GREETING & VILLAGE WEATHER HEADER (WITH LOCATION SYMBOL REFRESH) */}
+      {/* 1. TOP GREETING & VILLAGE WEATHER HEADER (WITH 1-CLICK VILLAGE PICKER & REFRESH) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-emerald-500/10 dark:from-sky-950/40 dark:via-indigo-950/40 dark:to-emerald-950/40 border border-slate-200/80 dark:border-white/10 backdrop-blur-md shadow-sm">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            Hi {userName}! 👋
+            Hi {userName}!
           </h1>
           <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold text-base sm:text-lg mt-1.5 flex-wrap">
-            <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">
-              📍 Village: {cleanVillageName}
-            </span>
+            <button
+              onClick={onOpenSearch}
+              className="text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline flex items-center gap-1.5 cursor-pointer text-left"
+              title="Click to search or change your exact village or city"
+            >
+              <span>{cleanVillageName || selectedLocation?.name || "Your Area"}</span>
+            </button>
+            {selectedLocation?.nearbyPlace && (
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                (Near {selectedLocation.nearbyPlace})
+              </span>
+            )}
           </div>
         </div>
 

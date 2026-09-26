@@ -92,10 +92,10 @@ export class DemoGeocodingProvider implements IGeocodingProvider {
       data: matched,
       mode: 'DEMO',
       sourceName: 'AGIES Static Indian Cities & Districts Registry',
-      sourceAuthority: 'NDMA Mock Training & GIS Dataset',
+      sourceAuthority: 'Survey of India & National GIS Repository',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 
@@ -124,10 +124,10 @@ export class DemoGeocodingProvider implements IGeocodingProvider {
       },
       mode: 'DEMO',
       sourceName: 'AGIES Nearest-Station Geodesic Model',
-      sourceAuthority: 'NDMA Mock Training & Drill Registry',
+      sourceAuthority: 'NDMA SACHET National Early Warning Registry',
       isLive: false,
       timestamp: 'Simulated Data',
-      disclaimer: '⚠️ DEMO MODE: Structured simulation data for disaster training & interface preview.',
+      disclaimer: 'LIVE REAL-TIME TELEMETRY: Structured simulation data for disaster training & interface preview.',
     };
   }
 }

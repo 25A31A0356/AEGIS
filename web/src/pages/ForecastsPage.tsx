@@ -40,7 +40,7 @@ export const ForecastsPage: React.FC = () => {
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-[#27272a] pb-3">
         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-          {dict.forecast || 'Disaster & Meteorological Analysis'}
+          {dict.forecast || 'Analysis'}
         </h1>
         <p className="text-xs text-slate-500 dark:text-[#a1a1aa] mt-0.5">
           Inspect historical trends, contributing factors, and 3-day predictive outlooks.

@@ -67,63 +67,33 @@ const MapCenterController: React.FC<{ center: [number, number]; zoom: number }> 
   zoom,
 }) => {
   const map = useMap();
+  const lastCenterKeyRef = React.useRef<string>("");
+
   React.useEffect(() => {
-    map.setView(center, zoom, { animate: true, duration: 0.8 });
+    const key = `${center[0].toFixed(3)}_${center[1].toFixed(3)}`;
+    if (key !== lastCenterKeyRef.current) {
+      lastCenterKeyRef.current = key;
+      const currentZoom = map.getZoom();
+      map.setView(center, currentZoom >= 13 ? currentZoom : zoom, { animate: true, duration: 0.8 });
+    }
   }, [center, zoom, map]);
   return null;
 };
 
 const GoogleLiveMapControls: React.FC<{
   onRecenter: () => void;
-  onToggleSatellite: () => void;
-  isSatellite: boolean;
-}> = ({ onRecenter, onToggleSatellite, isSatellite }) => {
-  const map = useMap();
-
+}> = ({ onRecenter }) => {
   return (
-    <>
-      <div className="absolute bottom-4 left-4 z-400 pointer-events-auto">
-        <button
-          type="button"
-          onClick={onToggleSatellite}
-          className="flex items-center gap-2 bg-white/95 dark:bg-[#071828]/95 backdrop-blur-xs hover:bg-white dark:hover:bg-[#0B1E30] text-slate-800 dark:text-slate-200 px-3 py-2 rounded-xl shadow-card border border-slate-200 dark:border-[#1E3347] text-xs font-semibold transition-all hover:shadow-md cursor-pointer"
-          title="Toggle Google Maps Satellite / Streets"
-        >
-          <Layers className="w-3.5 h-3.5 text-blue-600 dark:text-[#18C3D0]" />
-          <span>{isSatellite ? 'Google Streets' : 'Google Satellite'}</span>
-        </button>
-      </div>
-
-      <div className="absolute bottom-4 right-4 z-400 flex flex-col gap-2 items-center pointer-events-auto">
-        <button
-          type="button"
-          onClick={onRecenter}
-          className="w-9 h-9 rounded-xl bg-white dark:bg-[#071828] hover:bg-slate-50 dark:hover:bg-[#0B1E30] text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-[#18C3D0] shadow-card border border-slate-200 dark:border-[#1E3347] flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
-          title="Center on Location"
-        >
-          <Crosshair className="w-4 h-4 text-blue-600 dark:text-[#18C3D0]" />
-        </button>
-
-        <div className="bg-white dark:bg-[#071828] rounded-xl shadow-card border border-slate-200 dark:border-[#1E3347] overflow-hidden flex flex-col divide-y divide-slate-100 dark:divide-[#1E3347]">
-          <button
-            type="button"
-            onClick={() => map.zoomIn()}
-            className="w-9 h-8 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#0B1E30] font-bold text-base transition-colors cursor-pointer"
-            title="Zoom in"
-          >
-            +
-          </button>
-          <button
-            type="button"
-            onClick={() => map.zoomOut()}
-            className="w-9 h-8 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#0B1E30] font-bold text-base transition-colors cursor-pointer"
-            title="Zoom out"
-          >
-            −
-          </button>
-        </div>
-      </div>
-    </>
+    <div className="absolute bottom-4 right-4 z-400 flex flex-col gap-2 items-center pointer-events-auto">
+      <button
+        type="button"
+        onClick={onRecenter}
+        className="w-10 h-10 rounded-xl bg-white dark:bg-[#071828] hover:bg-slate-50 dark:hover:bg-[#0B1E30] text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-[#18C3D0] shadow-card border border-slate-200 dark:border-[#1E3347] flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
+        title="Refresh & Center Location"
+      >
+        <Crosshair className="w-5 h-5 text-blue-600 dark:text-[#18C3D0]" />
+      </button>
+    </div>
   );
 };
 
@@ -402,8 +372,7 @@ export const InteractiveLocationMap: React.FC<InteractiveLocationMapProps> = ({
 
           <GoogleLiveMapControls
             onRecenter={() => onSelectCoordinates(centerCoordinates, locationName)}
-            onToggleSatellite={() => setIsSatellite(!isSatellite)}
-            isSatellite={isSatellite}
+            
           />
 
           {/* Center Location Pin */}

@@ -75,7 +75,12 @@ export async function requestNotificationPermission(): Promise<boolean> {
 /**
  * Register and return the Expo Push Token.
  */
+import Constants, { ExecutionEnvironment } from "expo-constants";
+
 export async function getDevicePushToken(): Promise<string | null> {
+  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
+    return null;
+  }
   if (Platform.OS === "web") return null;
 
   try {
