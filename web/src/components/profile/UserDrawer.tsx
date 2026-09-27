@@ -436,7 +436,7 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
 
               {/* Running Mobile App Link */}
               <a
-                href="http://localhost:8081"
+                href="https://25a31a0356.github.io/aegis-alert/"
                 target="_blank"
                 rel="noreferrer"
                 className="w-full p-3.5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-[#18181b]/50 transition-colors cursor-pointer border-t border-slate-100 dark:border-[#1e1e24]"
@@ -446,9 +446,9 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
                     <span className="material-symbols-outlined text-lg">smartphone</span>
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">Open Mobile App (Expo Live)</h4>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">Open AEGIS ALERT App</h4>
                     <p className="text-[11px] text-slate-500 dark:text-[#a1a1aa]">
-                      Launch mobile app on http://localhost:8081
+                      https://25a31a0356.github.io/aegis-alert/
                     </p>
                   </div>
                 </div>

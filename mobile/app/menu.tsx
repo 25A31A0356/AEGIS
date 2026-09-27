@@ -76,32 +76,18 @@ export default function MenuScreen() {
           ))}
         </View>
 
-                {/* Running Live Site & GitHub Cross-Navigation Links */}
+                {/* Running Live Web Command Center Link */}
         <View style={{ gap: 10, marginTop: 14 }}>
           <Pressable
-            onPress={() => Linking.openURL("http://localhost:5173")}
+            onPress={() => Linking.openURL("https://25A31A0356.github.io/Aegis-web/")}
             style={[styles.item, { backgroundColor: colors.surface, borderColor: colors.border }]}
           >
             <View style={[styles.itemIcon, { backgroundColor: "#0284c720" }]}>
               <IconSymbol name="globe" size={22} color="#0284c7" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.itemTitle, { color: colors.foreground }]}>Open Web Command Center</Text>
-              <Text style={[styles.itemDetail, { color: colors.muted }]}>Launch live web dashboard (http://localhost:5173)</Text>
-            </View>
-            <IconSymbol name="arrow.up.right" size={18} color={colors.muted} />
-          </Pressable>
-
-          <Pressable
-            onPress={() => Linking.openURL("https://github.com/25A31A0356/AEGIS")}
-            style={[styles.item, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          >
-            <View style={[styles.itemIcon, { backgroundColor: "#8b5cf620" }]}>
-              <IconSymbol name="chevron.left.forwardslash.chevron.right" size={20} color="#8b5cf6" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.itemTitle, { color: colors.foreground }]}>GitHub Repository</Text>
-              <Text style={[styles.itemDetail, { color: colors.muted }]}>github.com/25A31A0356/AEGIS</Text>
+              <Text style={[styles.itemTitle, { color: colors.foreground }]}>Open AEGIS ALERT Web</Text>
+              <Text style={[styles.itemDetail, { color: colors.muted }]}>https://25A31A0356.github.io/Aegis-web/</Text>
             </View>
             <IconSymbol name="arrow.up.right" size={18} color={colors.muted} />
           </Pressable>

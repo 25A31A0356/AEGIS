@@ -450,7 +450,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
                     {/* Companion App Link Row */}
                     <a
-                      href="http://localhost:8081"
+                      href="https://25a31a0356.github.io/aegis-alert/"
                       target="_blank"
                       rel="noreferrer"
                       className="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-[#132335] transition-colors text-left group"
