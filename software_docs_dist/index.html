@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AEGIS SOFTWARE — Central Data & API Core</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="https://25a31a0356.github.io/aegis-alert/favicon.png">
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .swagger-ui .topbar { display: none; }
+    .swagger-ui .info { margin: 24px 0; }
+    .swagger-ui { font-family: 'Inter', sans-serif; }
+    .swagger-ui .opblock { border-radius: 12px; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600 to-teal-400 flex items-center justify-center font-black text-white text-lg shadow-lg">
+          ⚡
+        </div>
+        <div>
+          <h1 class="font-black text-lg tracking-wider text-white">AEGIS SOFTWARE</h1>
+          <p class="text-[10px] font-mono text-teal-400">CENTRAL DATA &amp; REALTIME BACKEND CORE</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <a href="https://25a31a0356.github.io/aegis-alert/" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          📱 Mobile App
+        </a>
+        <a href="https://25A31A0356.github.io/Aegis-web/" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          🌐 Web Command Center
+        </a>
+        <a href="https://github.com/25A31A0356/aegis-software" target="_blank" class="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold transition">
+          GitHub Code
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Information -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-b border-slate-800">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 text-teal-400 font-mono text-xs font-bold mb-1">
+          <span>●</span> POSTGIS 20KM PROXIMITY
+        </div>
+        <p class="text-sm font-semibold text-white">Authoritative Geospatial Engine</p>
+        <p class="text-xs text-slate-400 mt-1">Computes 20km citizen radius and global command center feeds using spatial indexing.</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 text-sky-400 font-mono text-xs font-bold mb-1">
+          <span>●</span> WEBSOCKET REALTIME
+        </div>
+        <p class="text-sm font-semibold text-white">Bi-Directional Telemetry Stream</p>
+        <p class="text-xs text-slate-400 mt-1">Publishes instant SOS beacons, responder tracks, and severe alert warnings.</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold mb-1">
+          <span>●</span> OFFLINE IDEMPOTENCY
+        </div>
+        <p class="text-sm font-semibold text-white">Reliable SOS Sync Engine</p>
+        <p class="text-xs text-slate-400 mt-1">Guarantees zero-loss, zero-duplicate distress reporting under degraded network conditions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Swagger UI Documentation -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-3xl p-6 shadow-2xl">
+      <div id="swagger-ui"></div>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+  <script>
+    window.onload = () => {
+      window.ui = SwaggerUIBundle({
+        url: './openapi.json',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIBundle.SwaggerUIStandalonePreset
+        ],
+        layout: "BaseLayout"
+      });
+    };
+  </script>
+</body>
+</html>
