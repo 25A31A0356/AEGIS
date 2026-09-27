@@ -74,6 +74,15 @@ export interface SOSBeacon {
   specialNeeds?: string;
   triageStatus: SOSTriageStatus;
   severity: 'critical' | 'warning' | 'moderate';
+  callerName?: string;
+  callerPhone?: string;
+  bloodGroup?: string;
+  familyContacts?: { name: string; phone: string; relationship?: string }[];
+  homeCity?: string;
+  homePoliceStation?: string;
+  homePoliceNumber?: string;
+  currentPoliceStation?: string;
+  currentPoliceNumber?: string;
   assignedUnit?: SOSAssignedUnit;
   timeline: SOSTimelineEvent[];
   routeCoordinates?: [number, number][];

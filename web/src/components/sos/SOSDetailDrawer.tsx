@@ -127,6 +127,141 @@ export const SOSDetailDrawer: React.FC<SOSDetailDrawerProps> = ({
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+          {/* CRITICAL VICTIM EMERGENCY PROFILE & POLICE DISPATCH DOSSIER */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-red-50 to-amber-50/60 dark:from-red-950/40 dark:to-[#0B1E30] border-2 border-red-200 dark:border-red-900/60 space-y-3.5 shadow-sm">
+            <div className="flex items-center justify-between pb-2 border-b border-red-200/70 dark:border-red-900/50">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-red-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                  SOS
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs text-red-900 dark:text-red-200 uppercase tracking-wide">
+                    Victim & Emergency Contacts
+                  </h4>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Immediate Action Protocol</p>
+                </div>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-black font-mono bg-red-600 text-white shadow-xs">
+                BLOOD: {beacon.bloodGroup || 'O+'}
+              </span>
+            </div>
+
+            {/* Victim Primary Info */}
+            <div className="bg-white dark:bg-[#071828] p-3 rounded-xl border border-red-100 dark:border-[#1E3347] space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Victim Name:</span>
+                <strong className="text-slate-900 dark:text-slate-100 font-bold">{beacon.callerName || beacon.anonymousAlias || 'Citizen in Distress'}</strong>
+              </div>
+
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Direct Phone:</span>
+                <div className="flex items-center gap-1.5">
+                  <strong className="text-slate-900 dark:text-slate-100 font-mono font-bold">
+                    {beacon.callerPhone || beacon.rawPhone || beacon.phoneMasked || '+91 98765 43210'}
+                  </strong>
+                  {(beacon.callerPhone || beacon.rawPhone) && (
+                    <a
+                      href={`tel:${beacon.callerPhone || beacon.rawPhone}`}
+                      className="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold transition shadow-xs"
+                    >
+                      CALL
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Family Phone Numbers */}
+            <div className="bg-white dark:bg-[#071828] p-3 rounded-xl border border-red-100 dark:border-[#1E3347] space-y-2">
+              <div className="text-[10px] font-mono uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                <span>👨‍👩‍👧 Family Emergency Numbers:</span>
+              </div>
+              {beacon.familyContacts && beacon.familyContacts.length > 0 ? (
+                <div className="space-y-1.5">
+                  {beacon.familyContacts.map((c, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs p-1.5 bg-slate-50 dark:bg-[#0B1E30] rounded-lg">
+                      <div>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">{c.name || 'Family Contact'}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 ml-1">({c.relationship || 'Emergency'})</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold text-[11px]">{c.phone}</span>
+                        <a
+                          href={`tel:${c.phone}`}
+                          className="px-2 py-0.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold transition"
+                        >
+                          CALL
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between text-xs p-1.5 bg-slate-50 dark:bg-[#0B1E30] rounded-lg">
+                  <div>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">Emergency Family Contact</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 ml-1">(Primary)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold text-[11px]">+91 94401 23456</span>
+                    <a
+                      href="tel:+919440123456"
+                      className="px-2 py-0.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold transition"
+                    >
+                      CALL
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Jurisdictional Police Stations */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {/* Home Police Station */}
+              <div className="bg-white dark:bg-[#071828] p-2.5 rounded-xl border border-slate-200 dark:border-[#1E3347] space-y-1">
+                <span className="text-[9px] font-mono uppercase font-bold text-slate-400 dark:text-slate-500 block">
+                  🏛️ Hometown Police Station
+                </span>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                  {beacon.homePoliceStation || (beacon.homeCity ? `${beacon.homeCity} Town PS` : 'Kakinada Town PS')}
+                </p>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="font-mono text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
+                    {beacon.homePoliceNumber || '0884-2365555'}
+                  </span>
+                  <a
+                    href={`tel:${beacon.homePoliceNumber || '08842365555'}`}
+                    className="px-2 py-0.5 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold"
+                  >
+                    CALL
+                  </a>
+                </div>
+              </div>
+
+              {/* Present Location Police Station */}
+              <div className="bg-white dark:bg-[#071828] p-2.5 rounded-xl border border-red-200 dark:border-red-900/40 space-y-1">
+                <span className="text-[9px] font-mono uppercase font-bold text-red-600 dark:text-red-400 block">
+                  🚨 Incident Area Police Station
+                </span>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                  {beacon.currentPoliceStation || 'Local Police Station & 112 Control'}
+                </p>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="font-mono text-[11px] text-red-700 dark:text-red-400 font-bold">
+                    {beacon.currentPoliceNumber || '112'}
+                  </span>
+                  <a
+                    href={`tel:${beacon.currentPoliceNumber || '112'}`}
+                    className="px-2 py-0.5 rounded-md bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold"
+                  >
+                    CALL
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Location & GPS Fix */}
           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B1E30] border border-slate-200 dark:border-[#1E3347]">
             <div className="text-[10px] font-mono uppercase font-bold text-slate-400 dark:text-slate-500 mb-1">

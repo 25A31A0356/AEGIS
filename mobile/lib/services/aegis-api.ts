@@ -1093,7 +1093,7 @@ class AegisApiServiceClass {
 
     const payload = {
       caller_name: input.requesterName || "Citizen in Distress",
-      caller_phone: "",
+      caller_phone: input.requesterPhone || "",
       emergency_type: input.category || "general",
       severity: "CRITICAL",
       short_message: input.note || "Emergency SOS assistance requested",
@@ -1108,6 +1108,10 @@ class AegisApiServiceClass {
       idempotency_key: idempotencyKey,
       emergency_contacts: (input.familyContacts || []).map((c) => ({ name: c.name, phone: c.phone, relationship: c.relationship || "Family" })),
       demo_mode: Boolean(input.demoMode),
+      blood_group: input.bloodGroup || "",
+      home_city: input.homeCity || "",
+      home_police_station: input.homePoliceStation || "",
+      home_police_number: input.homePoliceNumber || "",
     };
 
     try {
@@ -1123,11 +1127,18 @@ class AegisApiServiceClass {
       const incident: SosIncident = {
         id: sosId,
         requesterId: input.requesterId || "usr-me",
-        requesterName: input.requesterName || "Aegis User",
+        requesterName: resData?.caller_name || input.requesterName || "Aegis User",
+        requesterPhone: resData?.caller_phone || input.requesterPhone || "",
+        bloodGroup: resData?.blood_group || input.bloodGroup || "O+",
+        homeCity: resData?.home_city || input.homeCity || "",
+        homePoliceStation: resData?.home_police_station || input.homePoliceStation || "",
+        homePoliceNumber: resData?.home_police_number || input.homePoliceNumber || "",
+        currentPoliceStation: resData?.current_police_station || "",
+        currentPoliceNumber: resData?.current_police_number || "112",
+        familyContacts: input.familyContacts || [],
         category: input.category || "general",
         note: input.note || "Emergency SOS assistance requested",
         peopleCount: input.peopleCount || 1,
-        bloodGroup: input.bloodGroup,
         medicalNotes: input.medicalNotes,
         location: {
           latitude: input.latitude,

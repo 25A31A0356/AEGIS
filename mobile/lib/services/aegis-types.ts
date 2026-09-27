@@ -303,6 +303,12 @@ export type SosEmergencyCategory =
   | string;
 
 export interface CreateSosPayload {
+  requesterPhone?: string;
+  homeCity?: string;
+  homePoliceStation?: string;
+  homePoliceNumber?: string;
+  currentPoliceStation?: string;
+  currentPoliceNumber?: string;
   category: SosEmergencyCategory;
   requesterId?: string;
   requesterName?: string;
@@ -358,6 +364,13 @@ export interface SosRouteData {
 }
 
 export interface SosIncident {
+  requesterPhone?: string;
+  homeCity?: string;
+  homePoliceStation?: string;
+  homePoliceNumber?: string;
+  currentPoliceStation?: string;
+  currentPoliceNumber?: string;
+  familyContacts?: { name: string; phone: string; relationship?: string }[];
   id: string;
   trackingId?: string;
   requesterId: string;

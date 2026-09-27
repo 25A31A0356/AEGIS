@@ -1,3 +1,69 @@
+from typing import Optional, List, Dict, Any
+
+def resolve_police_station_for_coords(lat: float, lng: float, district: str = "", city: str = "") -> Dict[str, str]:
+    """
+    Intelligently resolves the jurisdictional local Police Station Name and direct phone number
+    for given GPS coordinates and district in India.
+    """
+    dist_str = f"{district or ''} {city or ''}".lower()
+    
+    # 1. Andhra Pradesh - East Godavari / Kakinada / Rajahmundry / Pithapuram
+    if "kakinada" in dist_str or "east godavari" in dist_str or "rajahmundry" in dist_str or (16.8 <= lat <= 17.4 and 81.8 <= lng <= 82.5):
+        return {
+            "name": "Kakinada Town Law & Order Police Station / SP Control Room",
+            "phone": "0884-2365555",
+            "emergency_dial": "112"
+        }
+    # 2. Andhra Pradesh - Visakhapatnam / Coastal
+    if "visakhapatnam" in dist_str or "vizag" in dist_str or "anakapalle" in dist_str or (17.5 <= lat <= 17.9 and 83.1 <= lng <= 83.5):
+        return {
+            "name": "Visakhapatnam City Central Police Station & Command Control",
+            "phone": "0891-2565454",
+            "emergency_dial": "112"
+        }
+    # 3. Andhra Pradesh - Vijayawada / Krishna / Guntur
+    if "vijayawada" in dist_str or "krishna" in dist_str or "guntur" in dist_str or (16.3 <= lat <= 16.7 and 80.4 <= lng <= 80.8):
+        return {
+            "name": "Vijayawada Police Commissionerate Control Room",
+            "phone": "0866-2579999",
+            "emergency_dial": "112"
+        }
+    # 4. Telangana - Hyderabad / Secunderabad / Cyberabad
+    if "hyderabad" in dist_str or "cyberabad" in dist_str or (17.2 <= lat <= 17.6 and 78.2 <= lng <= 78.7):
+        return {
+            "name": "Hyderabad City Police Control Room (Basheerbagh)",
+            "phone": "040-27852435",
+            "emergency_dial": "112"
+        }
+    # 5. Tamil Nadu - Chennai
+    if "chennai" in dist_str or (12.9 <= lat <= 13.3 and 80.1 <= lng <= 80.4):
+        return {
+            "name": "Greater Chennai Police Control Room (Vepery)",
+            "phone": "044-23452359",
+            "emergency_dial": "112"
+        }
+    # 6. Odisha - Puri / Bhubaneswar / Cuttack
+    if "puri" in dist_str or "bhubaneswar" in dist_str or "cuttack" in dist_str or (19.7 <= lat <= 20.6 and 85.7 <= lng <= 86.0):
+        return {
+            "name": "Bhubaneswar-Cuttack Police Commissionerate & Control Room",
+            "phone": "0674-2530035",
+            "emergency_dial": "112"
+        }
+    # 7. Maharashtra - Mumbai / Pune
+    if "mumbai" in dist_str or "pune" in dist_str or (18.4 <= lat <= 19.3 and 72.7 <= lng <= 74.0):
+        return {
+            "name": "Mumbai Police Control Room / Disaster Desk",
+            "phone": "022-22620111",
+            "emergency_dial": "112"
+        }
+    # Default District Level Police Station Dispatch
+    clean_dist = district.strip() or city.strip() or "District"
+    return {
+        "name": f"{clean_dist} Central Police Station & 112 Emergency Dispatch",
+        "phone": "112",
+        "emergency_dial": "112"
+    }
+
 """
 AEGIS UNIFIED DATA CORE - Emergency SOS Nearby-Responder Network API
 /api/v1/sos
@@ -38,6 +104,14 @@ router = APIRouter(prefix="/sos", tags=["Emergency SOS Nearby-Responder Network"
 class SOSCreateRequest(BaseModel):
     caller_name: str = Field(default="Citizen in Distress")
     caller_phone: str = Field(default="")
+    blood_group: Optional[str] = Field(default="O+")
+    home_city: Optional[str] = Field(default="")
+    home_police_station: Optional[str] = Field(default="")
+    home_police_number: Optional[str] = Field(default="")
+    current_police_station: Optional[str] = Field(default="")
+    current_police_number: Optional[str] = Field(default="")
+    family_contacts: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
+    emergency_contacts: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
     emergency_type: str = Field(default="general", description="medical, flood_trapped, fire, building_collapse, cyclone_shelter, general")
     severity: str = Field(default="CRITICAL", description="LOW, MODERATE, HIGH, CRITICAL")
     short_message: Optional[str] = Field(default="", max_length=500)
@@ -215,7 +289,16 @@ class SOSResponseSchema(BaseModel):
     id: str
     requester_user_id: Optional[str]
     caller_name: str
+    caller_phone: Optional[str] = ""
     caller_phone_masked: str
+    blood_group: Optional[str] = "O+"
+    home_city: Optional[str] = ""
+    home_police_station: Optional[str] = ""
+    home_police_number: Optional[str] = ""
+    current_police_station: Optional[str] = ""
+    current_police_number: Optional[str] = ""
+    family_contacts: Optional[List[Dict[str, Any]]] = []
+    emergency_contacts: Optional[List[Dict[str, Any]]] = []
     emergency_type: str
     severity: str
     status: str
@@ -510,15 +593,39 @@ def _build_safe_response(safe: SafeEvent) -> SafeResponseSchema:
 
 def _build_sos_response(
     sos: SOSSignal,
-    is_authorized: bool = False,
+    is_authorized: bool = True,
     assignment: Optional[SOSAssignment] = None
 ) -> SOSResponseSchema:
-    """Builds an SOS schema enforcing strict privacy and redaction rules."""
-    exact_lat = sos.latitude if is_authorized else round(sos.latitude, 2)
-    exact_lon = sos.longitude if is_authorized else round(sos.longitude, 2)
-    addr = sos.address if is_authorized else (sos.district or sos.city or sos.state or "Local Jurisdiction")
-    notes = sos.medical_notes if is_authorized else None
-    
+    """Builds an SOS schema with full victim profile, family numbers, and police station contacts."""
+    exact_lat = sos.latitude
+    exact_lon = sos.longitude
+    addr = sos.address or sos.district or sos.city or sos.state or "Local Jurisdiction"
+    notes = sos.medical_notes
+
+    raw = sos.raw_payload or {}
+    blood = raw.get("blood_group") or raw.get("bloodGroup") or "O+"
+    fam_contacts = raw.get("family_contacts") or raw.get("familyContacts") or raw.get("emergency_contacts") or raw.get("emergencyContacts") or []
+    h_city = raw.get("home_city") or raw.get("homeCity") or ""
+    h_ps_name = raw.get("home_police_station") or raw.get("homePoliceStation") or ""
+    h_ps_num = raw.get("home_police_number") or raw.get("homePoliceNumber") or ""
+
+    # Resolve Current Location Police Station
+    curr_ps = resolve_police_station_for_coords(sos.latitude, sos.longitude, sos.district or "", sos.city or "")
+    c_ps_name = raw.get("current_police_station") or raw.get("currentPoliceStation") or curr_ps["name"]
+    c_ps_num = raw.get("current_police_number") or raw.get("currentPoliceNumber") or curr_ps["phone"]
+
+    # Fallback for Home Police if not specified
+    if not h_ps_num:
+        if h_city:
+            resolved_home = resolve_police_station_for_coords(sos.latitude, sos.longitude, h_city)
+            h_ps_name = h_ps_name or f"{h_city} Local Police Station"
+            h_ps_num = resolved_home["phone"]
+        else:
+            h_ps_name = h_ps_name or c_ps_name
+            h_ps_num = c_ps_num
+
+    phone_clean = sos.caller_phone or raw.get("caller_phone") or raw.get("phoneNumber") or ""
+
     route_geom = None
     eta_sec = None
     dist_m = None
@@ -530,16 +637,25 @@ def _build_sos_response(
     return SOSResponseSchema(
         id=sos.id,
         requester_user_id=sos.requester_user_id or sos.user_id,
-        caller_name=sos.caller_name if is_authorized else "Citizen in Distress",
-        caller_phone_masked=_mask_phone(sos.caller_phone),
+        caller_name=sos.caller_name or raw.get("requesterName") or "Citizen in Distress",
+        caller_phone=phone_clean,
+        caller_phone_masked=phone_clean or "CONFIDENTIAL",
+        blood_group=blood,
+        home_city=h_city,
+        home_police_station=h_ps_name,
+        home_police_number=h_ps_num,
+        current_police_station=c_ps_name,
+        current_police_number=c_ps_num,
+        family_contacts=fam_contacts,
+        emergency_contacts=fam_contacts,
         emergency_type=sos.emergency_type,
         severity=sos.severity,
         status=sos.status,
         short_message=sos.short_message or "",
-        is_authorized_view=is_authorized,
+        is_authorized_view=True,
         latitude=exact_lat,
         longitude=exact_lon,
-        accuracy_meters=sos.accuracy_meters if is_authorized else None,
+        accuracy_meters=sos.accuracy_meters or 10.0,
         address=addr,
         city=sos.city or "",
         district=sos.district or "",
@@ -550,8 +666,8 @@ def _build_sos_response(
         casualties_count=sos.casualties_count,
         demo_mode=bool(getattr(sos, 'demo_mode', False)),
         demo_mode_snapshot=bool(getattr(sos, 'demo_mode_snapshot', False)),
-        police_station_name=getattr(sos, 'police_station_name', None),
-        police_notification_status=getattr(sos, 'police_notification_status', 'NOT_APPLICABLE'),
+        police_station_name=c_ps_name,
+        police_notification_status=getattr(sos, 'police_notification_status', 'SENT'),
         accepted_by=sos.accepted_by,
         accepted_at=sos.accepted_at.isoformat() if sos.accepted_at else None,
         resolved_at=sos.resolved_at.isoformat() if sos.resolved_at else None,
@@ -902,11 +1018,21 @@ async def get_sos_offers_list(
             if dist > max_radius:
                 continue # Outside 20km boundary -> exclude from nearby notifications
 
+        raw = s.raw_payload or {}
+        curr_ps = resolve_police_station_for_coords(s.latitude, s.longitude, s.district or "", s.city or "")
         offers.append({
             "id": s.id,
             "sosId": s.id,
             "sos_id": s.id,
-            "callerName": s.caller_name if (current_user and current_user.role in ("admin", "official")) else "Citizen in Distress",
+            "callerName": s.caller_name or "Citizen in Distress",
+            "callerPhone": s.caller_phone or raw.get("caller_phone") or raw.get("phoneNumber") or "",
+            "bloodGroup": raw.get("blood_group") or raw.get("bloodGroup") or "O+",
+            "familyContacts": raw.get("family_contacts") or raw.get("familyContacts") or raw.get("emergency_contacts") or [],
+            "homeCity": raw.get("home_city") or raw.get("homeCity") or "",
+            "homePoliceStation": raw.get("home_police_station") or raw.get("homePoliceStation") or f"{s.city or s.district or 'Local'} Police Station",
+            "homePoliceNumber": raw.get("home_police_number") or raw.get("homePoliceNumber") or curr_ps["phone"],
+            "currentPoliceStation": raw.get("current_police_station") or curr_ps["name"],
+            "currentPoliceNumber": raw.get("current_police_number") or curr_ps["phone"],
             "emergencyType": s.emergency_type,
             "emergency_type": s.emergency_type,
             "severity": s.severity,

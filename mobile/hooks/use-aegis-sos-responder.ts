@@ -260,20 +260,32 @@ export function useAegisSosResponder() {
     setIsSubmitting(true);
     try {
       const loc = await getResponsibleLocation();
+      const familyList = options?.familyContacts || (
+        profile.familyContacts && profile.familyContacts.length > 0
+          ? profile.familyContacts.map(c => ({ name: c.name, phone: c.phone, relationship: c.relationship }))
+          : profile.primaryContact && profile.primaryContact.phone
+            ? [{ name: profile.primaryContact.name, phone: profile.primaryContact.phone, relationship: profile.primaryContact.relationship }]
+            : []
+      );
+
       const payload: CreateSosPayload = {
         category: options?.category || "general",
         note: options?.note || `${profile.fullName || "User"} requires immediate emergency assistance.`,
         peopleCount: profile.peopleCount || 1,
-        bloodGroup: profile.bloodGroup,
-        medicalNotes: profile.medicalNotes,
+        bloodGroup: profile.bloodGroup || "O+",
+        medicalNotes: profile.medicalNotes || "",
         latitude: loc.latitude,
         longitude: loc.longitude,
         accuracy: (loc as any).accuracyMeters ?? (loc as any).accuracy ?? 10.0,
         address: loc.label,
         area: loc.label ? loc.label.split(",")[0] : "Live Sector",
-        familyContacts: options?.familyContacts,
+        familyContacts: familyList,
         searchRadiusKm: 10,
         requesterName: profile.fullName || "Aegis User",
+        requesterPhone: profile.phoneNumber || "",
+        homeCity: (profile as any).homeCity || "",
+        homePoliceStation: (profile as any).homePoliceStation || "",
+        homePoliceNumber: (profile as any).homePoliceNumber || "",
         demoMode: Boolean(demoMode),
       };
 

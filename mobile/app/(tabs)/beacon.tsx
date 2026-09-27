@@ -27,6 +27,7 @@ import { DEFAULT_USER_LOCATION } from "@/lib/navigation-data";
 import { getLocalSosState, OfflineSosState } from "@/lib/services/aegis-cache";
 import { useAegisSosResponder } from "@/hooks/use-aegis-sos-responder";
 import { NearbySosRequestModal } from "@/components/NearbySosRequestModal";
+import { VictimEmergencyDossierCard } from "@/components/sos/VictimEmergencyDossierCard";
 
 /**
  * Continuous Radar Wave Ripple Animation Component
@@ -647,6 +648,9 @@ export default function BeaconScreen() {
                     </Text>
                   </View>
                 ) : null}
+
+                {/* Victim Profile, Family Contacts & Police Stations Emergency Dossier */}
+                <VictimEmergencyDossierCard incident={activeIncident} profile={profile} />
 
                 {/* Prominent Direct Emergency SMS Dispatch Button */}
                 <Pressable

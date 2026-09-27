@@ -30,6 +30,9 @@ export interface EmergencyProfile {
   secondaryContact?: EmergencyContact;
   customSosMessage: string;
   customSafeMessage: string;
+  homeCity?: string;
+  homePoliceStation?: string;
+  homePoliceNumber?: string;
   avatarUri?: string;
 }
 
@@ -50,6 +53,9 @@ export const DEFAULT_EMERGENCY_PROFILE: EmergencyProfile = {
   secondaryContact: undefined,
   customSosMessage: "EMERGENCY SOS: I need immediate help! Please dispatch rescue to my location.",
   customSafeMessage: "I am safe and secure. Sharing my location with family through AEGIS ALERT.",
+  homeCity: "Kakinada",
+  homePoliceStation: "Kakinada Town Police Station",
+  homePoliceNumber: "0884-2365555",
   avatarUri: "",
 };
 
