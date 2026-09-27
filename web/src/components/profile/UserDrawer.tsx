@@ -31,8 +31,8 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
   const [activeSectionModal, setActiveSectionModal] = useState<string | null>(null);
 
   // Edit form state
-  const [editName, setEditName] = useState(profile.fullName || 'Thotakura Sai Theja');
-  const [editPhone, setEditPhone] = useState(profile.phoneNumber || '+91 98765 43210');
+  const [editName, setEditName] = useState(profile.fullName || '');
+  const [editPhone, setEditPhone] = useState(profile.phoneNumber || '+91 XXXXXXXXXX');
   const [editBlood, setEditBlood] = useState(profile.bloodGroup || 'O+');
   const [editMedical, setEditMedical] = useState(profile.medicalNotes || 'No known allergies. Asthmatic inhaler carrier.');
   const [editPeople, setEditPeople] = useState(profile.peopleCount || 2);
@@ -62,8 +62,8 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
   const currentLang = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
 
   const handleOpenEdit = () => {
-    setEditName(profile.fullName || 'Thotakura Sai Theja');
-    setEditPhone(profile.phoneNumber || '+91 98765 43210');
+    setEditName(profile.fullName || '');
+    setEditPhone(profile.phoneNumber || '+91 XXXXXXXXXX');
     setEditBlood(profile.bloodGroup || 'O+');
     setEditMedical(profile.medicalNotes || '');
     setEditPeople(profile.peopleCount || 2);
@@ -74,7 +74,7 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     updateProfile({
-      fullName: editName.trim() || 'Thotakura Sai Theja',
+      fullName: editName.trim() || '',
       phoneNumber: editPhone.trim(),
       bloodGroup: editBlood,
       medicalNotes: editMedical.trim(),
@@ -157,10 +157,10 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
                     {dict.nameInApp || 'Name shown in the app'}
                   </p>
                   <h3 className="text-base font-extrabold text-slate-900 dark:text-white truncate">
-                    {profile.fullName || 'Thotakura Sai Theja'}
+                    {profile.fullName || ''}
                   </h3>
                   <p className="text-[11px] text-slate-500 dark:text-[#a1a1aa] font-medium mt-0.5">
-                    {profile.bloodGroup ? ('Blood: ' + profile.bloodGroup) : 'Blood: O+'} &bull; {profile.phoneNumber || '+91 98765 43210'}
+                    {profile.bloodGroup ? ('Blood: ' + profile.bloodGroup) : 'Blood: O+'} &bull; {profile.phoneNumber || '+91 XXXXXXXXXX'}
                   </p>
                 </div>
               </div>

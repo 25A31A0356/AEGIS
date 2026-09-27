@@ -64,7 +64,15 @@ export async function apiCall<T>(endpoint: string, options: RequestInit = {}): P
       let errorMessage = errorText;
       try {
         const errorJson = JSON.parse(errorText);
-        errorMessage = errorJson.error || errorJson.message || errorText;
+        if (errorJson?.error?.message) {
+          errorMessage = errorJson.error.message;
+        } else if (typeof errorJson?.error === "string") {
+          errorMessage = errorJson.error;
+        } else if (errorJson?.detail) {
+          errorMessage = typeof errorJson.detail === "string" ? errorJson.detail : JSON.stringify(errorJson.detail);
+        } else if (errorJson?.message) {
+          errorMessage = errorJson.message;
+        }
       } catch {
         // Not JSON, use text as is
       }

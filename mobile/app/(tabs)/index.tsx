@@ -39,6 +39,12 @@ export default function HomeScreen() {
     updateLocation,
   } = useAegisData();
 
+  useEffect(() => {
+    if (!profile.fullName && !isLoading) {
+      router.replace("/login" as any);
+    }
+  }, [profile.fullName, isLoading, router]);
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const [currentTimeStr, setCurrentTimeStr] = useState(() => {
@@ -61,7 +67,7 @@ export default function HomeScreen() {
   }, []);
 
   // Extract user's first name
-  const userName = profile?.fullName?.trim() ? profile.fullName.trim().split(" ")[0] : "Sai Theja";
+  const userName = profile?.fullName?.trim() ? profile.fullName.trim().split(" ")[0] : "";
 
   // Universal Locality categorization
   const locType = location.localityType || (location.village ? "Village" : ((location as any)?.isVillageLevel ? "Village" : "District"));
@@ -355,7 +361,7 @@ export default function HomeScreen() {
               ) : (
                 <View style={[styles.avatarCircle, { backgroundColor: colors.primary }]}>
                   <Text style={styles.avatarLetter}>
-                    {userName[0]?.toUpperCase() || "A"}
+                    {userName ? userName[0]?.toUpperCase() : "?"}
                   </Text>
                 </View>
               )}
@@ -390,7 +396,7 @@ export default function HomeScreen() {
               accessibilityLabel="Change location"
             >
               <Text style={styles.greetingTitle}>
-                {dict.greeting || "Hi"} {userName}!
+                {userName ? `${dict.greeting || "Hi"} ${userName}!` : `${dict.greeting || "Hi"}! Welcome to AEGIS`}
               </Text>
               <View style={styles.villageLocationRow}>
                 <Text style={styles.villageNameText}>

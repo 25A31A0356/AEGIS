@@ -40,12 +40,12 @@ export default function MenuScreen() {
               <Image source={{ uri: profile.avatarUri }} style={{ width: "100%", height: "100%", borderRadius: 16 }} />
             ) : (
               <Text style={styles.avatarText}>
-                {profile.fullName?.trim() ? profile.fullName.trim()[0].toUpperCase() : "A"}
+                {profile.fullName?.trim() ? profile.fullName.trim()[0].toUpperCase() : "?"}
               </Text>
             )}
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.profileName, { color: colors.foreground }]}>{profile.fullName || "Thotakura Sai Theja"}</Text>
+            <Text style={[styles.profileName, { color: colors.foreground }]}>{profile.fullName || "Citizen / Guest"}</Text>
             <Text style={[styles.profileSub, { color: colors.muted }]}>{dict.readyToday}</Text>
           </View>
           <Pressable onPress={() => router.push("/settings")}>

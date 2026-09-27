@@ -39,40 +39,15 @@ export const APP_LANGUAGES: LanguageOption[] = [
 
 export const BLOOD_GROUPS = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
 
-export const DEFAULT_FAMILY_CONTACTS: FamilyContact[] = [
-  {
-    id: 'fam-1',
-    name: 'Priya Sharma',
-    phone: '+91 98765 43210',
-    relationship: 'Spouse',
-    isPrimary: true,
-    notes: 'Living at home address',
-  },
-  {
-    id: 'fam-2',
-    name: 'Ramesh Kumar Sharma',
-    phone: '+91 98765 11223',
-    relationship: 'Father',
-    isPrimary: false,
-    notes: 'Senior citizen',
-  },
-  {
-    id: 'fam-3',
-    name: 'Sunita Sharma',
-    phone: '+91 98765 22334',
-    relationship: 'Mother',
-    isPrimary: false,
-    notes: 'Senior citizen',
-  },
-];
+export const DEFAULT_FAMILY_CONTACTS: FamilyContact[] = [];
 
 export const DEFAULT_EMERGENCY_PROFILE: EmergencyProfile = {
-  fullName: 'Thotakura Sai Theja',
-  phoneNumber: '+91 98765 00000',
+  fullName: '',
+  phoneNumber: '',
   bloodGroup: 'O+',
-  medicalNotes: 'No known chronic allergies. Fully vaccinated.',
-  peopleCount: 3,
-  familyContacts: DEFAULT_FAMILY_CONTACTS,
+  medicalNotes: '',
+  peopleCount: 1,
+  familyContacts: [],
   customSosMessage: 'EMERGENCY SOS: I need immediate help! Please dispatch rescue to my location.',
   customSafeMessage: 'I am safe and secure. Sharing my location with family through AEGIS ALERT.',
   avatarUrl: '',

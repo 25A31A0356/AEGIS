@@ -926,8 +926,8 @@ class AegisApiServiceClass {
             location: {
               lat: serverReport.location.latitude,
               lng: serverReport.location.longitude,
-              address: serverReport.location.address || "Live Location",
-              city: (serverReport.location.address || "").split(",")[0] || "Live Sector",
+              address: serverReport.location?.address || (serverReport as any).location_name || "Live Location",
+              city: (serverReport.location?.address || (serverReport as any).location_name || "").split(",")[0] || "Live Sector",
               state: "India",
             },
             timestamp: `Today, ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} IST`,
@@ -997,8 +997,8 @@ class AegisApiServiceClass {
             location: {
               lat: pendingReport.location.latitude,
               lng: pendingReport.location.longitude,
-              address: pendingReport.location.address || "Live Location",
-              city: (pendingReport.location.address || "").split(",")[0] || "Live Sector",
+              address: pendingReport.location?.address || "Live Location",
+              city: (pendingReport.location?.address || "").split(",")[0] || "Live Sector",
               state: "India",
             },
             timestamp: `Today, ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} IST`,
@@ -2058,7 +2058,118 @@ class AegisApiServiceClass {
       return false;
     }
   }
+
+  /**
+   * User Authentication & Session Methods
+   */
+  async registerUser(payload: { full_name: string; email: string; password?: string; role?: string }): Promise<any> {
+    try {
+      const res = await apiCall<any>("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+          full_name: payload.full_name,
+          email: payload.email,
+          password: payload.password || "password123",
+          role: payload.role || "citizen",
+        }),
+      });
+      return res;
+    } catch (err: any) {
+      return { success: false, message: err?.message || "Registration failed" };
+    }
+  }
+
+  async loginUser(email: string, password: string = "password123"): Promise<any> {
+    try {
+      const res = await apiCall<any>("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+      return res;
+    } catch (err: any) {
+      return { success: false, message: err?.message || "Login failed" };
+    }
+  }
+
+  async sendOtp(email: string, fullName?: string): Promise<any> {
+    try {
+      const res = await apiCall<any>("/auth/otp/send", {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          full_name: fullName || "",
+        }),
+      });
+      return res;
+    } catch (err: any) {
+      return { success: false, message: err?.message || "Failed to send OTP" };
+    }
+  }
+
+  async verifyOtp(payload: { email: string; otp: string; full_name?: string }): Promise<any> {
+    try {
+      const res = await apiCall<any>("/auth/otp/verify", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      return res;
+    } catch (err: any) {
+      return { success: false, message: err?.message || "OTP verification failed" };
+    }
+  }
+
+  async googleAuth(payload: { email: string; full_name: string; google_id?: string }): Promise<any> {
+    try {
+      const res = await apiCall<any>("/auth/google", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      return res;
+    } catch (err: any) {
+      return { success: false, message: err?.message || "Google authentication failed" };
+    }
+  }
+
+  async requestForgotPasswordOtp(email: string): Promise<any> {
+    try {
+      const res = await apiCall<any>("/auth/forgot-password/request", {
+        method: "POST",
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+      return res;
+    } catch (err: any) {
+      return { success: false, message: err?.message || "Failed to send password reset OTP" };
+    }
+  }
+
+  async resetPasswordWithOtp(payload: { email: string; otp: string; new_password: string }): Promise<any> {
+    try {
+      const res = await apiCall<any>("/auth/forgot-password/reset", {
+        method: "POST",
+        body: JSON.stringify({
+          email: payload.email.trim().toLowerCase(),
+          otp: payload.otp.trim(),
+          new_password: payload.new_password,
+        }),
+      });
+      return res;
+    } catch (err: any) {
+      return { success: false, message: err?.message || "Password reset failed" };
+    }
+  }
+
+  async clearSession(): Promise<void> {
+    try {
+      if (Platform.OS === "web") {
+        localStorage.removeItem("aegis_auth_token");
+        localStorage.removeItem("aegis_user_role");
+        localStorage.removeItem("agies_emergency_profile_sec");
+      }
+    } catch {}
+  }
 }
 
 export const AegisApiService = new AegisApiServiceClass();
-

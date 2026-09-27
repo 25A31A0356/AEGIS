@@ -55,15 +55,18 @@ const MapClickHandler: React.FC<{
 };
 
 export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
-  location,
+  location = { lat: 17.6868, lng: 83.2185, address: 'Visakhapatnam Sector', city: 'Visakhapatnam', state: 'Andhra Pradesh' },
   onChangeLocation,
 }) => {
+  const safeLoc = location || { lat: 17.6868, lng: 83.2185, address: 'Visakhapatnam Sector', city: 'Visakhapatnam', state: 'Andhra Pradesh' };
   const [isDetecting, setIsDetecting] = useState(false);
-  const [addressInput, setAddressInput] = useState(location.address);
+  const [addressInput, setAddressInput] = useState(safeLoc?.address || '');
 
   useEffect(() => {
-    setAddressInput(location.address);
-  }, [location.address]);
+    if (location?.address) {
+      setAddressInput(location.address);
+    }
+  }, [location?.address]);
 
   const handleUseCurrentLocation = () => {
     if (!('geolocation' in navigator)) {
@@ -159,7 +162,7 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
         <div className="lg:col-span-7 space-y-2">
           <div className="h-64 sm:h-72 w-full rounded-2xl overflow-hidden border border-[#DCEBED] relative shadow-inner">
             <MapContainer
-              center={[location.lat, location.lng]}
+              center={[safeLoc.lat || 17.6868, safeLoc.lng || 83.2185]}
               zoom={13}
               scrollWheelZoom={false}
               className="h-full w-full"
@@ -169,7 +172,7 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               <Marker
-                position={[location.lat, location.lng]}
+                position={[safeLoc.lat || 17.6868, safeLoc.lng || 83.2185]}
                 icon={IncidentMarkerIcon}
                 draggable={true}
                 eventHandlers={{
@@ -199,8 +202,8 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
               Exact GPS Coordinates
             </span>
             <div className="font-mono text-xs font-bold text-[#075B8A] flex items-center justify-between">
-              <span>Latitude: {location.lat.toFixed(5)}° N</span>
-              <span>Longitude: {location.lng.toFixed(5)}° E</span>
+              <span>Latitude: {(safeLoc.lat || 17.6868).toFixed(5)}° N</span>
+              <span>Longitude: {(safeLoc.lng || 83.2185).toFixed(5)}° E</span>
             </div>
           </div>
 
@@ -225,11 +228,11 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="p-2.5 rounded-xl bg-white border border-[#DCEBED]">
               <span className="text-[10px] text-[#708696] font-mono block">City / District</span>
-              <span className="font-bold text-[#18364A] truncate block">{location.city || 'Local Sector'}</span>
+              <span className="font-bold text-[#18364A] truncate block">{safeLoc.city || 'Local Sector'}</span>
             </div>
             <div className="p-2.5 rounded-xl bg-white border border-[#DCEBED]">
               <span className="text-[10px] text-[#708696] font-mono block">State</span>
-              <span className="font-bold text-[#18364A] truncate block">{location.state || 'India'}</span>
+              <span className="font-bold text-[#18364A] truncate block">{safeLoc.state || 'India'}</span>
             </div>
           </div>
         </div>

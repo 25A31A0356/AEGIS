@@ -46,10 +46,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# 1. CORS Middleware
+# 1. CORS Middleware (Supports localhost, LAN IPs 10.*, 192.168.*, and public web)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=["*"],
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -173,6 +174,11 @@ STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 UPLOADS_DIR = STATIC_DIR / "uploads"
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+SOFTWARE_DIR = Path(__file__).resolve().parent.parent.parent / "software_docs_dist"
+if SOFTWARE_DIR.exists():
+    app.mount("/software", StaticFiles(directory=str(SOFTWARE_DIR), html=True), name="software")
+    app.mount("/command", StaticFiles(directory=str(SOFTWARE_DIR), html=True), name="command")
 
 # 6. Include Master API v1 Router
 app.include_router(api_router, prefix=settings.API_V1_STR)

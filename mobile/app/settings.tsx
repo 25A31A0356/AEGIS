@@ -1,3 +1,4 @@
+import { AegisApiService } from "@/lib/services/aegis-api";
 import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
@@ -342,7 +343,14 @@ export default function SettingsScreen() {
         </View>
 
         {/* Sign Out */}
-        <Pressable onPress={() => router.replace("/")} style={[styles.signOut, { borderColor: colors.error }]}>
+        <Pressable
+          onPress={async () => {
+            await updateProfile({ fullName: "" });
+            await AegisApiService.clearSession();
+            router.replace("/login" as any);
+          }}
+          style={[styles.signOut, { borderColor: colors.error }]}
+        >
           <Text style={[styles.signOutText, { color: colors.error }]}>{t("signOut")}</Text>
         </Pressable>
 

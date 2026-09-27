@@ -14,6 +14,7 @@ import { SearchModal } from './components/layout/SearchModal';
 import { NotificationDrawer } from './components/layout/NotificationDrawer';
 
 // Main Pages
+import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ForecastsPage } from './pages/ForecastsPage';
 import { LiveMapPage } from './pages/LiveMapPage';
@@ -30,7 +31,12 @@ function AppContent() {
   const [selectedHazardId, setSelectedHazardId] = useState<string | undefined>(undefined);
   const [selectedSOSId, setSelectedSOSId] = useState<string | undefined>(undefined);
 
-  const { isAuthModalOpen, setIsAuthModalOpen } = useAuth();
+  const { isAuthenticated, isAuthModalOpen, setIsAuthModalOpen } = useAuth();
+
+  // If user is not authenticated, show dedicated full-page LoginPage first
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
 
   const isHomeTab = activeTab === 'home' || activeTab === 'dashboard';
 
@@ -104,7 +110,6 @@ function AppContent() {
           <div className="flex-1" onClick={() => setIsSidebarOpen(false)} />
         </div>
       )}
-
 
       {/* Sliding User & Session Logs Drawer (Right Side) */}
       <UserDrawer

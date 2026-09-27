@@ -41,7 +41,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const { beacons } = useSOS();
   const { dict } = useTranslation();
 
-  const userName = profile?.fullName?.trim() ? profile.fullName.trim().split(' ')[0] : 'Friend';
+  const activeName = profile?.fullName?.trim() ? profile.fullName.trim().split(' ')[0] : '';
   const locType = selectedLocation?.localityType || (selectedLocation?.village ? 'Village' : 'District');
   const locName = selectedLocation?.localityName || selectedLocation?.village || selectedLocation?.name || 'Your Area';
   const cleanVillageName = locName.split('•')[0].trim();
@@ -190,7 +190,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-emerald-500/10 dark:from-sky-950/40 dark:via-indigo-950/40 dark:to-emerald-950/40 border border-slate-200/80 dark:border-white/10 backdrop-blur-md shadow-sm">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            Hi {userName}!
+            {activeName ? `Hi ${activeName}!` : 'Hi! Welcome to AEGIS ALERT'}
           </h1>
           <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold text-base sm:text-lg mt-1.5 flex-wrap">
             <button

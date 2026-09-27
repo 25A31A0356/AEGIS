@@ -24,9 +24,11 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenUserDrawer,
 }) => {
   const { selectedLocation, isGpsActive } = useLocation();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { profile } = useProfile();
   const { dict } = useTranslation();
+
+  const activeDisplayName = user?.name || profile.fullName?.trim() || '';
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-slate-200 dark:border-[#27272a] px-4 sm:px-6 py-3 transition-colors shadow-xs">
@@ -48,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Right: Live GPS Location Badge, Search, & Profile Button */}
+        {/* Right: Live GPS Location Badge, Search, & Profile/Auth Button */}
         <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Auto-detected Live GPS Location Badge */}
           <div
@@ -75,24 +77,35 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* Profile Option Button */}
-          <button
-            onClick={onOpenUserDrawer}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#27272a] bg-slate-100 dark:bg-[#18181b] hover:bg-slate-200 dark:hover:bg-[#27272a] text-slate-800 dark:text-slate-200 transition-all cursor-pointer shadow-xs active:scale-95 group"
-            title="Open Citizen Profile & Preferences"
-            aria-label="Citizen Profile"
-          >
-            <div className="w-6 h-6 rounded-full bg-[#0d5c75] dark:bg-teal-600 text-white flex items-center justify-center text-[11px] font-black shadow-xs overflow-hidden shrink-0">
-              {profile.avatarUrl ? (
-                <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                profile.fullName?.trim() ? profile.fullName.trim()[0].toUpperCase() : (user?.name ? user.name[0].toUpperCase() : 'A')
-              )}
-            </div>
-            <span className="text-xs font-bold text-slate-900 dark:text-white hidden md:inline max-w-[110px] truncate">
-              {profile.fullName || user?.name || 'Thotakura Sai Theja'}
-            </span>
-          </button>
+          {/* Auth Button or Profile Trigger */}
+          {isAuthenticated && activeDisplayName ? (
+            <button
+              onClick={onOpenUserDrawer}
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-[#27272a] bg-slate-100 dark:bg-[#18181b] hover:bg-slate-200 dark:hover:bg-[#27272a] text-slate-800 dark:text-slate-200 transition-all cursor-pointer shadow-xs active:scale-95 group"
+              title="Open Citizen Profile & Preferences"
+              aria-label="Citizen Profile"
+            >
+              <div className="w-6 h-6 rounded-full bg-[#0d5c75] dark:bg-teal-600 text-white flex items-center justify-center text-[11px] font-black shadow-xs overflow-hidden shrink-0">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  activeDisplayName[0].toUpperCase()
+                )}
+              </div>
+              <span className="text-xs font-bold text-slate-900 dark:text-white hidden md:inline max-w-[110px] truncate">
+                {activeDisplayName}
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={onOpenAuth}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-indigo-500/40 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Sign In to Access Full Dashboard"
+            >
+              <span className="material-symbols-outlined text-base">login</span>
+              <span>Sign In?</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

@@ -78,10 +78,7 @@ async def init_db():
                 hashed_password=get_password_hash(settings.DEFAULT_ADMIN_PASSWORD),
                 full_name="Emergency Operations Commander",
                 role="ADMIN",
-                phone_number="+919876543210",
-                organization="Aegis National Command Center",
                 is_active=True,
-                is_verified=True,
             )
             session.add(default_admin)
             await session.commit()

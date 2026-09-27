@@ -52,8 +52,12 @@ export class ApiClient {
     if (envUrl && typeof envUrl === 'string' && envUrl.trim().length > 0) {
       return envUrl.replace(/\/+$/, '');
     }
-    if (typeof window === 'undefined') {
-      return 'http://localhost:8000/api/v1';
+    if (typeof window !== 'undefined' && window.location) {
+      const { protocol, hostname, port } = window.location;
+      if (port === '8000') {
+        return `${protocol}//${hostname}:8000/api/v1`;
+      }
+      return `${protocol}//${hostname}:8000/api/v1`;
     }
     return 'http://localhost:8000/api/v1';
   }
@@ -106,18 +110,22 @@ export class ApiClient {
         status: 0,
       };
     }
-    if (status === 400) {
-      message = rawMessage || 'Invalid request parameters submitted to emergency gateway.';
+    if (rawMessage && typeof rawMessage === 'string' && rawMessage.trim().length > 0) {
+      message = rawMessage;
+    } else if (status === 400) {
+      message = 'Invalid request parameters submitted.';
     } else if (status === 401) {
-      message = 'Authentication required. Please sign in to access restricted disaster commands.';
+      message = 'Account not found or invalid credentials. Please check or sign up.';
+    } else if (status === 409) {
+      message = 'An account with this email already exists. Please Sign In.';
     } else if (status === 403) {
-      message = 'Access restricted. Insufficient operational privileges.';
+      message = 'Access restricted. Insufficient privileges.';
     } else if (status === 404) {
-      message = rawMessage || 'Requested emergency resource or bulletin was not found.';
+      message = 'Requested emergency resource was not found.';
     } else if (status === 429) {
-      message = 'High request volume detected. Please wait a moment before refreshing.';
+      message = 'High request volume detected. Please wait a moment.';
     } else if (status >= 500) {
-      message = 'Aegis disaster telemetry service is temporarily busy. Retrying with cached telemetry.';
+      message = 'Server is temporarily busy. Please retry in a moment.';
     }
 
     return { code, message, status };
@@ -302,9 +310,12 @@ export class ApiClient {
     endpoint: string,
     body: B,
     options?: RequestOptions
-  ): Promise<T | null> {
+  ): Promise<T> {
     const res = await this.execute<T>(endpoint, 'POST', body, options);
-    return res.success && res.data !== undefined ? res.data : null;
+    if (!res.success) {
+      throw new Error(res.error?.message || 'Request failed');
+    }
+    return res.data as T;
   }
 
   public static async postWithMeta<T, B = any>(

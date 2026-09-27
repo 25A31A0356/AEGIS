@@ -1,15 +1,17 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { useColors } from '@/hooks/use-colors';
 
 interface AegisLogoProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   showSubtitle?: boolean;
   iconOnly?: boolean;
+  textColor?: string;
+  subtitleColor?: string;
   onPress?: () => void;
 }
 
-export function AegisShieldIcon({ size = 32 }: { size?: number }) {
+export function AegisShieldIcon({ size = 36 }: { size?: number }) {
   return (
     <Image
       source={require('@/assets/images/logo.png')}
@@ -23,27 +25,36 @@ export function AegisLogo({
   size = 'md',
   showSubtitle = true,
   iconOnly = false,
+  textColor,
+  subtitleColor,
   onPress,
 }: AegisLogoProps) {
   const colors = useColors();
 
   const iconSizes = {
-    sm: 26,
-    md: 34,
+    sm: 28,
+    md: 36,
     lg: 44,
+    xl: 56,
   };
 
   const titleSizes = {
     sm: 15,
     md: 18,
     lg: 22,
+    xl: 26,
   };
 
   const subSizes = {
     sm: 7.5,
     md: 8.5,
     lg: 10,
+    xl: 11.5,
   };
+
+  const aegisTextColor = textColor || (colors.background === '#000000' || colors.background.startsWith('#0') || colors.background.startsWith('#1') ? '#FFFFFF' : '#0F172A');
+  const alertColor = '#0284C7';
+  const subColor = subtitleColor || '#94A3B8';
 
   const content = (
     <View style={styles.container}>
@@ -51,15 +62,15 @@ export function AegisLogo({
       {!iconOnly && (
         <View style={styles.textContainer}>
           <View style={styles.brandRow}>
-            <Text style={[styles.brandText, { color: colors.foreground, fontSize: titleSizes[size] }]}>
+            <Text style={[styles.brandText, { color: aegisTextColor, fontSize: titleSizes[size] }]}>
               AEGIS
             </Text>
-            <Text style={[styles.brandText, { color: '#0284C7', fontSize: titleSizes[size], marginLeft: 5 }]}>
+            <Text style={[styles.brandText, { color: alertColor, fontSize: titleSizes[size], marginLeft: 6 }]}>
               ALERT
             </Text>
           </View>
           {showSubtitle && (
-            <Text style={[styles.subtitleText, { color: colors.muted, fontSize: subSizes[size] }]}>
+            <Text style={[styles.subtitleText, { color: subColor, fontSize: subSizes[size] }]}>
               HAZARD & WEATHER INTELLIGENCE
             </Text>
           )}
@@ -83,7 +94,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   textContainer: {
     justifyContent: 'center',
@@ -99,7 +110,7 @@ const styles = StyleSheet.create({
   subtitleText: {
     fontWeight: '700',
     letterSpacing: 1.1,
-    marginTop: 1,
+    marginTop: 2,
   },
   pressed: {
     opacity: 0.8,

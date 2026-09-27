@@ -80,7 +80,7 @@ export class ReportService {
     if (!payload.hazardType) {
       throw new Error('Hazard type is required.');
     }
-    if (!payload.location || !payload.location.address) {
+    if (!payload.location) {
       throw new Error('Valid location and address are required.');
     }
     if (!payload.description || payload.description.trim().length < 3) {
@@ -98,13 +98,13 @@ export class ReportService {
       const backendRes = await ApiClient.post<any>('/reports', {
         category: (payload.category || payload.hazardType || 'OTHER').toUpperCase(),
         hazard_type: payload.hazardType,
-        title: payload.title || `${payload.hazardLabel || payload.hazardType} reported at ${payload.location.city || payload.location.district || payload.location.address}`,
+        title: payload.title || `${payload.hazardLabel || payload.hazardType} reported at ${payload.location?.city || payload.location?.district || payload.location?.address || 'Local Sector'}`,
         description: payload.description,
         severity: (payload.severity || 'MODERATE').toUpperCase(),
-        latitude: payload.location.lat,
-        longitude: payload.location.lng,
+        latitude: payload.location?.lat ?? 17.6868,
+        longitude: payload.location?.lng ?? 83.2185,
         accuracy_meters: 10.0,
-        location_name: payload.location.address,
+        location_name: payload.location?.address || payload.location?.city || 'Live Location',
         city: payload.location.city || '',
         state: payload.location.state || '',
         district: payload.location.district || '',

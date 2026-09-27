@@ -5,6 +5,7 @@ Master backend router orchestrating distress creation, 10km/20km geospatial matc
 Rapido-like offers, atomic race condition resolution, privacy preservation, turn-by-turn routing,
 live breadcrumb tracking, and cross-platform synchronization for Aegis Web and Aegis Alert App.
 """
+import math
 from typing import Optional, List, Dict, Any
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, Header, status
@@ -860,6 +861,71 @@ async def list_active_sos(
         )
     )
 
+
+
+@router.get("/offers", response_model=ApiResponse[List[Dict[str, Any]]])
+async def get_sos_offers_list(
+    responderId: Optional[str] = Query(default=None),
+    latitude: Optional[float] = Query(default=None),
+    longitude: Optional[float] = Query(default=None),
+    radiusKm: float = Query(default=20.0),
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user)
+):
+    """
+    Returns active SOS distress offers for responders within the authoritative 20 KM server-side radius.
+    """
+    # 1. Fetch all active/pending SOS signals
+    query = select(SOSSignal).where(
+        SOSSignal.status.in_([
+            SOSState.PENDING.value, SOSState.MATCHING.value, SOSState.OFFERED.value
+        ])
+    ).order_by(desc(SOSSignal.created_at))
+
+    res = await db.execute(query)
+    signals = res.scalars().all()
+
+    # Helper haversine distance
+    def calc_dist(lat1, lon1, lat2, lon2):
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
+        return 6371.0 * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    offers = []
+    max_radius = min(radiusKm, 20.0) # Strictly capped at 20.0 KM
+
+    for s in signals:
+        dist = 0.0
+        if latitude is not None and longitude is not None:
+            dist = round(calc_dist(latitude, longitude, s.latitude, s.longitude), 2)
+            if dist > max_radius:
+                continue # Outside 20km boundary -> exclude from nearby notifications
+
+        offers.append({
+            "id": s.id,
+            "sosId": s.id,
+            "sos_id": s.id,
+            "callerName": s.caller_name if (current_user and current_user.role in ("admin", "official")) else "Citizen in Distress",
+            "emergencyType": s.emergency_type,
+            "emergency_type": s.emergency_type,
+            "severity": s.severity,
+            "latitude": s.latitude,
+            "longitude": s.longitude,
+            "distanceKm": dist,
+            "approximate_distance_km": dist,
+            "shortMessage": s.short_message or "Emergency assistance requested",
+            "short_message": s.short_message or "Emergency assistance requested",
+            "requestedAt": s.created_at.isoformat() if s.created_at else "",
+            "status": s.status,
+            "expiresInSeconds": 45
+        })
+
+    return ApiResponse(
+        success=True,
+        data=offers,
+        freshness=FreshnessMetadata(status="fresh", age_seconds=0)
+    )
 
 @router.get("/nearby", response_model=ApiResponse[List[SOSOfferResponseSchema]])
 async def get_nearby_sos_offers(

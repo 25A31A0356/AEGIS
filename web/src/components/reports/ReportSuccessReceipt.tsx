@@ -79,7 +79,7 @@ export const ReportSuccessReceipt: React.FC<ReportSuccessReceiptProps> = ({
           <span className="text-[#708696] font-medium shrink-0 mr-2">Location:</span>
           <span className="font-semibold text-[#18364A] text-right truncate max-w-xs flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5 text-[#075B8A] shrink-0" />
-            {report.location.address}
+            {report?.location?.address || (report as any)?.location_name || report?.location?.city || 'Reported Incident Sector'}
           </span>
         </div>
 
