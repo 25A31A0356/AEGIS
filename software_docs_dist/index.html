@@ -1,661 +1,86 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AEGIS SOFTWARE — Universal Incident Management & Disaster Command Portal</title>
+  <title>AEGIS SOFTWARE — Central Data & API Core</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="https://25a31a0356.github.io/aegis-alert/favicon.png">
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            aegis: {
-              50: '#f0f9ff',
-              500: '#0284c7',
-              600: '#0369a1',
-              900: '#0c4a6e',
-              950: '#031a2b',
-            }
-          }
-        }
-      }
-    }
-  </script>
-
-  <!-- Google Fonts & Material Symbols -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  
-  <!-- Leaflet Map CSS & JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Swagger UI CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
-  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
-
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .font-mono { font-family: 'JetBrains+Mono', monospace; }
     .swagger-ui .topbar { display: none; }
+    .swagger-ui .info { margin: 24px 0; }
     .swagger-ui { font-family: 'Inter', sans-serif; }
     .swagger-ui .opblock { border-radius: 12px; }
-    .glass-card { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.6); }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #090d16; }
-    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #334155; }
-    .live-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .6; transform: scale(1.08); } }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
-
+<body class="bg-slate-950 text-slate-100 min-h-screen">
   <!-- Top Navigation Bar -->
-  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 via-blue-600 to-teal-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-sky-500/20">
-          <span class="material-symbols-outlined text-2xl">shield</span>
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600 to-teal-400 flex items-center justify-center font-black text-white text-lg shadow-lg">
+          ⚡
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-black text-lg tracking-wider text-white">AEGIS COMMAND SOFTWARE</h1>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse"></span>
-              LIVE SERVER
-            </span>
-          </div>
-          <p class="text-[10px] font-mono text-slate-400">UNIFIED INCIDENT MANAGEMENT &amp; 24/7 DISASTER GATEWAY</p>
+          <h1 class="font-black text-lg tracking-wider text-white">AEGIS SOFTWARE</h1>
+          <p class="text-[10px] font-mono text-teal-400">CENTRAL DATA &amp; REALTIME BACKEND CORE</p>
         </div>
       </div>
-
-      <!-- Live Clock, Status & Action Links -->
-      <div class="flex items-center gap-3 sm:gap-4">
-        <div class="hidden md:flex flex-col text-right">
-          <span id="liveClock" class="text-xs font-mono font-bold text-sky-400">--:--:-- IST</span>
-          <span class="text-[10px] text-slate-400">Gateway: <span id="gatewayStatus" class="text-emerald-400 font-bold">ONLINE (0ms)</span></span>
-        </div>
-
-        <button onclick="fetchAllData()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1.5 text-xs font-medium border border-slate-700">
-          <span class="material-symbols-outlined text-sm">refresh</span>
-          <span class="hidden sm:inline">Refresh</span>
-        </button>
-
-        <div class="h-6 w-px bg-slate-800"></div>
-
-        <div class="flex items-center gap-2 text-xs">
-          <a href="http://localhost:8081" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1">
-            <span class="material-symbols-outlined text-xs text-sky-400">smartphone</span>
-            <span class="hidden sm:inline">Mobile App</span>
-          </a>
-          <a href="http://localhost:5173" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1">
-            <span class="material-symbols-outlined text-xs text-emerald-400">language</span>
-            <span class="hidden sm:inline">Web Center</span>
-          </a>
-        </div>
+      <div class="flex items-center gap-3 text-xs">
+        <a href="https://25a31a0356.github.io/aegis-alert/" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          📱 Mobile App
+        </a>
+        <a href="https://25A31A0356.github.io/Aegis-web/" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          🌐 Web Command Center
+        </a>
+        <a href="https://github.com/25A31A0356/aegis-software" target="_blank" class="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold transition">
+          GitHub Code
+        </a>
       </div>
     </div>
   </header>
 
-  <!-- Secondary Tab Navigation -->
-  <div class="bg-slate-900 border-b border-slate-800 sticky top-16 z-40">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 flex gap-1 overflow-x-auto py-2">
-      <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-sky-600 text-white">
-        <span class="material-symbols-outlined text-sm">dashboard</span>
-        Operations Desk
-      </button>
-      <button onclick="switchTab('sos')" id="tab-btn-sos" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800">
-        <span class="material-symbols-outlined text-sm text-rose-400">sos</span>
-        Active SOS Signals (<span id="badgeSosCount">0</span>)
-      </button>
-      <button onclick="switchTab('reports')" id="tab-btn-reports" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800">
-        <span class="material-symbols-outlined text-sm text-amber-400">report_problem</span>
-        Community Reports (<span id="badgeReportCount">0</span>)
-      </button>
-      <button onclick="switchTab('system')" id="tab-btn-system" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800">
-        <span class="material-symbols-outlined text-sm text-teal-400">dns</span>
-        System Health &amp; Ingestion
-      </button>
-      <button onclick="switchTab('api')" id="tab-btn-api" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800">
-        <span class="material-symbols-outlined text-sm text-indigo-400">api</span>
-        OpenAPI Core Explorer
-      </button>
-    </div>
-  </div>
-
-  <!-- Main Content Viewport -->
-  <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 space-y-6">
-
-    <!-- 1. OPERATIONS DASHBOARD TAB -->
-    <div id="view-dashboard" class="tab-view space-y-6">
-      <!-- Top Metrics -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="glass-card p-4 sm:p-5 rounded-2xl">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-400">Active SOS Signals</span>
-            <span class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold">
-              <span class="material-symbols-outlined text-base">sos</span>
-            </span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span id="metricSosCount" class="text-2xl sm:text-3xl font-black text-white">0</span>
-            <span class="text-[10px] text-rose-400 font-bold uppercase tracking-wider">Critical Distress</span>
-          </div>
+  <!-- Hero Information -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-b border-slate-800">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 text-teal-400 font-mono text-xs font-bold mb-1">
+          <span>●</span> POSTGIS 20KM PROXIMITY
         </div>
-
-        <div class="glass-card p-4 sm:p-5 rounded-2xl">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-400">Ground-Truth Reports</span>
-            <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-              <span class="material-symbols-outlined text-base">report</span>
-            </span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span id="metricReportCount" class="text-2xl sm:text-3xl font-black text-white">0</span>
-            <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Citizen Submissions</span>
-          </div>
-        </div>
-
-        <div class="glass-card p-4 sm:p-5 rounded-2xl">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-400">Active Weather Telemetry</span>
-            <span class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
-              <span class="material-symbols-outlined text-base">cloud_sync</span>
-            </span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span id="metricWeatherTemp" class="text-2xl sm:text-3xl font-black text-white">28°C</span>
-            <span id="metricWeatherLabel" class="text-[10px] text-sky-400 font-bold uppercase tracking-wider">Open-Meteo Live</span>
-          </div>
-        </div>
-
-        <div class="glass-card p-4 sm:p-5 rounded-2xl">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-slate-400">Registered Users</span>
-            <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
-              <span class="material-symbols-outlined text-base">group</span>
-            </span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span id="metricUserCount" class="text-2xl sm:text-3xl font-black text-white">--</span>
-            <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">SQLite Verified</span>
-          </div>
-        </div>
+        <p class="text-sm font-semibold text-white">Authoritative Geospatial Engine</p>
+        <p class="text-xs text-slate-400 mt-1">Computes 20km citizen radius and global command center feeds using spatial indexing.</p>
       </div>
-
-      <!-- Operational Map & Live Telemetry Stream Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Live Incident Map (2 Cols) -->
-        <div class="lg:col-span-2 glass-card rounded-3xl p-5 flex flex-col">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-sky-400">map</span>
-              <h2 class="font-bold text-sm text-white">Live Incident &amp; Distress Geo-Map</h2>
-            </div>
-            <span class="text-xs text-slate-400 font-mono">India National Coordinates</span>
-          </div>
-          <div id="commandMap" class="w-full h-[420px] rounded-2xl bg-slate-900 border border-slate-800 z-10"></div>
-          <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
-            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-600"></span> Active SOS Beacon</div>
-            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Community Hazard Report</div>
-            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-500"></span> Rescue Center / Shelter</div>
-          </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 text-sky-400 font-mono text-xs font-bold mb-1">
+          <span>●</span> WEBSOCKET REALTIME
         </div>
-
-        <!-- Live Real-Time Broadcast Stream (1 Col) -->
-        <div class="glass-card rounded-3xl p-5 flex flex-col">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-emerald-400">rss_feed</span>
-              <h2 class="font-bold text-sm text-white">Realtime Broadcast Stream</h2>
-            </div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-800 text-slate-300">SSE Live</span>
-          </div>
-          <div id="eventStreamContainer" class="flex-1 overflow-y-auto max-h-[420px] space-y-2.5 pr-1 font-mono text-xs">
-            <!-- Events injected here -->
-            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400">
-              <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1">
-                <span>SYSTEM_BOOT</span>
-                <span>Just now</span>
-              </div>
-              <p class="text-slate-300 text-xs font-sans">Connecting to AEGIS Central Event Broker...</p>
-            </div>
-          </div>
+        <p class="text-sm font-semibold text-white">Bi-Directional Telemetry Stream</p>
+        <p class="text-xs text-slate-400 mt-1">Publishes instant SOS beacons, responder tracks, and severe alert warnings.</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold mb-1">
+          <span>●</span> OFFLINE IDEMPOTENCY
         </div>
+        <p class="text-sm font-semibold text-white">Reliable SOS Sync Engine</p>
+        <p class="text-xs text-slate-400 mt-1">Guarantees zero-loss, zero-duplicate distress reporting under degraded network conditions.</p>
       </div>
     </div>
+  </section>
 
-    <!-- 2. ACTIVE SOS SIGNALS TAB -->
-    <div id="view-sos" class="tab-view hidden space-y-6">
-      <div class="glass-card rounded-3xl p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <span class="material-symbols-outlined text-rose-500">sos</span>
-              Emergency Distress &amp; SOS Management
-            </h2>
-            <p class="text-xs text-slate-400">Real-time distress signals triggered by citizens on mobile app or web portal</p>
-          </div>
-          <button onclick="fetchSosData()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition">
-            Refresh SOS List
-          </button>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-900/80 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
-              <tr>
-                <th class="p-3.5">Signal ID</th>
-                <th class="p-3.5">Caller / Identity</th>
-                <th class="p-3.5">Emergency Type</th>
-                <th class="p-3.5">Severity</th>
-                <th class="p-3.5">GPS Location</th>
-                <th class="p-3.5">Status</th>
-                <th class="p-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="sosTableBody" class="divide-y divide-slate-800 text-slate-200">
-              <tr>
-                <td colspan="7" class="p-6 text-center text-slate-500">No active SOS distress beacons recorded.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+  <!-- Interactive Swagger UI Documentation -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-3xl p-6 shadow-2xl">
+      <div id="swagger-ui"></div>
     </div>
-
-    <!-- 3. COMMUNITY HAZARD REPORTS TAB -->
-    <div id="view-reports" class="tab-view hidden space-y-6">
-      <div class="glass-card rounded-3xl p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <span class="material-symbols-outlined text-amber-500">report</span>
-              Community Incident &amp; Hazard Reports
-            </h2>
-            <p class="text-xs text-slate-400">Crowdsourced ground-truth hazard reports verified through AEGIS</p>
-          </div>
-          <button onclick="fetchReportData()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition">
-            Refresh Reports
-          </button>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-900/80 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
-              <tr>
-                <th class="p-3.5">Report Title</th>
-                <th class="p-3.5">Hazard Type</th>
-                <th class="p-3.5">Severity</th>
-                <th class="p-3.5">District / Region</th>
-                <th class="p-3.5">Verification</th>
-                <th class="p-3.5">Timestamp</th>
-                <th class="p-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="reportsTableBody" class="divide-y divide-slate-800 text-slate-200">
-              <tr>
-                <td colspan="7" class="p-6 text-center text-slate-500">No community reports submitted.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. SYSTEM HEALTH TAB -->
-    <div id="view-system" class="tab-view hidden space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Central API & DB Status -->
-        <div class="glass-card rounded-3xl p-6 space-y-4">
-          <h2 class="text-base font-bold text-white flex items-center gap-2">
-            <span class="material-symbols-outlined text-teal-400">check_circle</span>
-            Central Infrastructure Health
-          </h2>
-          <div class="space-y-3 font-mono text-xs">
-            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <span class="text-slate-400">FastAPI Gateway</span>
-              <span class="text-emerald-400 font-bold">OPERATIONAL (v1.0.0)</span>
-            </div>
-            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <span class="text-slate-400">SQLite Database Engine</span>
-              <span class="text-emerald-400 font-bold">SYNCHRONIZED (WAL MODE)</span>
-            </div>
-            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <span class="text-slate-400">Realtime Event Broker</span>
-              <span class="text-emerald-400 font-bold">ACTIVE (SSE / WS)</span>
-            </div>
-            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <span class="text-slate-400">112 Automated SMS Relay</span>
-              <span class="text-sky-400 font-bold">STANDBY / READY</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Registered Telemetry Feed Adapters -->
-        <div class="glass-card rounded-3xl p-6 space-y-4">
-          <h2 class="text-base font-bold text-white flex items-center gap-2">
-            <span class="material-symbols-outlined text-sky-400">hub</span>
-            Official Meteorological &amp; Seismic Feeds
-          </h2>
-          <div class="space-y-2.5 text-xs">
-            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-              <div>
-                <p class="font-bold text-slate-200">Open-Meteo High-Resolution Weather</p>
-                <p class="text-[10px] text-slate-500 font-mono">Interval: 5 mins &bull; WMO Compliant</p>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400">LIVE</span>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-              <div>
-                <p class="font-bold text-slate-200">USGS Real-Time Earthquake Stream</p>
-                <p class="text-[10px] text-slate-500 font-mono">Interval: 2 mins &bull; Global GeoJSON</p>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400">LIVE</span>
-            </div>
-            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-              <div>
-                <p class="font-bold text-slate-200">IMD &amp; CWC Flood &amp; Cyclone Feed</p>
-                <p class="text-[10px] text-slate-500 font-mono">Interval: 5 mins &bull; National NDMA</p>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400">LIVE</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. OPENAPI SWAGGER EXPLORER TAB -->
-    <div id="view-api" class="tab-view hidden space-y-6">
-      <div class="bg-white rounded-3xl p-6 shadow-2xl text-slate-900">
-        <div id="swagger-ui"></div>
-      </div>
-    </div>
-
   </main>
 
-  <!-- Incident Details Modal -->
-  <div id="incidentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-    <div class="w-full max-w-lg glass-card rounded-3xl p-6 text-slate-100 shadow-2xl border border-slate-700">
-      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
-        <h3 id="modalTitle" class="text-base font-bold text-white">Incident Details</h3>
-        <button onclick="closeIncidentModal()" class="text-slate-400 hover:text-white p-1 text-lg font-bold">✕</button>
-      </div>
-      <div id="modalBody" class="space-y-3 text-xs">
-        <!-- Content injected here -->
-      </div>
-      <div class="mt-6 pt-3 border-t border-slate-800 flex justify-end">
-        <button onclick="closeIncidentModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Command Portal Client Logic -->
+  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
   <script>
-    // Config: API Base URL (auto-detects origin or localhost:8000)
-    const API_BASE = window.location.origin.includes(':8000') 
-      ? window.location.origin 
-      : 'http://localhost:8000';
-
-    let map = null;
-    let mapMarkersLayer = null;
-    let swaggerInitialized = false;
-
-    // 1. Live Clock
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }) + ' IST';
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // 2. Tab Switcher
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-sky-600', 'text-white');
-        btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
-      });
-      const activeBtn = document.getElementById('tab-btn-' + tabId);
-      if (activeBtn) {
-        activeBtn.classList.add('bg-sky-600', 'text-white');
-        activeBtn.classList.remove('text-slate-400', 'hover:bg-slate-800');
-      }
-
-      document.querySelectorAll('.tab-view').forEach(view => view.classList.add('hidden'));
-      const activeView = document.getElementById('view-' + tabId);
-      if (activeView) activeView.classList.remove('hidden');
-
-      if (tabId === 'dashboard' && map) {
-        setTimeout(() => map.invalidateSize(), 200);
-      }
-      if (tabId === 'api' && !swaggerInitialized) {
-        initSwagger();
-      }
-    }
-
-    // 3. Leaflet Map Initialization
-    function initMap() {
-      if (map) return;
-      map = L.map('commandMap').setView([20.5937, 78.9629], 5);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-        maxZoom: 19
-      }).addTo(map);
-
-      mapMarkersLayer = L.layerGroup().addTo(map);
-    }
-
-    // 4. Ingest & Display Data
-    async function fetchAllData() {
-      await Promise.all([
-        fetchSosData(),
-        fetchReportData(),
-        fetchWeatherData()
-      ]);
-    }
-
-    async function fetchSosData() {
-      try {
-        const res = await fetch(API_BASE + '/api/v1/sos');
-        const json = await res.json();
-        const signals = (json.data && json.data.signals) ? json.data.signals : (Array.isArray(json.data) ? json.data : []);
-        
-        document.getElementById('badgeSosCount').textContent = signals.length;
-        document.getElementById('metricSosCount').textContent = signals.length;
-
-        // Render Table
-        const tbody = document.getElementById('sosTableBody');
-        if (signals.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-500">No active SOS distress beacons recorded.</td></tr>';
-        } else {
-          tbody.innerHTML = signals.map(s => `
-            <tr class="hover:bg-slate-900/60 transition">
-              <td class="p-3.5 font-mono text-sky-400 font-bold">${s.id.substring(0, 8)}...</td>
-              <td class="p-3.5 font-semibold text-white">${s.caller_name || 'Citizen'}</td>
-              <td class="p-3.5 capitalize"><span class="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">${s.emergency_type || 'General'}</span></td>
-              <td class="p-3.5 font-bold text-rose-400">${s.severity || 'CRITICAL'}</td>
-              <td class="p-3.5 font-mono text-slate-400">${Number(s.latitude).toFixed(4)}, ${Number(s.longitude).toFixed(4)}</td>
-              <td class="p-3.5"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.status === 'RESOLVED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">${s.status || 'ACTIVE'}</span></td>
-              <td class="p-3.5 text-right">
-                <button onclick='viewSosDetails(${JSON.stringify(s)})' class="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[10px]">
-                  View
-                </button>
-              </td>
-            </tr>
-          `).join('');
-        }
-
-        // Update Map Markers
-        if (mapMarkersLayer) {
-          mapMarkersLayer.clearLayers();
-          signals.forEach(s => {
-            if (s.latitude && s.longitude) {
-              const marker = L.circleMarker([s.latitude, s.longitude], {
-                radius: 9,
-                fillColor: '#dc2626',
-                color: '#ffffff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.9
-              }).addTo(mapMarkersLayer);
-              marker.bindPopup(`<b>SOS: ${s.emergency_type}</b><br>${s.caller_name}<br>Coords: ${s.latitude}, ${s.longitude}`);
-            }
-          });
-        }
-      } catch (err) {
-        console.warn('Failed to fetch SOS signals:', err);
-      }
-    }
-
-    async function fetchReportData() {
-      try {
-        const res = await fetch(API_BASE + '/api/v1/reports');
-        const json = await res.json();
-        const reports = (json.data && json.data.reports) ? json.data.reports : (Array.isArray(json.data) ? json.data : []);
-        
-        document.getElementById('badgeReportCount').textContent = reports.length;
-        document.getElementById('metricReportCount').textContent = reports.length;
-
-        const tbody = document.getElementById('reportsTableBody');
-        if (reports.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-500">No community reports submitted.</td></tr>';
-        } else {
-          tbody.innerHTML = reports.map(r => `
-            <tr class="hover:bg-slate-900/60 transition">
-              <td class="p-3.5 font-bold text-white">${r.title || 'Untitled Hazard'}</td>
-              <td class="p-3.5 font-mono text-amber-400">${r.hazard_type || 'GENERAL'}</td>
-              <td class="p-3.5 font-bold text-amber-300">${r.severity || 'HIGH'}</td>
-              <td class="p-3.5 text-slate-300">${r.district || r.state || 'National'}</td>
-              <td class="p-3.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400">VERIFIED</span></td>
-              <td class="p-3.5 text-slate-400 font-mono text-[10px]">${r.created_at ? new Date(r.created_at).toLocaleTimeString() : 'Recent'}</td>
-              <td class="p-3.5 text-right">
-                <button onclick='viewReportDetails(${JSON.stringify(r)})' class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-semibold">
-                  Inspect
-                </button>
-              </td>
-            </tr>
-          `).join('');
-        }
-
-        // Add Reports to Map
-        if (mapMarkersLayer) {
-          reports.forEach(r => {
-            if (r.latitude && r.longitude) {
-              const marker = L.circleMarker([r.latitude, r.longitude], {
-                radius: 7,
-                fillColor: '#d97706',
-                color: '#ffffff',
-                weight: 1.5,
-                opacity: 1,
-                fillOpacity: 0.9
-              }).addTo(mapMarkersLayer);
-              marker.bindPopup(`<b>REPORT: ${r.hazard_type}</b><br>${r.title}`);
-            }
-          });
-        }
-      } catch (err) {
-        console.warn('Failed to fetch reports:', err);
-      }
-    }
-
-    async function fetchWeatherData() {
-      try {
-        const res = await fetch(API_BASE + '/api/v1/weather?lat=17.3850&lng=78.4867');
-        const json = await res.json();
-        const data = json.data || json;
-        if (data && (data.temperature !== undefined || data.temp !== undefined)) {
-          const temp = data.temperature || data.temp || 28;
-          document.getElementById('metricWeatherTemp').textContent = temp + '°C';
-          document.getElementById('metricWeatherLabel').textContent = data.condition || data.weatherLabel || 'Open-Meteo Live';
-        }
-      } catch (e) {
-        console.warn('Weather fetch error:', e);
-      }
-    }
-
-    // Modal Details Viewers
-    function viewSosDetails(s) {
-      document.getElementById('modalTitle').textContent = 'SOS Beacon: ' + (s.id ? s.id.substring(0, 13) : 'Active');
-      document.getElementById('modalBody').innerHTML = `
-        <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 mb-3">
-          <strong>Emergency:</strong> ${s.emergency_type || 'General Distress'} (${s.severity || 'CRITICAL'})
-        </div>
-        <p><strong>Caller Name:</strong> ${s.caller_name || 'Citizen in Distress'}</p>
-        <p><strong>Phone Number:</strong> ${s.caller_phone || 'Masked / Available to 112'}</p>
-        <p><strong>GPS Coordinates:</strong> ${s.latitude}, ${s.longitude} (Accuracy: ${s.accuracy_meters || 5}m)</p>
-        <p><strong>Message:</strong> ${s.short_message || 'No additional details provided.'}</p>
-        <p><strong>Status:</strong> ${s.status || 'PENDING / MATCHING'}</p>
-      `;
-      document.getElementById('incidentModal').classList.remove('hidden');
-    }
-
-    function viewReportDetails(r) {
-      document.getElementById('modalTitle').textContent = 'Hazard Report: ' + (r.title || 'Ground-Truth');
-      document.getElementById('modalBody').innerHTML = `
-        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 mb-3">
-          <strong>Category:</strong> ${r.hazard_type || 'General Hazard'} &bull; <strong>Severity:</strong> ${r.severity || 'HIGH'}
-        </div>
-        <p><strong>Description:</strong> ${r.description || 'No description provided.'}</p>
-        <p><strong>Location:</strong> ${r.district || ''}, ${r.state || ''} (${r.latitude}, ${r.longitude})</p>
-        <p><strong>Source:</strong> ${r.source || 'citizen_report'}</p>
-      `;
-      document.getElementById('incidentModal').classList.remove('hidden');
-    }
-
-    function closeIncidentModal() {
-      document.getElementById('incidentModal').classList.add('hidden');
-    }
-
-    // Connect to Realtime Event Stream (SSE)
-    function connectEventStream() {
-      try {
-        const sse = new EventSource(API_BASE + '/api/v1/realtime');
-        sse.onmessage = (e) => {
-          try {
-            const parsed = JSON.parse(e.data);
-            if (parsed.type !== 'ping') {
-              const container = document.getElementById('eventStreamContainer');
-              const div = document.createElement('div');
-              div.className = 'p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs animate-in fade-in';
-              div.innerHTML = `
-                <div class="flex items-center justify-between text-[10px] text-sky-400 font-bold mb-1">
-                  <span>${parsed.type || 'EVENT'}</span>
-                  <span class="text-slate-500">${new Date().toLocaleTimeString()}</span>
-                </div>
-                <p class="text-slate-200 font-sans">${parsed.message || JSON.stringify(parsed.data || parsed)}</p>
-              `;
-              container.insertBefore(div, container.firstChild);
-              // Auto-refresh data on new event
-              fetchAllData();
-            }
-          } catch {}
-        };
-        sse.onerror = () => {
-          document.getElementById('gatewayStatus').textContent = 'RECONNECTING...';
-          document.getElementById('gatewayStatus').className = 'text-amber-400 font-bold';
-        };
-        sse.onopen = () => {
-          document.getElementById('gatewayStatus').textContent = 'ONLINE (LIVE SSE)';
-          document.getElementById('gatewayStatus').className = 'text-emerald-400 font-bold';
-        };
-      } catch (err) {
-        console.warn('SSE connection failed:', err);
-      }
-    }
-
-    // Swagger UI
-    function initSwagger() {
-      swaggerInitialized = true;
-      SwaggerUIBundle({
+    window.onload = () => {
+      window.ui = SwaggerUIBundle({
         url: './openapi.json',
         dom_id: '#swagger-ui',
         deepLinking: true,
@@ -665,14 +90,6 @@
         ],
         layout: "BaseLayout"
       });
-    }
-
-    // Boot on page load
-    window.onload = () => {
-      initMap();
-      fetchAllData();
-      connectEventStream();
-      setInterval(fetchAllData, 15000); // 15-second background sync
     };
   </script>
 </body>
