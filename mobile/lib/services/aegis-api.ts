@@ -986,6 +986,7 @@ class AegisApiServiceClass {
       casualties_count: input.peopleCount || 1,
       idempotency_key: idempotencyKey,
       emergency_contacts: (input.familyContacts || []).map((c) => ({ name: c.name, phone: c.phone, relationship: c.relationship || "Family" })),
+      demo_mode: Boolean(input.demoMode),
     };
 
     try {

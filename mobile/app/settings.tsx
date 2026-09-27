@@ -284,6 +284,25 @@ export default function SettingsScreen() {
                 thumbColor="#fff"
               />
             }
+          />
+          <SettingRow
+            icon="flame.fill"
+            title={demoMode ? "Demo Mode (Active)" : "Demo Mode (Disabled)"}
+            detail={
+              demoMode
+                ? "ON: SOS broadcast shows on App & Web within 20km. SMS sent ONLY to family numbers (Police SMS suppressed for drill/practice)."
+                : "OFF: Live Emergency 112 Active. SMS dispatched to Police (both current sector and hometown) + family numbers."
+            }
+            colors={colors}
+            onPress={() => setDemoMode(!demoMode)}
+            right={
+              <Switch
+                value={demoMode}
+                onValueChange={setDemoMode}
+                trackColor={{ false: colors.border, true: "#EA580C" }}
+                thumbColor="#fff"
+              />
+            }
             last
           />
         </View>
