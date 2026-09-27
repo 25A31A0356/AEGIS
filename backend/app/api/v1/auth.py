@@ -10,13 +10,13 @@ import os
 import asyncio
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from backend.app.database.session import get_db
-from backend.app.database.models import User, UserPreference
+from backend.app.database.models import User, UserPreference, utc_now
 from backend.app.schemas.common import ApiResponse
 from backend.app.core.security import verify_password, get_password_hash, create_access_token
 from backend.app.core.config import settings
@@ -419,6 +419,97 @@ async def google_auth(
     )
 
 
+class UserProfileUpdateRequest(BaseModel):
+    full_name: Optional[str] = None
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    phoneNumber: Optional[str] = None
+    avatar_url: Optional[str] = None
+    avatarUrl: Optional[str] = None
+    avatarUri: Optional[str] = None
+    blood_group: Optional[str] = None
+    bloodGroup: Optional[str] = None
+    medical_notes: Optional[str] = None
+    medicalNotes: Optional[str] = None
+    people_count: Optional[int] = None
+    peopleCount: Optional[int] = None
+    home_city: Optional[str] = None
+    homeCity: Optional[str] = None
+    home_police_station: Optional[str] = None
+    homePoliceStation: Optional[str] = None
+    home_police_number: Optional[str] = None
+    homePoliceNumber: Optional[str] = None
+    family_contacts: Optional[List[Dict[str, Any]]] = None
+    familyContacts: Optional[List[Dict[str, Any]]] = None
+    custom_sos_message: Optional[str] = None
+    customSosMessage: Optional[str] = None
+    custom_safe_message: Optional[str] = None
+    customSafeMessage: Optional[str] = None
+    language: Optional[str] = None
+    theme: Optional[str] = None
+
+
+def _format_user_profile_data(user: User, pref: Optional[UserPreference]) -> Dict[str, Any]:
+    ep = (getattr(user, "emergency_profile", None) or (pref.emergency_profile if pref else None) or {})
+    
+    phone = user.phone or ep.get("phoneNumber") or ep.get("phone") or ""
+    avatar = user.avatar_url or ep.get("avatarUrl") or ep.get("avatarUri") or ""
+    blood = user.blood_group or ep.get("bloodGroup") or ep.get("blood_group") or "O+"
+    med = user.medical_notes or ep.get("medicalNotes") or ep.get("medical_notes") or ""
+    people = user.people_count or ep.get("peopleCount") or ep.get("people_count") or 1
+    h_city = user.home_city or ep.get("homeCity") or ep.get("home_city") or "Kakinada"
+    h_ps = user.home_police_station or ep.get("homePoliceStation") or ep.get("home_police_station") or "Kakinada Town Police Station"
+    h_pn = user.home_police_number or ep.get("homePoliceNumber") or ep.get("home_police_number") or "0884-2365555"
+    fams = user.family_contacts or ep.get("familyContacts") or ep.get("family_contacts") or (pref.emergency_contacts if pref else []) or []
+    c_sos = ep.get("customSosMessage") or ep.get("custom_sos_message") or "EMERGENCY SOS: I need immediate help! Please dispatch rescue to my location."
+    c_safe = ep.get("customSafeMessage") or ep.get("custom_safe_message") or "I am safe and secure. Sharing my location with family through AEGIS ALERT."
+
+    return {
+        "id": user.id,
+        "email": user.email,
+        "full_name": user.full_name or "Citizen in Distress",
+        "name": user.full_name or "Citizen in Distress",
+        "phone": phone,
+        "phoneNumber": phone,
+        "avatar_url": avatar,
+        "avatarUrl": avatar,
+        "avatarUri": avatar,
+        "blood_group": blood,
+        "bloodGroup": blood,
+        "medical_notes": med,
+        "medicalNotes": med,
+        "people_count": people,
+        "peopleCount": people,
+        "home_city": h_city,
+        "homeCity": h_city,
+        "home_police_station": h_ps,
+        "homePoliceStation": h_ps,
+        "home_police_number": h_pn,
+        "homePoliceNumber": h_pn,
+        "family_contacts": fams,
+        "familyContacts": fams,
+        "custom_sos_message": c_sos,
+        "customSosMessage": c_sos,
+        "custom_safe_message": c_safe,
+        "customSafeMessage": c_safe,
+        "role": user.role,
+        "is_active": user.is_active,
+        "saved_locations": pref.saved_locations if pref else [],
+        "hazard_subscriptions": pref.hazard_subscriptions if pref else ["FLOOD", "EARTHQUAKE", "CYCLONE", "FIRE"],
+        "push_enabled": pref.push_enabled if pref else True,
+        "sms_alerts_enabled": pref.sms_alerts_enabled if pref else False,
+        "language": pref.language if pref else "en",
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "permissions": {
+            "is_admin": user.role in ("admin",),
+            "is_official": user.role in ("admin", "official"),
+            "is_operator": user.role in ("admin", "official", "operator"),
+            "is_responder": user.role in ("admin", "official", "operator", "responder", "sdrf_officer", "ndrf_officer"),
+            "is_citizen": True
+        }
+    }
+
+
 @router.get("/me", response_model=ApiResponse[Dict[str, Any]])
 async def get_current_user_profile(
     current_user: User = Depends(require_authenticated_user),
@@ -430,27 +521,107 @@ async def get_current_user_profile(
 
     return ApiResponse(
         success=True,
-        data={
-            "id": current_user.id,
-            "email": current_user.email,
-            "full_name": current_user.full_name,
-            "name": current_user.full_name,
-            "role": current_user.role,
-            "is_active": current_user.is_active,
-            "saved_locations": pref.saved_locations if pref else [],
-            "hazard_subscriptions": pref.hazard_subscriptions if pref else ["FLOOD", "EARTHQUAKE", "CYCLONE", "FIRE"],
-            "push_enabled": pref.push_enabled if pref else True,
-            "sms_alerts_enabled": pref.sms_alerts_enabled if pref else False,
-            "language": pref.language if pref else "en",
-            "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
-            "permissions": {
-                "is_admin": current_user.role in ("admin",),
-                "is_official": current_user.role in ("admin", "official"),
-                "is_operator": current_user.role in ("admin", "official", "operator"),
-                "is_responder": current_user.role in ("admin", "official", "operator", "responder", "sdrf_officer", "ndrf_officer"),
-                "is_citizen": True
-            }
-        }
+        data=_format_user_profile_data(current_user, pref)
+    )
+
+
+@router.put("/profile", response_model=ApiResponse[Dict[str, Any]])
+@router.patch("/profile", response_model=ApiResponse[Dict[str, Any]])
+@router.post("/profile", response_model=ApiResponse[Dict[str, Any]])
+async def update_current_user_profile(
+    payload: UserProfileUpdateRequest,
+    current_user: User = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Updates authenticated user's emergency profile, contacts, and personal preferences,
+    synchronizing instantly across Web and Mobile.
+    """
+    if payload.full_name is not None or payload.name is not None:
+        current_user.full_name = (payload.full_name or payload.name or "").strip()
+    
+    phone_val = payload.phoneNumber or payload.phone
+    if phone_val is not None:
+        current_user.phone = phone_val.strip()
+
+    avatar_val = payload.avatarUrl or payload.avatarUri or payload.avatar_url
+    if avatar_val is not None:
+        current_user.avatar_url = avatar_val.strip()
+
+    blood_val = payload.bloodGroup or payload.blood_group
+    if blood_val is not None:
+        current_user.blood_group = blood_val.strip()
+
+    med_val = payload.medicalNotes or payload.medical_notes
+    if med_val is not None:
+        current_user.medical_notes = med_val.strip()
+
+    people_val = payload.peopleCount if payload.peopleCount is not None else payload.people_count
+    if people_val is not None:
+        current_user.people_count = int(people_val)
+
+    h_city_val = payload.homeCity or payload.home_city
+    if h_city_val is not None:
+        current_user.home_city = h_city_val.strip()
+
+    h_ps_val = payload.homePoliceStation or payload.home_police_station
+    if h_ps_val is not None:
+        current_user.home_police_station = h_ps_val.strip()
+
+    h_pn_val = payload.homePoliceNumber or payload.home_police_number
+    if h_pn_val is not None:
+        current_user.home_police_number = h_pn_val.strip()
+
+    fams_val = payload.familyContacts if payload.familyContacts is not None else payload.family_contacts
+    if fams_val is not None:
+        current_user.family_contacts = fams_val
+
+    # Update or create user preference record
+    pref_res = await db.execute(select(UserPreference).where(UserPreference.user_id == current_user.id))
+    pref = pref_res.scalars().first()
+    if not pref:
+        pref = UserPreference(
+            user_id=current_user.id,
+            saved_locations=[],
+            hazard_subscriptions=["FLOOD", "EARTHQUAKE", "CYCLONE", "FIRE"],
+            push_enabled=True,
+            sms_alerts_enabled=False,
+            language="en"
+        )
+        db.add(pref)
+
+    ep = pref.emergency_profile or {}
+    ep["fullName"] = current_user.full_name
+    ep["phoneNumber"] = current_user.phone
+    ep["avatarUrl"] = current_user.avatar_url
+    ep["avatarUri"] = current_user.avatar_url
+    ep["bloodGroup"] = current_user.blood_group
+    ep["medicalNotes"] = current_user.medical_notes
+    ep["peopleCount"] = current_user.people_count
+    ep["homeCity"] = current_user.home_city
+    ep["homePoliceStation"] = current_user.home_police_station
+    ep["homePoliceNumber"] = current_user.home_police_number
+    ep["familyContacts"] = current_user.family_contacts
+
+    if payload.customSosMessage is not None or payload.custom_sos_message is not None:
+        ep["customSosMessage"] = payload.customSosMessage or payload.custom_sos_message
+    if payload.customSafeMessage is not None or payload.custom_safe_message is not None:
+        ep["customSafeMessage"] = payload.customSafeMessage or payload.custom_safe_message
+    if payload.language:
+        pref.language = payload.language
+
+    pref.emergency_profile = ep
+    current_user.emergency_profile = ep
+    current_user.updated_at = utc_now()
+    pref.updated_at = utc_now()
+
+    await db.commit()
+    await db.refresh(current_user)
+    await db.refresh(pref)
+
+    return ApiResponse(
+        success=True,
+        data=_format_user_profile_data(current_user, pref)
     )
 
 

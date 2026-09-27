@@ -27,6 +27,16 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    blood_group: Mapped[Optional[str]] = mapped_column(String(10), default="O+", nullable=True)
+    medical_notes: Mapped[Optional[str]] = mapped_column(Text, default="", nullable=True)
+    people_count: Mapped[Optional[int]] = mapped_column(Integer, default=1, nullable=True)
+    home_city: Mapped[Optional[str]] = mapped_column(String(255), default="", nullable=True)
+    home_police_station: Mapped[Optional[str]] = mapped_column(String(255), default="", nullable=True)
+    home_police_number: Mapped[Optional[str]] = mapped_column(String(50), default="", nullable=True)
+    family_contacts: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list, nullable=False)
+    emergency_profile: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
     role: Mapped[str] = mapped_column(String(50), default="public", nullable=False)  # admin, official, sdrf_officer, public
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
@@ -593,6 +603,7 @@ class UserPreference(Base):
     
     # Family Emergency Contacts
     emergency_contacts: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list, nullable=False)  # [{"name": "Family", "phone": "+919876543210", "relationship": "Parent"}]
+    emergency_profile: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)

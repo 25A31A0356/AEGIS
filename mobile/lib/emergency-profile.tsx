@@ -181,6 +181,38 @@ export function EmergencyProfileProvider({ children }: { children: ReactNode }) 
   const [profile, setProfile] = useState<EmergencyProfile>(DEFAULT_EMERGENCY_PROFILE);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const refreshFromServer = useCallback(async () => {
+    try {
+      const serverData = await AegisApiService.getCurrentUserProfile();
+      if (serverData) {
+        const mappedServer: Partial<EmergencyProfile> = {
+          fullName: serverData.full_name || serverData.name || "",
+          phoneNumber: serverData.phoneNumber || serverData.phone || "",
+          bloodGroup: serverData.bloodGroup || serverData.blood_group || "O+",
+          medicalNotes: serverData.medicalNotes || serverData.medical_notes || "",
+          peopleCount: serverData.peopleCount || serverData.people_count || 1,
+          homeCity: serverData.homeCity || serverData.home_city || "Kakinada",
+          homePoliceStation: serverData.homePoliceStation || serverData.home_police_station || "Kakinada Town Police Station",
+          homePoliceNumber: serverData.homePoliceNumber || serverData.home_police_number || "0884-2365555",
+          avatarUri: serverData.avatarUri || serverData.avatarUrl || serverData.avatar_url || "",
+          familyContacts: Array.isArray(serverData.familyContacts) && serverData.familyContacts.length > 0
+            ? serverData.familyContacts
+            : (Array.isArray(serverData.family_contacts) ? serverData.family_contacts : []),
+          customSosMessage: serverData.customSosMessage || serverData.custom_sos_message || DEFAULT_EMERGENCY_PROFILE.customSosMessage,
+          customSafeMessage: serverData.customSafeMessage || serverData.custom_safe_message || DEFAULT_EMERGENCY_PROFILE.customSafeMessage,
+        };
+
+        setProfile((prev) => {
+          const merged = normalizeProfile({ ...prev, ...mappedServer });
+          void writeSecureProfile(JSON.stringify(merged));
+          return merged;
+        });
+      }
+    } catch (err) {
+      console.warn("[Profile] Server profile fetch error:", err);
+    }
+  }, []);
+
   useEffect(() => {
     (async () => {
       try {
@@ -189,23 +221,42 @@ export function EmergencyProfileProvider({ children }: { children: ReactNode }) 
           const parsed = JSON.parse(saved);
           setProfile(normalizeProfile(parsed));
         }
+        // Then fetch latest authoritative state from backend database
+        void refreshFromServer();
       } catch (e) {
         console.warn("Failed to load emergency profile from secure storage", e);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [refreshFromServer]);
 
   const syncBackend = (p: EmergencyProfile) => {
-    AegisApiService.updateUserSettings({
-      userId: "default-user",
-      fullName: p.fullName,
+    AegisApiService.updateProfile({
+      full_name: p.fullName,
+      name: p.fullName,
+      phone: p.phoneNumber,
       phoneNumber: p.phoneNumber,
+      avatar_url: p.avatarUri,
+      avatarUri: p.avatarUri,
+      blood_group: p.bloodGroup,
       bloodGroup: p.bloodGroup,
+      medical_notes: p.medicalNotes,
       medicalNotes: p.medicalNotes,
+      people_count: p.peopleCount,
       peopleCount: p.peopleCount,
-      emergencyContacts: p.familyContacts,
+      home_city: p.homeCity,
+      homeCity: p.homeCity,
+      home_police_station: p.homePoliceStation,
+      homePoliceStation: p.homePoliceStation,
+      home_police_number: p.homePoliceNumber,
+      homePoliceNumber: p.homePoliceNumber,
+      family_contacts: p.familyContacts,
+      familyContacts: p.familyContacts,
+      custom_sos_message: p.customSosMessage,
+      customSosMessage: p.customSosMessage,
+      custom_safe_message: p.customSafeMessage,
+      customSafeMessage: p.customSafeMessage,
     }).catch((e) => console.warn("[Profile] Backend sync failed:", e));
   };
 

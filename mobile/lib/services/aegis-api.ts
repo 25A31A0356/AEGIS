@@ -2172,6 +2172,29 @@ class AegisApiServiceClass {
     }
   }
 
+  async getCurrentUserProfile(): Promise<any> {
+    try {
+      const res = await apiCall<any>("/auth/me", { method: "GET" });
+      return res?.data || res;
+    } catch (err: any) {
+      console.warn("[AegisApiService] getCurrentUserProfile error:", err);
+      return null;
+    }
+  }
+
+  async updateProfile(payload: Record<string, any>): Promise<any> {
+    try {
+      const res = await apiCall<any>("/auth/profile", {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+      return res?.data || res;
+    } catch (err: any) {
+      console.warn("[AegisApiService] updateProfile error:", err);
+      return null;
+    }
+  }
+
   async clearSession(): Promise<void> {
     try {
       if (Platform.OS === "web") {
