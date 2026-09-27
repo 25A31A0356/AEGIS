@@ -3,14 +3,14 @@ import { STATE_VICTIM_BEACONS } from '../data/stateVictimBeacons';
  * AEGIS ALERT - Central Frontend SOS Service
  * Connects Aegis Web to the Aegis Software SOS API and Realtime Event Stream.
  * Handles beacon lifecycle transitions, responder location tracking, and reactive updates.
- * Implements 1-minute auto-refresh cycle and stale message pruning.
+ * ZERO MOCK DATA: Exclusively shows genuine, live distress signals triggered from App / Web.
  */
 
 import { ApiClient } from './apiClient';
 import { RealtimeService, RealtimeEvent } from './realtimeService';
 import { SOSBeacon, SOSTriageStatus } from '../types/sos';
 
-const STORAGE_KEY = 'aegis_user_sos_beacons_v5';
+const STORAGE_KEY = 'aegis_user_sos_beacons_v6';
 
 export function normalizeBeaconState(stateName?: string, district?: string, coords?: [number, number]): string {
   if (stateName && stateName.trim() && stateName.toLowerCase() !== 'india' && stateName.toLowerCase() !== 'all') {
@@ -76,41 +76,33 @@ export class SOSService {
   }
 
   private static loadFromStorage(): SOSBeacon[] {
-    if (typeof localStorage === 'undefined') return [...STATE_VICTIM_BEACONS];
+    if (typeof localStorage === 'undefined') return [];
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) {
         const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const validIds = new Set(STATE_VICTIM_BEACONS.map(b => b.id));
-          const list: SOSBeacon[] = [];
-          
-          // Seed standard state victim beacons
-          for (const sv of STATE_VICTIM_BEACONS) {
-            const match = parsed.find((p: any) => p && p.id === sv.id);
-            if (match) {
-              list.push({ ...sv, ...match, state: sv.state });
-            } else {
-              list.push(sv);
-            }
-          }
-
-          // Append any newly created user beacons
-          for (const p of parsed) {
-            if (p && p.id && !validIds.has(p.id)) {
-              list.push({
-                ...p,
-                state: normalizeBeaconState(p.state, p.district, p.coordinates),
-              });
-            }
-          }
-          return list;
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (p: any) =>
+              p &&
+              p.id &&
+              !p.id.startsWith('SOS-AP-') &&
+              !p.id.startsWith('SOS-MH-') &&
+              !p.id.startsWith('SOS-OR-') &&
+              !p.id.startsWith('SOS-KL-') &&
+              !p.id.startsWith('SOS-TN-') &&
+              !p.id.startsWith('SOS-DL-') &&
+              !p.id.startsWith('SOS-GJ-') &&
+              !p.id.startsWith('SOS-AS-') &&
+              !p.id.startsWith('SOS-WB-') &&
+              !p.id.startsWith('SOS-KA-')
+          );
         }
       }
     } catch {
       // ignore
     }
-    return [...STATE_VICTIM_BEACONS];
+    return [];
   }
 
   private static saveToStorage(): void {
@@ -123,14 +115,12 @@ export class SOSService {
   }
 
   /**
-   * 1-Minute Auto-Refresh Timer
+   * Auto-Refresh Timer: 60s
    */
   public static startAutoRefreshCycle(): void {
     if (this.autoRefreshIntervalId) {
       clearInterval(this.autoRefreshIntervalId);
     }
-
-    // Refresh every 60 seconds (1 minute)
     this.autoRefreshIntervalId = setInterval(() => {
       this.pruneStaleBeacons();
       this.fetchBeaconsFromApi(true).catch(() => {});
@@ -141,10 +131,7 @@ export class SOSService {
    * Prune stale, expired, or long-resolved SOS messages
    */
   public static pruneStaleBeacons(): void {
-    // Retain default victim beacons and only prune temporary user beacons that were resolved > 15m ago
-    const stateBeaconIds = new Set(STATE_VICTIM_BEACONS.map(b => b.id));
     const filtered = this.beacons.filter((b) => {
-      if (stateBeaconIds.has(b.id)) return true;
       if (b.triageStatus === 'RESOLVED' || b.triageStatus === 'CANCELLED') {
         const timestamp = new Date(b.timestamp).getTime();
         if (!isNaN(timestamp) && timestamp < (Date.now() - 15 * 60 * 1000)) {
@@ -171,15 +158,43 @@ export class SOSService {
     const handleSOSEvent = (evt: RealtimeEvent) => {
       const eventData = evt.data || {};
       const eventType = eventData.eventType || evt.type;
-      const beaconId = eventData.beaconId || eventData.beacon?.id || eventData.id;
+      const beaconId = eventData.beaconId || eventData.beacon?.id || eventData.id || eventData.sos_id;
 
-      if ((eventType === 'SOS_CREATED' || eventType === 'SOS_DISPATCHED') && eventData.beacon) {
-        const b = eventData.beacon;
-        this.upsertBeacon({
-          ...b,
-          state: normalizeBeaconState(b.state, b.district, b.coordinates),
+      if ((eventType === 'SOS_CREATED' || eventType === 'SOS_DISPATCHED') && (eventData.beacon || eventData.id || eventData.sos_id)) {
+        const raw = eventData.beacon || eventData;
+        const coords: [number, number] = (raw.latitude && raw.longitude)
+          ? [raw.latitude, raw.longitude]
+          : (raw.coordinates || [17.6868, 83.2185]);
+        const stateVal = normalizeBeaconState(raw.state, raw.district, coords);
+
+        const b: SOSBeacon = {
+          id: raw.id || raw.sos_id || `SOS-${Date.now()}`,
+          anonymousAlias: raw.caller_name || raw.anonymousAlias || 'Citizen in Distress',
+          phoneMasked: raw.caller_phone_masked || raw.caller_phone || raw.phoneMasked || '+91 ••••• •••••',
+          rawPhone: raw.caller_phone,
+          timestamp: raw.created_at || raw.timestamp || new Date().toISOString(),
+          emergencyType: (raw.emergency_type || raw.emergencyType || 'general') as any,
+          emergencyTitle: raw.short_message || raw.emergencyTitle || 'Emergency Distress Signal',
+          locationName: raw.address || raw.locationName || (raw.district ? `${raw.district}, ${stateVal}` : 'Live GPS Coordinates'),
+          district: raw.district || '',
+          state: stateVal,
+          coordinates: coords,
+          gpsAccuracyMeters: raw.accuracy_meters || raw.gpsAccuracyMeters || 10.0,
+          batteryPercent: raw.battery_percent ?? raw.batteryPercent ?? 100,
+          personsCount: raw.casualties_count || raw.personsCount || 1,
+          triageStatus: (raw.status || raw.triageStatus || 'PENDING') as SOSTriageStatus,
+          severity: (raw.severity?.toLowerCase() || 'critical') as any,
+          timeline: raw.timeline || [
+            {
+              timestamp: new Date().toLocaleTimeString(),
+              actor: raw.caller_name || 'Citizen in Distress',
+              action: 'SOS Distress Signal Broadcasted from Mobile App',
+              notes: raw.short_message || 'Emergency trigger received in real-time.',
+            }
+          ],
           isLiveBackend: true,
-        });
+        };
+        this.upsertBeacon(b);
       } else if (eventType === 'SOS_OFFERED' && beaconId) {
         this.updateLocalBeacon(beaconId, {
           triageStatus: eventData.triageStatus || 'MATCHING',
@@ -272,25 +287,26 @@ export class SOSService {
   }
 
   /**
-   * Fetch active SOS beacons from the central Aegis API with fallback to cache/demo
+   * Fetch active SOS beacons from the central Aegis API (No dummy fallbacks)
    */
   public static async fetchBeaconsFromApi(forceFresh: boolean = false): Promise<SOSBeacon[]> {
     try {
       const res = await ApiClient.get<any>('/sos', undefined, { skipCache: forceFresh, timeoutMs: 4500 });
       const rawList = Array.isArray(res) ? res : (res?.beacons || res?.data || []);
-      if (Array.isArray(rawList) && rawList.length > 0) {
+      if (Array.isArray(rawList)) {
         const liveBeacons: SOSBeacon[] = rawList.map((b: any) => {
           const coords: [number, number] = (b.latitude && b.longitude) ? [b.latitude, b.longitude] : (b.coordinates || [17.6868, 83.2185]);
           const stateVal = normalizeBeaconState(b.state, b.district, coords);
           return {
             id: b.id || `SOS-${Math.random().toString(36).substring(2, 7)}`,
             anonymousAlias: b.caller_name || b.anonymousAlias || `Citizen #${b.id?.substring(0, 6)}`,
-            phoneMasked: b.caller_phone_masked || b.phoneMasked || 'CONFIDENTIAL',
+            phoneMasked: b.caller_phone_masked || b.caller_phone || b.phoneMasked || 'CONFIDENTIAL',
+            rawPhone: b.caller_phone,
             timestamp: b.created_at || b.timestamp || new Date().toISOString(),
             emergencyType: (b.emergency_type || b.emergencyType || 'general') as any,
             emergencyTitle: b.short_message || b.emergencyTitle || 'Emergency Distress Signal',
-            locationName: b.address || b.locationName || 'Live GPS Coordinates',
-            district: b.district || 'Visakhapatnam',
+            locationName: b.address || b.locationName || (b.district ? `${b.district}, ${stateVal}` : 'Live GPS Coordinates'),
+            district: b.district || '',
             state: stateVal,
             coordinates: coords,
             gpsAccuracyMeters: b.accuracy_meters || b.gpsAccuracyMeters || 10.0,
@@ -301,7 +317,7 @@ export class SOSService {
             timeline: b.timeline || [
               {
                 timestamp: b.created_at ? new Date(b.created_at).toLocaleTimeString() : new Date().toLocaleTimeString(),
-                actor: 'Central Emergency Dispatch Core',
+                actor: b.caller_name || 'Central Emergency Dispatch Core',
                 action: `Distress Signal Registered (${b.status || 'PENDING'})`,
                 notes: b.short_message || 'Beacon active in central PostGIS spatial index.',
               }
@@ -310,27 +326,16 @@ export class SOSService {
           };
         });
 
-        // Merge live beacons with state victim beacons
-        const merged: SOSBeacon[] = [...STATE_VICTIM_BEACONS];
-        for (const lb of liveBeacons) {
-          if (!merged.some(m => m.id === lb.id)) {
-            merged.unshift(lb);
-          }
-        }
-
-        this.beacons = merged;
+        this.beacons = liveBeacons;
         this.isInitialized = true;
         this.saveToStorage();
         this.notifyListeners();
         return [...this.beacons];
       }
     } catch (e) {
-      console.warn('[SOSService] Failed to fetch live SOS from backend API, using cached data:', e);
+      console.warn('[SOSService] Failed to fetch live SOS from backend API:', e);
     }
 
-    if (this.beacons.length === 0) {
-      this.beacons = [...STATE_VICTIM_BEACONS];
-    }
     this.isInitialized = true;
     return [...this.beacons];
   }
@@ -455,7 +460,7 @@ export class SOSService {
           timeline: [
             {
               timestamp: new Date().toLocaleTimeString(),
-              actor: 'Central Emergency Dispatch Core',
+              actor: res.caller_name || 'Citizen in Distress',
               action: 'Distress Beacon Initialized',
               notes: 'Distress registered in central PostGIS database.',
             }
@@ -505,7 +510,7 @@ export class SOSService {
   }
 
   public static clearAllBeacons(): void {
-    this.beacons = [...STATE_VICTIM_BEACONS];
+    this.beacons = [];
     this.saveToStorage();
     this.notifyListeners();
   }

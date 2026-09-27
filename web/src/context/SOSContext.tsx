@@ -117,23 +117,31 @@ export const SOSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     // Listen to real-time events to trigger notifications
-    const unsubRealtime = RealtimeService.on('SOS_DISPATCHED', (evt: RealtimeEvent) => {
+    const handleLiveSosNotification = (evt: RealtimeEvent) => {
       const data = evt.data || {};
-      if (data.eventType === 'SOS_CREATED' && data.beacon) {
-        addNotification({
-          severity: 'critical',
-          title: `🚨 SOS Distress Signal: ${data.beacon.id}`,
-          message: `${data.beacon.emergencyTitle} (${data.beacon.district || 'India Sector'}) — ${data.beacon.personsCount || 1} person(s).`,
-          source: 'Aegis Alert Distress Sentinel',
-          location: `${data.beacon.locationName || data.beacon.district}`,
-          linkTab: 'sos',
-        });
-      }
-    });
+      const beacon = data.beacon || data;
+      const caller = beacon.caller_name || beacon.anonymousAlias || beacon.victimName || 'Citizen in Distress';
+      const title = beacon.short_message || beacon.emergencyTitle || 'Emergency SOS Distress Signal';
+      const loc = beacon.address || beacon.locationName || beacon.district || (beacon.state ? `${beacon.state} Sector` : 'Live Location');
+      const count = beacon.casualties_count || beacon.personsCount || 1;
+
+      addNotification({
+        severity: 'critical',
+        title: `🚨 Live SOS Distress: ${caller}`,
+        message: `${title} (${loc}) • ${count} person(s) in immediate need.`,
+        source: 'Aegis Sentinel Real-Time Mesh',
+        location: loc,
+        linkTab: 'sos',
+      });
+    };
+
+    const unsubRealtime1 = RealtimeService.on('SOS_CREATED', handleLiveSosNotification);
+    const unsubRealtime2 = RealtimeService.on('SOS_DISPATCHED', handleLiveSosNotification);
 
     return () => {
       unsubscribe();
-      unsubRealtime();
+      unsubRealtime1();
+      unsubRealtime2();
     };
   }, [selectedBeacon, addNotification]);
 

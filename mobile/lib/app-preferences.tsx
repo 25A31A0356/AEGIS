@@ -14,6 +14,8 @@ type PreferencesValue = {
   setLiveLocationEnabled: (enabled: boolean) => void;
   isNearbyResponderEnabled: boolean;
   setNearbyResponderEnabled: (enabled: boolean) => void;
+  demoMode: boolean;
+  setDemoMode: (enabled: boolean) => void;
   t: (key: string) => string;
   dict: TranslationDictionary;
 };
@@ -25,6 +27,7 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
   const [notificationsEnabled, setNotificationsState] = useState<boolean>(true);
   const [liveLocationEnabled, setLiveLocationState] = useState<boolean>(true);
   const [isNearbyResponderEnabled, setIsNearbyResponderEnabledState] = useState<boolean>(true);
+  const [demoMode, setDemoModeState] = useState<boolean>(false);
 
   useEffect(() => {
     AsyncStorage.getItem("agies-language").then((saved) => {
@@ -40,6 +43,11 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
     AsyncStorage.getItem("agies-live-location-enabled").then((saved) => {
       if (saved !== null) {
         setLiveLocationState(saved === "true");
+      }
+    });
+    AsyncStorage.getItem("aegis-demo-mode-enabled").then((saved) => {
+      if (saved !== null) {
+        setDemoModeState(saved === "true");
       }
     });
     AsyncStorage.getItem("aegis-nearby-responder-enabled").then((saved) => {
@@ -91,6 +99,11 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
     [syncBackend]
   );
 
+  const setDemoMode = useCallback((enabled: boolean) => {
+    setDemoModeState(enabled);
+    void AsyncStorage.setItem("aegis-demo-mode-enabled", String(enabled));
+  }, []);
+
   const setNearbyResponderEnabled = useCallback(
     (enabled: boolean) => {
       setIsNearbyResponderEnabledState(enabled);
@@ -114,6 +127,8 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
       setLiveLocationEnabled,
       isNearbyResponderEnabled,
       setNearbyResponderEnabled,
+      demoMode,
+      setDemoMode,
       dict: currentDict,
       t: (key: string) => {
         const val = currentRecord[key];
@@ -128,6 +143,8 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
     notificationsEnabled,
     liveLocationEnabled,
     isNearbyResponderEnabled,
+    demoMode,
+    setDemoMode,
     setLanguage,
     setNotificationsEnabled,
     setLiveLocationEnabled,

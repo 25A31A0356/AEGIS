@@ -55,6 +55,7 @@ class SOSCreateRequest(BaseModel):
     requester_user_id: Optional[str] = Field(default=None)
     idempotency_key: Optional[str] = Field(default=None, description="Offline idempotency token")
     emergency_contacts: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
+    demo_mode: Optional[bool] = Field(default=False, description="Emergency Settings Demo Mode toggle")
 
 
 class SafeCreateRequest(BaseModel):
@@ -72,6 +73,7 @@ class SafeCreateRequest(BaseModel):
     user_id: Optional[str] = Field(default=None)
     idempotency_key: Optional[str] = Field(default=None)
     emergency_contacts: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
+    demo_mode: Optional[bool] = Field(default=False, description="Emergency Settings Demo Mode toggle")
 
 
 class SafeResponseSchema(BaseModel):
@@ -113,6 +115,7 @@ class OfflineSOSSyncItem(BaseModel):
     medical_notes: Optional[str] = ""
     recorded_at_client: Optional[str] = None
     emergency_contacts: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
+    demo_mode: Optional[bool] = Field(default=False, description="Emergency Settings Demo Mode toggle")
 
 
 class OfflineSafeSyncItem(BaseModel):
@@ -127,6 +130,7 @@ class OfflineSafeSyncItem(BaseModel):
     accuracy_meters: Optional[float] = 10.0
     recorded_at_client: Optional[str] = None
     emergency_contacts: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
+    demo_mode: Optional[bool] = Field(default=False, description="Emergency Settings Demo Mode toggle")
 
 
 class OfflineSyncBatchRequest(BaseModel):
@@ -231,6 +235,10 @@ class SOSResponseSchema(BaseModel):
     battery_percent: Optional[int]
     medical_notes: Optional[str]
     casualties_count: int
+    demo_mode: bool = False
+    demo_mode_snapshot: bool = False
+    police_station_name: Optional[str] = None
+    police_notification_status: Optional[str] = "NOT_APPLICABLE"
     
     # Responder Assignment & Navigation
     accepted_by: Optional[str]
@@ -539,6 +547,10 @@ def _build_sos_response(
         battery_percent=sos.battery_percent,
         medical_notes=notes,
         casualties_count=sos.casualties_count,
+        demo_mode=bool(getattr(sos, 'demo_mode', False)),
+        demo_mode_snapshot=bool(getattr(sos, 'demo_mode_snapshot', False)),
+        police_station_name=getattr(sos, 'police_station_name', None),
+        police_notification_status=getattr(sos, 'police_notification_status', 'NOT_APPLICABLE'),
         accepted_by=sos.accepted_by,
         accepted_at=sos.accepted_at.isoformat() if sos.accepted_at else None,
         resolved_at=sos.resolved_at.isoformat() if sos.resolved_at else None,
@@ -642,6 +654,35 @@ async def create_sos_incident(
 
 
     # 4. Create SOS entity
+    is_demo = bool(payload.demo_mode)
+    p_name = "SKIPPED (DEMO MODE ON)" if is_demo else "Nearest Police Station / 112 Control"
+    p_phone = "DEMO_MODE_SUPPRESSED" if is_demo else "112"
+    p_status = "SKIPPED_DEMO_MODE" if is_demo else "SENT"
+
+    # Find nearest police facility if in Production Mode
+    if not is_demo:
+        try:
+            from backend.app.database.models import EmergencyFacility
+            fac_q = select(EmergencyFacility).where(
+                EmergencyFacility.facility_type == "POLICE_STATION",
+                EmergencyFacility.operational_status == "OPERATIONAL"
+            )
+            fac_res = await db.execute(fac_q)
+            police_facs = fac_res.scalars().all()
+            if police_facs:
+                def dist_fn(f):
+                    import math
+                    dlat = math.radians(f.latitude - payload.latitude)
+                    dlon = math.radians(f.longitude - payload.longitude)
+                    a = math.sin(dlat/2)**2 + math.cos(math.radians(payload.latitude))*math.cos(math.radians(f.latitude))*math.sin(dlon/2)**2
+                    return 6371.0 * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+                nearest_fac = min(police_facs, key=dist_fn)
+                p_name = nearest_fac.name
+                p_phone = nearest_fac.contact_phone or "112"
+        except Exception as e:
+            p_name = "National Emergency Police Control (112)"
+            p_phone = "112"
+
     sos = SOSSignal(
         device_id=payload.device_id,
         user_id=user_id,
@@ -668,6 +709,11 @@ async def create_sos_incident(
         idempotency_key=payload.idempotency_key,
         sync_status="SYNCED",
         raw_payload=payload.model_dump(),
+        demo_mode=is_demo,
+        demo_mode_snapshot=is_demo,
+        police_station_name=p_name,
+        police_station_phone=p_phone,
+        police_notification_status=p_status,
         expires_at=expires,
         created_at=now,
         updated_at=now
@@ -734,6 +780,9 @@ async def create_sos_incident(
 
     if contacts:
         await NotificationService.notify_emergency_contacts(db, sos, contacts)
+
+    # 6b. Dispatch Automatic Police Notification if Demo Mode is OFF
+    await NotificationService.notify_police_station(db, sos, police_station_name=sos.police_station_name, police_station_phone=sos.police_station_phone)
 
     # 7. Discover nearby responders (10km initial, expanding up to 20km)
     candidates = await SOSMatchingEngine.find_eligible_responders(db, sos)

@@ -51,31 +51,25 @@ export const SOSPage: React.FC<SOSPageProps> = ({ preSelectedSOSId }) => {
       ? [selectedLocation.coordinates[0], selectedLocation.coordinates[1]]
       : [17.6868, 83.2185];
 
-  // Merge state victim beacons with real-time user-triggered beacons, normalizing all state names
+  // Exclusively render genuine live-triggered SOS beacons from mobile app / backend
   const allVictimBeacons: StateVictimProfile[] = useMemo(() => {
-    const list = [...STATE_VICTIM_BEACONS];
-    beacons.forEach((b) => {
-      const exists = list.some((item) => item.id === b.id);
+    return beacons.map((b) => {
       const normalizedState = normalizeBeaconState(b.state, b.district, b.coordinates);
-
-      if (!exists) {
-        list.unshift({
-          ...b,
-          state: normalizedState,
-          victimName: b.anonymousAlias?.replace(/Beacon\s*#?[A-Z0-9-]+\s*\(/i, '').replace(/\)/g, '') || 'Citizen in Distress',
-          familyContactName: 'Family Guardian',
-          familyContactPhone: '+91 94401 87654',
-          familyRelationship: 'Family',
-          nearbyPoliceStationName: `${b.district || 'Local'} Police Station (Sector Control)`,
-          nearbyPoliceStationPhone: '+91 891 256 3322',
-          hometownPoliceStationName: `${b.district || 'Local'} Emergency Desk`,
-          hometownPoliceStationPhone: '+91 891 256 1100',
-          signalStatus: '4G LTE (Good)',
-          elevationMeters: 18,
-        });
-      }
+      return {
+        ...b,
+        state: normalizedState,
+        victimName: (b as any).victimName || (b.anonymousAlias ? b.anonymousAlias.replace(/Beacon\s*#?[A-Z0-9-]+\s*\(/i, '').replace(/\)/g, '') : 'Citizen in Distress'),
+        familyContactName: (b as any).familyContactName || 'Family Guardian',
+        familyContactPhone: (b as any).familyContactPhone || (b as any).rawPhone || b.phoneMasked || '+91 94401 87654',
+        familyRelationship: (b as any).familyRelationship || 'Family',
+        nearbyPoliceStationName: (b as any).nearbyPoliceStationName || `${b.district || 'Local'} Police Station (Sector Control)`,
+        nearbyPoliceStationPhone: (b as any).nearbyPoliceStationPhone || '112',
+        hometownPoliceStationName: (b as any).hometownPoliceStationName || `${b.district || 'Local'} Emergency Desk`,
+        hometownPoliceStationPhone: (b as any).hometownPoliceStationPhone || '100',
+        signalStatus: (b as any).signalStatus || '4G LTE (Active)',
+        elevationMeters: (b as any).elevationMeters || 18,
+      };
     });
-    return list;
   }, [beacons]);
 
   // Clean, sorted list of individual states (excluding generic "all" or "india")
@@ -351,64 +345,80 @@ export const SOSPage: React.FC<SOSPageProps> = ({ preSelectedSOSId }) => {
             </div>
 
             <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
-              {activeBeacons.map((b) => (
-                <div
-                  key={b.id}
-                  className="p-4 rounded-2xl border border-slate-200 dark:border-[#27272a] bg-slate-50 dark:bg-[#18181b] hover:border-red-400 transition-all space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30">
-                        {b.triageStatus}
-                      </span>
-                      <h3 className="text-xs font-bold text-slate-900 dark:text-white font-mono">
-                        {b.victimName} ({b.id})
-                      </h3>
-                    </div>
-                    <span className="text-xs text-slate-500 dark:text-[#a1a1aa] font-mono font-bold">
-                      {b.state} &bull; {b.district}
-                    </span>
+              {activeBeacons.length === 0 ? (
+                <div className="py-12 px-4 text-center rounded-2xl border border-dashed border-slate-200 dark:border-[#27272a] bg-slate-50/50 dark:bg-[#18181b]/50 space-y-3">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
-
-                  <p className="text-xs text-slate-600 dark:text-[#a1a1aa] leading-relaxed">
-                    {b.emergencyTitle}
-                  </p>
-
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-[#27272a]">
-                    <button
-                      onClick={() => {
-                        setSelectedVictim(b);
-                        setIsModalOpen(true);
-                      }}
-                      className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <span>View Victim Profile</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => updateBeaconTriage(b.id, 'ACCEPTED')}
-                        className="px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-black text-xs font-semibold cursor-pointer"
-                      >
-                        {dict.acknowledge || 'Acknowledge'}
-                      </button>
-                      <button
-                        onClick={() => updateBeaconTriage(b.id, 'RESPONDER_EN_ROUTE')}
-                        className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold cursor-pointer"
-                      >
-                        {dict.dispatchNdrf || 'Dispatch Aid'}
-                      </button>
-                      <button
-                        onClick={() => updateBeaconTriage(b.id, 'RESOLVED')}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold cursor-pointer"
-                      >
-                        {dict.resolve || 'Resolve'}
-                      </button>
-                    </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Emergency Network Clear • 24/7 Sentinel Monitoring
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-[#a1a1aa] max-w-sm mx-auto">
+                      No active emergency distress signals at this moment. When a citizen triggers SOS from the Aegis Mobile App, it will immediately alert and populate here.
+                    </p>
                   </div>
                 </div>
-              ))}
+              ) : (
+                activeBeacons.map((b) => (
+                  <div
+                    key={b.id}
+                    className="p-4 rounded-2xl border border-slate-200 dark:border-[#27272a] bg-slate-50 dark:bg-[#18181b] hover:border-red-400 transition-all space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30">
+                          {b.triageStatus}
+                        </span>
+                        <h3 className="text-xs font-bold text-slate-900 dark:text-white font-mono">
+                          {b.victimName} ({b.id})
+                        </h3>
+                      </div>
+                      <span className="text-xs text-slate-500 dark:text-[#a1a1aa] font-mono font-bold">
+                        {b.state} &bull; {b.district}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 dark:text-[#a1a1aa] leading-relaxed">
+                      {b.emergencyTitle}
+                    </p>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-[#27272a]">
+                      <button
+                        onClick={() => {
+                          setSelectedVictim(b);
+                          setIsModalOpen(true);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <span>View Victim Profile</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateBeaconTriage(b.id, 'ACCEPTED')}
+                          className="px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-black text-xs font-semibold cursor-pointer"
+                        >
+                          {dict.acknowledge || 'Acknowledge'}
+                        </button>
+                        <button
+                          onClick={() => updateBeaconTriage(b.id, 'RESPONDER_EN_ROUTE')}
+                          className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold cursor-pointer"
+                        >
+                          {dict.dispatchNdrf || 'Dispatch Aid'}
+                        </button>
+                        <button
+                          onClick={() => updateBeaconTriage(b.id, 'RESOLVED')}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold cursor-pointer"
+                        >
+                          {dict.resolve || 'Resolve'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

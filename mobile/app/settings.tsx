@@ -38,6 +38,8 @@ export default function SettingsScreen() {
     setLiveLocationEnabled,
     isNearbyResponderEnabled,
     setNearbyResponderEnabled,
+    demoMode,
+    setDemoMode,
     t,
     dict,
   } = useAppPreferences();

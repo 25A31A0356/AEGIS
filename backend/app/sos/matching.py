@@ -236,17 +236,13 @@ class SOSMatchingEngine:
             else:
                 tier_2_candidates.append(candidate_data)
 
-        # Deterministic Ranking: Sort primarily by composite score descending, then distance ascending
-        tier_1_candidates.sort(key=lambda x: (-x["score"], x["distance_km"]))
-        tier_2_candidates.sort(key=lambda x: (-x["score"], x["distance_km"]))
+        # Deterministic Ranking: Pool all eligible responders across the entire 20 km SOS Network
+        all_eligible = tier_1_candidates + tier_2_candidates
+        all_eligible.sort(key=lambda x: (-x["score"], x["distance_km"]))
 
-        selected_candidates: List[Dict[str, Any]] = []
-        if tier_1_candidates:
-            selected_candidates = tier_1_candidates[:limit]
-            logger.info(f"SOS {sos.id} matched {len(selected_candidates)} deterministic responders within {r_init} km (Top score: {selected_candidates[0]['score']})")
-        elif tier_2_candidates:
-            selected_candidates = tier_2_candidates[:limit]
-            logger.info(f"SOS {sos.id} expanded search to {r_max} km and found {len(selected_candidates)} responders (Top score: {selected_candidates[0]['score']})")
+        selected_candidates: List[Dict[str, Any]] = all_eligible[:limit]
+        if selected_candidates:
+            logger.info(f"SOS {sos.id} matched {len(selected_candidates)} deterministic responders within 20 km network (Top score: {selected_candidates[0]['score']})")
         else:
             logger.warning(f"SOS {sos.id} found 0 nearby eligible responders within {r_max} km")
 

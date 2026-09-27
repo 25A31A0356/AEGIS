@@ -26,6 +26,64 @@ class NotificationService:
     push_adapter: BasePushAdapter = BasePushAdapter()
 
     @classmethod
+    async def notify_police_station(
+        cls,
+        db: AsyncSession,
+        sos: SOSSignal,
+        police_station_id: Optional[str] = None,
+        police_station_name: Optional[str] = None,
+        police_station_phone: Optional[str] = None
+    ) -> Optional[SOSNotification]:
+        """
+        Alerts nearest verified police station automatically when Demo Mode is OFF.
+        Strictly suppressed when Demo Mode is ON.
+        """
+        if getattr(sos, "demo_mode", False):
+            logger.info(f"[Demo Mode Active] Police notification suppressed for SOS {sos.id}")
+            sos.police_notification_status = "SKIPPED_DEMO_MODE"
+            sos.police_station_name = "SKIPPED (DEMO MODE ON)"
+            await db.commit()
+            return None
+
+        station_name = police_station_name or sos.police_station_name or "Nearest Police Station / Emergency Control"
+        station_phone = police_station_phone or sos.police_station_phone or "112"
+        
+        loc_desc = sos.address or (f"{sos.district}, {sos.state}" if sos.district else None) or f"{sos.latitude:.4f}, {sos.longitude:.4f}"
+        alert_msg = f"[OFFICIAL POLICE DISPATCH] High-Priority Emergency Distress: {sos.emergency_type.upper()}. Caller: {sos.caller_name}. GPS: {loc_desc}. Open AEGIS Emergency Command Network."
+
+        details = {
+            "police_station_id": police_station_id,
+            "police_station_name": station_name,
+            "police_station_phone": station_phone,
+            "emergency_type": sos.emergency_type,
+            "severity": sos.severity,
+            "latitude": sos.latitude,
+            "longitude": sos.longitude,
+            "address": sos.address or sos.city or "Local Jurisdiction",
+            "message": alert_msg,
+            "delivery_channel": "AUTOMATIC_POLICE_SMS",
+            "delivery_timestamp": utc_now().isoformat()
+        }
+
+        notification = SOSNotification(
+            sos_id=sos.id,
+            recipient_type="POLICE_STATION",
+            recipient_id=station_phone,
+            channel="SMS",
+            status="SENT",
+            details=details,
+            sent_at=utc_now()
+        )
+        db.add(notification)
+        sos.police_station_id = police_station_id
+        sos.police_station_name = station_name
+        sos.police_station_phone = station_phone
+        sos.police_notification_status = "SENT"
+        await db.commit()
+        logger.info(f"Dispatched Automated Emergency SMS to Police Station '{station_name}' ({station_phone}) for SOS {sos.id}")
+        return notification
+
+    @classmethod
     async def notify_emergency_contacts(
         cls,
         db: AsyncSession,
@@ -202,15 +260,32 @@ class NotificationService:
         - Channel `sos:{sos_id}`: Incident channel for assigned participants
         - Direct user socket for requester and assigned responder
         """
+        phone_masked = (
+            (sos.caller_phone[:6] + " •••••")
+            if (sos.caller_phone and len(sos.caller_phone) >= 6)
+            else (sos.caller_phone or "CONFIDENTIAL")
+        )
         base_data = {
             "id": sos.id,
             "sos_id": sos.id,
             "status": sos.status,
             "emergency_type": sos.emergency_type,
             "severity": sos.severity,
-            "city": sos.city,
-            "district": sos.district,
-            "state": sos.state,
+            "caller_name": sos.caller_name or "Citizen in Distress",
+            "caller_phone_masked": phone_masked,
+            "caller_phone": phone_masked,
+            "short_message": sos.short_message or "Emergency SOS assistance requested",
+            "emergency_title": sos.short_message or "Emergency SOS Distress Signal",
+            "latitude": sos.latitude,
+            "longitude": sos.longitude,
+            "accuracy_meters": sos.accuracy_meters or 10.0,
+            "address": sos.address or (f"{sos.district}, {sos.state}" if sos.district else "Live GPS Location"),
+            "city": sos.city or "",
+            "district": sos.district or "",
+            "state": sos.state or "India",
+            "battery_percent": sos.battery_percent if sos.battery_percent is not None else 100,
+            "casualties_count": sos.casualties_count or 1,
+            "medical_notes": sos.medical_notes or "",
             "created_at": sos.created_at.isoformat() if sos.created_at else "",
             "updated_at": sos.updated_at.isoformat() if sos.updated_at else "",
         }

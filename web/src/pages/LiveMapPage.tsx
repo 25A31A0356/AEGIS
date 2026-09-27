@@ -50,31 +50,25 @@ export const LiveMapPage: React.FC = () => {
       ? [selectedLocation.coordinates[0], selectedLocation.coordinates[1]]
       : [17.6868, 83.2185];
 
-  // Merge context beacons with state victim beacons
+  // Exclusively render genuine live-triggered SOS beacons from mobile app / backend
   const allVictimBeacons: StateVictimProfile[] = useMemo(() => {
-    const list = [...STATE_VICTIM_BEACONS];
-    beacons.forEach((b) => {
-      const exists = list.some((item) => item.id === b.id);
+    return beacons.map((b) => {
       const normalizedState = normalizeBeaconState(b.state, b.district, b.coordinates);
-
-      if (!exists) {
-        list.unshift({
-          ...b,
-          victimName: (b as any).victimName || b.anonymousAlias || 'Citizen in Distress',
-          familyContactName: (b as any).familyContactName || 'Family Member',
-          familyContactPhone: (b as any).familyContactPhone || b.phoneMasked || '+91 91100 00000',
-          familyRelationship: (b as any).familyRelationship || 'Relative',
-          nearbyPoliceStationName: (b as any).nearbyPoliceStationName || `${b.district || 'Local'} Police Station Control Desk`,
-          nearbyPoliceStationPhone: (b as any).nearbyPoliceStationPhone || '112',
-          hometownPoliceStationName: (b as any).hometownPoliceStationName || 'District Police Headquarters',
-          hometownPoliceStationPhone: (b as any).hometownPoliceStationPhone || '100',
-          signalStatus: (b as any).signalStatus || '4G Active (Good)',
-          elevationMeters: (b as any).elevationMeters || 22,
-          state: normalizedState,
-        });
-      }
+      return {
+        ...b,
+        victimName: (b as any).victimName || b.anonymousAlias || 'Citizen in Distress',
+        familyContactName: (b as any).familyContactName || 'Family Member',
+        familyContactPhone: (b as any).familyContactPhone || (b as any).rawPhone || b.phoneMasked || '+91 91100 00000',
+        familyRelationship: (b as any).familyRelationship || 'Relative',
+        nearbyPoliceStationName: (b as any).nearbyPoliceStationName || `${b.district || 'Local'} Police Station Control Desk`,
+        nearbyPoliceStationPhone: (b as any).nearbyPoliceStationPhone || '112',
+        hometownPoliceStationName: (b as any).hometownPoliceStationName || 'District Police Headquarters',
+        hometownPoliceStationPhone: (b as any).hometownPoliceStationPhone || '100',
+        signalStatus: (b as any).signalStatus || '4G Active (Good)',
+        elevationMeters: (b as any).elevationMeters || 22,
+        state: normalizedState,
+      };
     });
-    return list;
   }, [beacons]);
 
   // Filter beacons by state and severity level

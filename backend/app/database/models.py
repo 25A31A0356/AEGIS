@@ -272,6 +272,14 @@ class SOSSignal(Base):
     sync_status: Mapped[str] = mapped_column(String(30), default="SYNCED", nullable=False, index=True)  # SYNCED, SYNC_PENDING
     raw_payload: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
 
+    # Demo Mode & Police Notification Tracking
+    demo_mode: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
+    demo_mode_snapshot: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    police_station_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    police_station_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    police_station_phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    police_notification_status: Mapped[str] = mapped_column(String(50), default="NOT_APPLICABLE", nullable=False)  # SKIPPED_DEMO_MODE, SENT, FAILED, NOT_APPLICABLE
+
     # Assignment & Lifecycle
     accepted_by: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
     accepted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

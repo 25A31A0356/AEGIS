@@ -320,6 +320,9 @@ export interface CreateSosPayload {
   searchRadiusKm?: number;
   familyContacts?: { name: string; phone: string; relationship?: string }[];
   idempotencyKey?: string;
+  demoMode?: boolean;
+  policeStationName?: string;
+  policeNotificationStatus?: string;
 }
 
 export interface SosResponder {

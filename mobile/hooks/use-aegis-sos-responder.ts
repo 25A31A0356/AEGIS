@@ -14,7 +14,7 @@ import { getResponsibleLocation } from "@/lib/services/aegis-location";
 import { getLocalSosIncident } from "@/lib/services/aegis-cache";
 
 export function useAegisSosResponder() {
-  const { isNearbyResponderEnabled } = useAppPreferences();
+  const { isNearbyResponderEnabled, demoMode } = useAppPreferences();
   const { profile } = useEmergencyProfile();
 
   const [activeIncident, setActiveIncident] = useState<SosIncident | null>(null);
@@ -232,14 +232,14 @@ export function useAegisSosResponder() {
           void AegisApiService.updateSosLocation(activeIncident.id, "requester", {
             latitude: loc.latitude,
             longitude: loc.longitude,
-            accuracy: loc.accuracy,
+            accuracy: (loc as any).accuracyMeters ?? (loc as any).accuracy ?? 10.0,
             address: loc.label,
           });
         } else if (assignedIncident) {
           void AegisApiService.updateSosLocation(assignedIncident.id, "responder", {
             latitude: loc.latitude,
             longitude: loc.longitude,
-            accuracy: loc.accuracy,
+            accuracy: (loc as any).accuracyMeters ?? (loc as any).accuracy ?? 10.0,
             address: loc.label,
           });
         }
@@ -268,12 +268,13 @@ export function useAegisSosResponder() {
         medicalNotes: profile.medicalNotes,
         latitude: loc.latitude,
         longitude: loc.longitude,
-        accuracy: loc.accuracy,
+        accuracy: (loc as any).accuracyMeters ?? (loc as any).accuracy ?? 10.0,
         address: loc.label,
         area: loc.label ? loc.label.split(",")[0] : "Live Sector",
         familyContacts: options?.familyContacts,
         searchRadiusKm: 10,
         requesterName: profile.fullName || "Aegis User",
+        demoMode: Boolean(demoMode),
       };
 
       const res = await AegisApiService.createSosIncident(payload);
@@ -299,7 +300,7 @@ export function useAegisSosResponder() {
         badge: "Verified Community Responder",
         latitude: loc.latitude,
         longitude: loc.longitude,
-        accuracy: loc.accuracy,
+        accuracy: (loc as any).accuracyMeters ?? (loc as any).accuracy ?? 10.0,
         address: loc.label,
       });
 
@@ -403,7 +404,7 @@ export function useAegisSosResponder() {
       userName: profile.fullName || "Aegis User",
       latitude: loc.latitude,
       longitude: loc.longitude,
-      accuracy: loc.accuracy,
+      accuracy: (loc as any).accuracyMeters ?? (loc as any).accuracy ?? 10.0,
       address: loc.label,
       state: loc.state,
       district: loc.district,
