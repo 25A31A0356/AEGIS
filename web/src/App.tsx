@@ -1,3 +1,5 @@
+import { extractRelayPayloadFromUrl, OfflineRelayData } from './services/offlineRelayService';
+import { EmergencyRelayModal } from './components/sos/EmergencyRelayModal';
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataProviderContext';
@@ -30,6 +32,14 @@ function AppContent() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedHazardId, setSelectedHazardId] = useState<string | undefined>(undefined);
   const [selectedSOSId, setSelectedSOSId] = useState<string | undefined>(undefined);
+  const [incomingRelayData, setIncomingRelayData] = useState<OfflineRelayData | null>(null);
+
+  React.useEffect(() => {
+    const relay = extractRelayPayloadFromUrl();
+    if (relay) {
+      setIncomingRelayData(relay);
+    }
+  }, []);
 
   const { isAuthenticated, isAuthModalOpen, setIsAuthModalOpen } = useAuth();
 
@@ -50,6 +60,18 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans transition-colors duration-200 bg-white dark:bg-black text-slate-900 dark:text-white selection:bg-slate-900 selection:text-white dark:selection:bg-white dark:selection:text-black">
+      {/* Offline SOS Family Emergency Relay Modal (Pops up when family member clicks SMS link) */}
+      {incomingRelayData && (
+        <EmergencyRelayModal
+          relayData={incomingRelayData}
+          onClose={() => setIncomingRelayData(null)}
+          onPublished={() => {
+            setActiveTab('sos');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+      )}
+
       {/* Top Application Header */}
       <Header
         activeTab={activeTab}

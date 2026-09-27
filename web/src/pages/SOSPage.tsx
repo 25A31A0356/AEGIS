@@ -241,6 +241,19 @@ export const SOSPage: React.FC<SOSPageProps> = ({ preSelectedSOSId }) => {
             : 'h-[560px] rounded-3xl border border-slate-200 dark:border-[#27272a]'
         } overflow-hidden shadow-lg transition-all`}
       >
+        {/* Floating Admin SOS Control Overlay on Map */}
+        <div className="absolute top-4 right-4 z-[999] flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsAdminPurgeOpen(true)}
+            className="px-3.5 py-2 rounded-2xl bg-black/85 backdrop-blur-md border border-red-500/50 hover:border-red-500 text-red-400 hover:text-white hover:bg-red-600 transition-all shadow-xl flex items-center gap-2 text-xs font-black cursor-pointer group"
+            title="Administrative SOS Control: Enter Admin ID & Pass to Wipe SOS from App and Web"
+          >
+            <ShieldAlert className="w-4 h-4 text-red-500 group-hover:text-white transition-colors animate-pulse" />
+            <span>SOS Control (Admin)</span>
+          </button>
+        </div>
+
         <IndiaSafetyMap
           hazards={[]}
           states={[]}

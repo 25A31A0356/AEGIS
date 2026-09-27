@@ -1,3 +1,4 @@
+import { buildOfflineRelaySmsMessage, OfflineRelayData } from '@/lib/services/aegis-offline-relay';
 import React, { useState, useEffect, useRef } from "react";
 import {
   Animated,
@@ -225,9 +226,10 @@ export default function BeaconScreen() {
 
     const sosNote = `${profile.fullName} | Blood: ${profile.bloodGroup} | Med: ${profile.medicalNotes || "None"} | GPS: ${userCoord.address} (${userCoord.latitude.toFixed(4)}, ${userCoord.longitude.toFixed(4)}) | Family Alerted: ${contactsSummary || primaryContact.name}`;
 
+    let isOnlineSuccess = false;
     try {
       // 1. Create Authoritative SOS Incident on Aegis Software Backend
-      await triggerSosIncident({
+      const res = await triggerSosIncident({
         category: "general",
         note: sosNote,
         familyContacts: familyList.map((f) => ({
@@ -237,23 +239,32 @@ export default function BeaconScreen() {
         })),
       });
 
-      // 2. Also register in traditional legacy beacon store for compatibility
-      await AegisApiService.submitSosBeacon({
-        hazard: "Emergency SOS",
-        people: profile.peopleCount || familyList.length || 1,
-        note: sosNote,
-        latitude: userCoord.latitude,
-        longitude: userCoord.longitude,
-      });
+      if (res && res.success && !res.queued) {
+        isOnlineSuccess = true;
+      }
 
-      // 3. Automatically launch native Emergency SMS Dispatch to 112 & Family Contacts
-      sendSmsSos();
+      // 2. Also register in traditional legacy beacon store for compatibility
+      if (isOnlineSuccess) {
+        await AegisApiService.submitSosBeacon({
+          hazard: "Emergency SOS",
+          people: profile.peopleCount || familyList.length || 1,
+          note: sosNote,
+          latitude: userCoord.latitude,
+          longitude: userCoord.longitude,
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn("[Beacon] SOS Online Push Failed (User is in Offline Mode):", e);
+      isOnlineSuccess = false;
+    } finally {
+      // 3. Dispatch SMS:
+      // If ONLINE: Standard direct notification without relay link.
+      // If OFFLINE: Automatic offline SMS containing the victim's exact GPS + Family Emergency Relay Link!
+      sendSmsSos(!isOnlineSuccess);
 
       // Automatic background SMS and police status feedback
       const modeText = demoMode ? "[DEMO MODE ACTIVE] Family SMS dispatched. Police SMS suppressed." : "[PRODUCTION EMERGENCY] Family & Police Stations dispatched.";
       console.log(`[SOS DISPATCH] Authoritative signal dispatched successfully. ${modeText}`);
-    } catch (e) {
-      console.warn("[Beacon] SOS Trigger Error:", e);
     }
   };
 
@@ -328,7 +339,7 @@ export default function BeaconScreen() {
   };
 
   // Quick SMS Dispatch Handlers alerting all configured family contacts
-  const sendSmsSos = (phoneOverride?: string) => {
+  const sendSmsSos = (isOfflineMode: boolean = false, phoneOverride?: string) => {
     const validPhones = phoneOverride 
       ? [phoneOverride.replace(/[^0-9+]/g, "")]
       : familyList
@@ -336,7 +347,29 @@ export default function BeaconScreen() {
           .filter((p): p is string => Boolean(p && p.length >= 7));
 
     if (validPhones.length === 0) return;
-    const body = encodeURIComponent(buildSosMessage());
+
+    let smsText = "";
+    if (isOfflineMode) {
+      // Build offline relay data with victim's exact GPS coordinates
+      const relayData: OfflineRelayData = {
+        caller_name: profile.fullName || "Aegis User",
+        caller_phone: profile.phoneNumber || "",
+        latitude: userCoord.latitude,
+        longitude: userCoord.longitude,
+        accuracy_meters: 10,
+        address: userCoord.address,
+        emergency_type: "Emergency SOS",
+        short_message: "Emergency distress signal triggered while offline",
+        blood_group: profile.bloodGroup,
+        medical_notes: profile.medicalNotes,
+        timestamp: new Date().toISOString(),
+      };
+      smsText = buildOfflineRelaySmsMessage(relayData);
+    } else {
+      smsText = buildSosMessage();
+    }
+
+    const body = encodeURIComponent(smsText);
     const phoneList = validPhones.join(Platform.OS === "ios" ? "&" : ",");
     Linking.openURL(`sms:${phoneList}${Platform.OS === "ios" ? "&" : "?"}body=${body}`);
   };
