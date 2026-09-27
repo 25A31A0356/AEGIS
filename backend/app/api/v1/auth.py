@@ -31,13 +31,13 @@ _OTP_STORE: Dict[str, Dict[str, Any]] = {}
 def send_otp_email_sync(recipient_email: str, otp_code: str, user_name: str = ""):
     """
     Dispatches formatted HTML verification email containing the 6-digit OTP code.
-    Attempts SMTP relay if SMTP_SERVER environment variable is set, otherwise logs securely.
+    Attempts SMTP relay using configured settings.
     """
-    sender_email = os.environ.get("AEGIS_SMTP_FROM", "auth@aegisalert.app")
-    smtp_server = os.environ.get("AEGIS_SMTP_SERVER", "")
-    smtp_port = int(os.environ.get("AEGIS_SMTP_PORT", "587"))
-    smtp_user = os.environ.get("AEGIS_SMTP_USER", "")
-    smtp_pass = os.environ.get("AEGIS_SMTP_PASSWORD", "")
+    sender_email = settings.AEGIS_SMTP_FROM or os.environ.get("AEGIS_SMTP_FROM", "t.s.t.2.0.0.8.bb@gmail.com")
+    smtp_server = settings.AEGIS_SMTP_SERVER or os.environ.get("AEGIS_SMTP_SERVER", "smtp.gmail.com")
+    smtp_port = int(settings.AEGIS_SMTP_PORT or os.environ.get("AEGIS_SMTP_PORT", "587"))
+    smtp_user = settings.AEGIS_SMTP_USER or os.environ.get("AEGIS_SMTP_USER", "t.s.t.2.0.0.8.bb@gmail.com")
+    smtp_pass = settings.AEGIS_SMTP_PASSWORD or os.environ.get("AEGIS_SMTP_PASSWORD", "tnuzmsocdesjwthj")
 
     html_content = f"""<!DOCTYPE html>
 <html>

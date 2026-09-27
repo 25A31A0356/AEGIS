@@ -107,6 +107,13 @@ class Settings(BaseSettings):
     EXPO_ACCESS_TOKEN: Optional[str] = ""
     FCM_SERVER_KEY: Optional[str] = ""
 
+    # Real Email Dispatch (SMTP)
+    AEGIS_SMTP_SERVER: Optional[str] = "smtp.gmail.com"
+    AEGIS_SMTP_PORT: int = 587
+    AEGIS_SMTP_USER: Optional[str] = "t.s.t.2.0.0.8.bb@gmail.com"
+    AEGIS_SMTP_PASSWORD: Optional[str] = "tnuzmsocdesjwthj"
+    AEGIS_SMTP_FROM: Optional[str] = "t.s.t.2.0.0.8.bb@gmail.com"
+
     # Scheduler & Ingestion
     ENABLE_BACKGROUND_SCHEDULER: bool = True
     DEFAULT_INGESTION_INTERVAL_MINUTES: int = 5
