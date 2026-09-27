@@ -14,6 +14,7 @@ export default function MenuScreen() {
   const { profile } = useEmergencyProfile();
 
   const items = [
+    { icon: "shield.lefthalf.filled", route: "/safety-hub", title: dict.safetyHub || "Safety Hub & Disaster SOPs", detail: "NDMA SACHET Do's, Don'ts & 72h Survival Kit" },
     { icon: "person.3.fill", key: "familyContacts", title: dict.familyContacts, detail: dict.trustedSafeContacts },
     { icon: "download.fill", key: "downloads", title: dict.downloads, detail: "Offline survival content" },
     { icon: "map.fill", key: "offlineMaps", title: dict.offlineMaps, detail: "Cached vector maps for no-signal use" },
@@ -56,7 +57,7 @@ export default function MenuScreen() {
           {items.map((item) => (
             <Pressable
               key={item.key}
-              onPress={() => router.push({ pathname: "/utility/[section]", params: { section: item.key } } as any)}
+              onPress={() => (item as any).route ? router.push((item as any).route) : router.push({ pathname: "/utility/[section]", params: { section: (item as any).key } } as any)}
               style={({ pressed }) => [
                 styles.item,
                 { backgroundColor: colors.surface, borderColor: colors.border },
