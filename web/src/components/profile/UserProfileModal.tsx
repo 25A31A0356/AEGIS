@@ -222,7 +222,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                         {t('settings.nameInApp', 'NAME IN APP')}
                       </div>
                       <div className="text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">
-                        {profile.fullName || 'Aarav Sharma'}
+                        {profile.fullName || 'Thotakura Sai Theja'}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5 mt-0.5 flex-wrap">
                         <span className="text-red-600 dark:text-red-400 font-bold font-mono">
@@ -589,7 +589,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                     required
                     value={tempName}
                     onChange={(e) => setTempName(e.target.value)}
-                    placeholder="e.g. Aarav Sharma"
+                    placeholder="e.g. Thotakura Sai Theja"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#1E3347] bg-white dark:bg-[#0E1C2A] text-slate-900 dark:text-slate-100 text-xs font-medium focus:ring-2 focus:ring-[#075B8A] dark:focus:ring-[#18C3D0] focus:border-[#075B8A] outline-none"
                   />
                 </div>

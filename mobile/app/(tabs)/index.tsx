@@ -61,7 +61,7 @@ export default function HomeScreen() {
   }, []);
 
   // Extract user's first name
-  const userName = profile?.fullName?.trim() ? profile.fullName.trim().split(" ")[0] : "Aarav";
+  const userName = profile?.fullName?.trim() ? profile.fullName.trim().split(" ")[0] : "Sai Theja";
 
   // Universal Locality categorization
   const locType = location.localityType || (location.village ? "Village" : (location.isVillageLevel ? "Village" : "District"));

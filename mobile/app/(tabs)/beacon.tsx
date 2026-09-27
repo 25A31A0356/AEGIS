@@ -370,7 +370,7 @@ export default function BeaconScreen() {
       <View style={styles.headerRow}>
         <View>
           <Text style={[styles.greeting, { color: colors.foreground }]}>
-            {t("greeting")} {profile.fullName || "Aarav"}
+            {t("greeting")} {profile.fullName || "Thotakura Sai Theja"}
           </Text>
           <Text style={[styles.subGreeting, { color: colors.muted }]}>
             {currentPage === 0 ? dict.distressBeacon : dict.familyCheckIn}

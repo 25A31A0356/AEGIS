@@ -45,7 +45,7 @@ export default function MenuScreen() {
             )}
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.profileName, { color: colors.foreground }]}>{profile.fullName || "Aarav"}</Text>
+            <Text style={[styles.profileName, { color: colors.foreground }]}>{profile.fullName || "Thotakura Sai Theja"}</Text>
             <Text style={[styles.profileSub, { color: colors.muted }]}>{dict.readyToday}</Text>
           </View>
           <Pressable onPress={() => router.push("/settings")}>

@@ -10,7 +10,7 @@ import { ApiClient } from './apiClient';
 import { RealtimeService, RealtimeEvent } from './realtimeService';
 import { SOSBeacon, SOSTriageStatus } from '../types/sos';
 
-const STORAGE_KEY = 'aegis_user_sos_beacons_v6';
+const STORAGE_KEY = 'aegis_user_sos_beacons_v9';
 
 export function normalizeBeaconState(stateName?: string, district?: string, coords?: [number, number]): string {
   if (stateName && stateName.trim() && stateName.toLowerCase() !== 'india' && stateName.toLowerCase() !== 'all') {

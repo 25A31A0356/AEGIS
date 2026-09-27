@@ -185,29 +185,7 @@ export default function MapsScreen() {
   const nearbySosPlaces: EmergencyPlace[] = useMemo(() => {
     const places: EmergencyPlace[] = [];
 
-        // Live blinking SOS beacon in the local neighborhood (~1.1 km away)
-    const demoLat = userCoord.latitude + 0.008;
-    const demoLng = userCoord.longitude + 0.007;
-    const demoDistKm = calculateDistanceKm(userCoord.latitude, userCoord.longitude, demoLat, demoLng);
-    const demoEtaMin = Math.max(3, Math.round(demoDistKm * 2.5));
-    const locLabel = location.village || location.localityName || location.label || "Local Sector";
-
-    places.push({
-      id: "sos-active-victim-1",
-      name: "Aarav Sharma (Needs Help)",
-      category: "sos",
-      type: "Rapid Inundation • Trapped Near Residence",
-      address: `${locLabel} Main Road • ${demoDistKm} km away`,
-      coordinates: { lat: demoLat, lng: demoLng },
-      elevationMeters: 18,
-      distanceKm: demoDistKm,
-      estimatedMinutes: demoEtaMin,
-      status: respondedSosIds["sos-active-victim-1"] ? "RESPONDER EN ROUTE" : "CRITICAL SOS ACTIVE",
-      badge: respondedSosIds["sos-active-victim-1"] ? "AID DISPATCHED" : "NEEDS HELP",
-      details: "Rapid waterlogging in ground-floor residence. Needs immediate emergency evacuation assistance.",
-    });
-
-    // Also include any other real server SOS beacons within 20km
+    // Exclusively include genuine server SOS beacons within 20km
     rawSosBeacons.forEach((m) => {
       const lat = m.coordinates?.latitude;
       const lng = m.coordinates?.longitude;

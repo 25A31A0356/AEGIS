@@ -161,7 +161,7 @@ export default function SettingsScreen() {
           <View style={{ flex: 1 }}>
             <Text style={[styles.cardLabel, { color: colors.muted }]}>{dict.nameInApp}</Text>
             <Text style={[styles.nameDisplay, { color: colors.foreground }]}>
-              {profile.fullName || "Aarav Sharma"}
+              {profile.fullName || "Thotakura Sai Theja"}
             </Text>
             <Text style={[styles.profileSubDetails, { color: colors.muted }]}>
               {profile.bloodGroup ? `Blood: ${profile.bloodGroup}` : ""}
@@ -395,7 +395,7 @@ export default function SettingsScreen() {
                 <TextInput
                   value={tempName}
                   onChangeText={setTempName}
-                  placeholder="e.g. Aarav Sharma"
+                  placeholder="e.g. Thotakura Sai Theja"
                   placeholderTextColor={colors.muted}
                   style={[styles.modalInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground }]}
                 />

@@ -67,7 +67,7 @@ export const DEFAULT_FAMILY_CONTACTS: FamilyContact[] = [
 ];
 
 export const DEFAULT_EMERGENCY_PROFILE: EmergencyProfile = {
-  fullName: 'Aarav Sharma',
+  fullName: 'Thotakura Sai Theja',
   phoneNumber: '+91 98765 00000',
   bloodGroup: 'O+',
   medicalNotes: 'No known chronic allergies. Fully vaccinated.',

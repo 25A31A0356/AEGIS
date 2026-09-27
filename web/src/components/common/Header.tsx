@@ -90,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
             <span className="text-xs font-bold text-slate-900 dark:text-white hidden md:inline max-w-[110px] truncate">
-              {profile.fullName || user?.name || 'Aarav Sharma'}
+              {profile.fullName || user?.name || 'Thotakura Sai Theja'}
             </span>
           </button>
         </div>
