@@ -24,7 +24,6 @@ backend/static/uploads/incident_*
 
 # Node & Frontend
 node_modules/
-dist/
 .env.local
 .DS_Store
 
@@ -34,3 +33,7 @@ dist/
 build/
 *.dill
 *.stamp
+
+# Keep mobile and web distribution bundles tracked for deployment
+!mobile/dist/**
+!web/dist/**
