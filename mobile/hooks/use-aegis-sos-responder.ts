@@ -28,13 +28,16 @@ export function useAegisSosResponder() {
   const myResponderIdRef = useRef<string>(`resp-${profile.fullName?.replace(/\s+/g, "_") || "volunteer"}`);
   const locationPollTimerRef = useRef<any>(null);
 
-  // Restore active SOS from persistent local cache on mount
+  // Check for non-expired active SOS on mount (only if explicitly initiated by user within 10 minutes)
   useEffect(() => {
     async function restoreLocal() {
       try {
         const local = await getLocalSosIncident();
         if (local && local.status !== "RESOLVED" && local.status !== "CANCELLED") {
-          setActiveIncident(local);
+          const ageMs = Date.now() - new Date(local.createdAt || 0).getTime();
+          if (ageMs < 10 * 60 * 1000) {
+            setActiveIncident(local);
+          }
         }
       } catch (e) {
         console.warn("[useAegisSosResponder] Error restoring local SOS:", e);

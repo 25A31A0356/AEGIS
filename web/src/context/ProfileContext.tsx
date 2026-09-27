@@ -97,6 +97,19 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     } catch (e) {
       console.warn('[ProfileContext] Server sync error:', e);
+      try {
+        const storedUser = localStorage.getItem('aegis_current_user');
+        if (storedUser) {
+          const u = JSON.parse(storedUser);
+          if (u.name) {
+            setProfile((prev) => ({
+              ...prev,
+              fullName: prev.fullName || u.name,
+              phoneNumber: prev.phoneNumber || u.phone || '',
+            }));
+          }
+        }
+      } catch {}
     }
   }, []);
 

@@ -911,7 +911,9 @@ export async function getLocalSosIncidents(): Promise<Record<string, SosIncident
 export async function getLocalSosIncident(): Promise<SosIncident | null> {
   try {
     const map = await getLocalSosIncidents();
-    const incidents = Object.values(map);
+    const incidents = Object.values(map).filter(
+      (inc) => inc.status !== "RESOLVED" && inc.status !== "CANCELLED"
+    );
     if (incidents.length === 0) return null;
 
     incidents.sort(
@@ -919,7 +921,14 @@ export async function getLocalSosIncident(): Promise<SosIncident | null> {
         new Date(b.updatedAt || b.createdAt).getTime() -
         new Date(a.updatedAt || a.createdAt).getTime()
     );
-    return incidents[0] || null;
+    const latest = incidents[0];
+    if (!latest) return null;
+
+    const ageMs = Date.now() - new Date(latest.createdAt || 0).getTime();
+    if (ageMs > 10 * 60 * 1000) {
+      return null;
+    }
+    return latest;
   } catch {
     return null;
   }

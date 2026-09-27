@@ -210,6 +210,21 @@ export function EmergencyProfileProvider({ children }: { children: ReactNode }) 
       }
     } catch (err) {
       console.warn("[Profile] Server profile fetch error:", err);
+      try {
+        const stored = await AsyncStorage.getItem("aegis_current_user");
+        if (stored) {
+          const u = JSON.parse(stored);
+          if (u.name || u.full_name) {
+            setProfile((prev) =>
+              normalizeProfile({
+                ...prev,
+                fullName: prev.fullName || u.name || u.full_name,
+                phoneNumber: prev.phoneNumber || u.phone || "",
+              })
+            );
+          }
+        }
+      } catch {}
     }
   }, []);
 
