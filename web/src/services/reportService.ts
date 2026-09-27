@@ -246,22 +246,13 @@ export class ReportService {
             };
           });
 
-        if (normalized.length > 0) {
-          // Sync with local storage
-          try {
-            if (typeof localStorage !== 'undefined') {
-              const localSaved = this.getAllReports();
-              const merged = [...normalized];
-              for (const loc of localSaved) {
-                if (!merged.some((m) => m.id === loc.id)) {
-                  merged.push(loc);
-                }
-              }
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-            }
-          } catch {}
-          return normalized;
-        }
+        // Always sync with authoritative server state
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+          }
+        } catch {}
+        return normalized;
       }
     } catch (e) {
       console.warn('[ReportService] Error fetching live reports from backend:', e);

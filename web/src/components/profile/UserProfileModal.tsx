@@ -67,10 +67,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image file size should be less than 5MB");
-        return;
-      }
+      // Support any size picture
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
