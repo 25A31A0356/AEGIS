@@ -64,7 +64,7 @@ export default function HomeScreen() {
   const userName = profile?.fullName?.trim() ? profile.fullName.trim().split(" ")[0] : "Sai Theja";
 
   // Universal Locality categorization
-  const locType = location.localityType || (location.village ? "Village" : (location.isVillageLevel ? "Village" : "District"));
+  const locType = location.localityType || (location.village ? "Village" : ((location as any)?.isVillageLevel ? "Village" : "District"));
   const locName = location.localityName || location.village || location.label || "Your Area";
   const cleanVillageName = locName
     .replace(/^🌾\s*/i, "")
@@ -501,7 +501,7 @@ export default function HomeScreen() {
             </View>
 
             <View style={[styles.sensorBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <Text style={[styles.sensorLabel, { color: colors.muted }]}>⏱️ {dict.pressure || "Pressure"}</Text>
+              <Text style={[styles.sensorLabel, { color: colors.muted }]}>⏱️ {((dict as any)?.pressure || 'Pressure') || "Pressure"}</Text>
               <Text style={[styles.sensorVal, { color: colors.foreground }]}>{pressure} <Text style={styles.sensorUnit}>hPa</Text></Text>
             </View>
 

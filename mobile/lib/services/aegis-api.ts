@@ -54,6 +54,7 @@ import {
   recordSafeCheckIn,
   saveLocalSosIncident,
   saveLocalCommunityReport,
+  getLocalCommunityReports,
   getLocalSosIncident,
   getCachedActivities,
   setCachedActivities,
@@ -817,7 +818,7 @@ class AegisApiServiceClass {
         } catch {}
       }
 
-      const mergedList = [...localReports, ...webReports.filter((w) => !localReports.some((l) => l.id === w.id))];
+      const mergedList = [...localReports, ...webReports.filter((w) => !localReports.some((l: any) => l.id === w.id))];
 
       if (mergedList.length > 0) {
         return {
@@ -1196,7 +1197,7 @@ class AegisApiServiceClass {
         message: "✓ SOS Emergency Beacon broadcast active and live.",
         sosId: incident.id,
         incident,
-        displayState: "SOS ACTIVE",
+        displayState: "SERVER RECEIVED",
       };
     } catch (error) {
       console.warn("[AegisApi] Remote API endpoint unreachable; activating direct localized SOS beacon:", error);
@@ -1281,7 +1282,7 @@ class AegisApiServiceClass {
         success: true,
         queued: isActuallyOffline,
         message: isActuallyOffline
-          ? "✓ SOS Incident queued locally. Transmits when connection reconnects."
+          ? "✓ SOS Incident queued locally. Displaying 'OFFLINE — SYNC PENDING'. Transmits on reconnect."
           : "✓ SOS Emergency Beacon broadcast active and live.",
         sosId: idempotencyKey,
         incident: activeLocalIncident,
@@ -1649,9 +1650,9 @@ class AegisApiServiceClass {
     }
 
     const cached = await getCachedData<SasGridResponse>(cacheKey);
-    if (cached) {
+    if (cached && cached.data) {
       return {
-        data: (cached.data || []).filter(isGenuineUserReport),
+        data: cached.data,
         source: `${cached.source} (Offline Cache)`,
         timestamp: new Date(cached.timestamp).toISOString(),
         cached: true,

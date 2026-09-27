@@ -139,14 +139,24 @@ export function useAegisData(): UseAegisDataReturn {
       extra?: Partial<AegisLocationResult>
     ) => {
       const updated: AegisLocationResult = {
+        ...location,
         latitude,
         longitude,
         label,
         source: mode,
         permissionGranted: mode === "gps" ? true : location.permissionGranted,
         isPinned: mode === "custom",
+        accuracyMeters: extra?.accuracyMeters ?? location.accuracyMeters ?? 10.0,
+        accuracyTier: extra?.accuracyTier ?? location.accuracyTier ?? "MEDIUM",
+        timestamp: new Date().toISOString(),
+        provider: mode === "gps" ? "GPS" : "MANUAL",
+        isMockLocation: false,
+        isStale: false,
+        ageSeconds: 0,
+        locationServicesEnabled: true,
+        isPrecisePermission: true,
         ...(extra || {}),
-      };
+      } as AegisLocationResult;
       setLocation(updated);
       await saveLastKnownLocation(updated);
       await loadData(latitude, longitude);

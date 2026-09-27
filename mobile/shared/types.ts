@@ -1,7 +1,10 @@
-/**
- * Unified type exports
- * Import shared types from this single entry point.
- */
+export interface User {
+  id: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  role?: string;
+  createdAt?: string;
+}
 
-export type * from "../drizzle/schema";
-export * from "./_core/errors";
+export type InsertUser = Partial<User>;

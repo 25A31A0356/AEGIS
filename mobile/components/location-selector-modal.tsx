@@ -56,6 +56,7 @@ export const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
   currentLabel,
 }) => {
   const colors = useColors();
+  const router = useRouter();
   const { t, dict } = useAppPreferences();
 
   const [searchQuery, setSearchQuery] = useState("");
