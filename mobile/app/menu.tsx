@@ -56,7 +56,7 @@ export default function MenuScreen() {
         <View style={styles.list}>
           {items.map((item) => (
             <Pressable
-              key={item.key}
+              key={(item as any).route || (item as any).key || item.icon}
               onPress={() => (item as any).route ? router.push((item as any).route) : router.push({ pathname: "/utility/[section]", params: { section: (item as any).key } } as any)}
               style={({ pressed }) => [
                 styles.item,
