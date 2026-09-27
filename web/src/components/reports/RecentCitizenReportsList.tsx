@@ -37,8 +37,14 @@ export const RecentCitizenReportsList: React.FC<RecentCitizenReportsListProps> =
     }).catch((err) => {
       console.warn('[RecentCitizenReportsList] Failed to fetch server reports:', err);
     });
+
+    const unsubscribe = ReportService.onReportsChange((updated) => {
+      if (isMounted) setLocalReports(updated);
+    });
+
     return () => {
       isMounted = false;
+      unsubscribe();
     };
   }, [externalReports]);
 

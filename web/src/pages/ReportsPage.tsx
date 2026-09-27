@@ -29,11 +29,19 @@ export const ReportsPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // Initial fetch
     ReportService.fetchLiveReports().then((list) => {
       if (list && list.length >= 0) {
         setReports(list);
       }
     });
+
+    // Reactive subscription to reports submitted in app or other tabs
+    const unsubscribe = ReportService.onReportsChange((updatedList) => {
+      setReports(updatedList);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

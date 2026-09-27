@@ -313,18 +313,161 @@ export class ReportService {
     }
   }
 
-  public static getAllReports(): CitizenReport[] {
-    try {
-      if (typeof localStorage !== 'undefined') {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            return parsed;
+  private static listeners: Set<(reports: CitizenReport[]) => void> = new Set();
+  private static isListenerSetup = false;
+
+  public static onReportsChange(listener: (reports: CitizenReport[]) => void): () => void {
+    this.listeners.add(listener);
+    this.ensureGlobalListeners();
+    return () => this.listeners.delete(listener);
+  }
+
+  private static notifyListeners(): void {
+    const all = this.getAllReports();
+    this.listeners.forEach((l) => {
+      try {
+        l(all);
+      } catch {}
+    });
+  }
+
+  private static ensureGlobalListeners(): void {
+    if (this.isListenerSetup || typeof window === 'undefined') return;
+    this.isListenerSetup = true;
+
+    // Storage listener across tabs
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEY || e.key === '@aegis_local_community_reports' || e.key === 'aegis_offline_action_queue') {
+        this.notifyListeners();
+      }
+    });
+
+    // BroadcastChannel listener
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('aegis_emergency_bus');
+        bc.onmessage = (evt) => {
+          if (evt.data && (evt.data.type === 'REPORT_CREATED' || evt.data.type === 'report.created')) {
+            this.notifyListeners();
           }
+        };
+      } catch {}
+    }
+  }
+
+  public static getAllReports(): CitizenReport[] {
+    this.ensureGlobalListeners();
+    const reportsMap = new Map<string, CitizenReport>();
+
+    if (typeof localStorage === 'undefined') return INITIAL_DEMO_REPORTS;
+
+    // 1. Load from aegis_citizen_reports
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((r: CitizenReport) => {
+            if (r && r.id) reportsMap.set(r.id, r);
+          });
         }
       }
     } catch {}
-    return INITIAL_DEMO_REPORTS;
+
+    // 2. Load and normalize from mobile @aegis_local_community_reports
+    try {
+      const mobileStored = localStorage.getItem('@aegis_local_community_reports');
+      if (mobileStored) {
+        const parsed = JSON.parse(mobileStored);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((m: any) => {
+            if (m && m.id && !reportsMap.has(m.id)) {
+              const rawSev = (m.severity || 'MODERATE').toLowerCase();
+              const sev: ReportSeverity = ['low', 'moderate', 'medium', 'high', 'critical'].includes(rawSev)
+                ? (rawSev as ReportSeverity)
+                : 'moderate';
+              const norm: CitizenReport = {
+                id: m.id,
+                category: m.category || 'OTHER',
+                hazardType: (m.category || m.hazard || 'other').toLowerCase().replace(/\s+/g, '_') as ReportHazardType,
+                hazardLabel: m.title || m.hazard || 'Incident Report',
+                title: m.title || m.hazard || 'Incident Report',
+                description: m.description || '',
+                media: m.imageUrl ? [{ id: 'm-1', url: m.imageUrl, mediaReference: m.imageUrl, fileType: 'image/jpeg', fileSize: 1024, fileName: 'evidence.jpg', uploadedAt: 'Recent' }] : [],
+                mediaType: m.imageUrl ? 'PHOTO' : 'NONE',
+                severity: sev,
+                location: {
+                  lat: m.location?.latitude ?? 17.6868,
+                  lng: m.location?.longitude ?? 83.2185,
+                  address: m.location?.address || 'Live Location',
+                  city: (m.location?.address || '').split(',')[0] || 'Local Sector',
+                  state: 'India',
+                },
+                timestamp: m.createdAt ? `Today, ${new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} IST` : 'Today, IST',
+                status: 'submitted',
+                verificationStatus: m.verificationStatus || 'UNVERIFIED',
+                isVerified: false,
+                sourceType: 'COMMUNITY_REPORT',
+                provenanceLabel: 'User Uploaded (Mobile App)',
+                upvotes: m.upvotes || 0,
+                downvotes: 0,
+                reporter: { name: 'Citizen Observer', isAnonymous: true },
+              };
+              reportsMap.set(m.id, norm);
+            }
+          });
+        }
+      }
+    } catch {}
+
+    // 3. Load from mobile offline queue
+    try {
+      const queueStored = localStorage.getItem('aegis_offline_action_queue');
+      if (queueStored) {
+        const queue = JSON.parse(queueStored);
+        if (Array.isArray(queue)) {
+          queue.forEach((q: any) => {
+            if (q && q.type === 'community_report' && q.id && !reportsMap.has(q.id)) {
+              const p = q.payload || {};
+              const rawSev = (p.severity || 'MODERATE').toLowerCase();
+              const sev: ReportSeverity = ['low', 'moderate', 'medium', 'high', 'critical'].includes(rawSev)
+                ? (rawSev as ReportSeverity)
+                : 'moderate';
+              const norm: CitizenReport = {
+                id: q.id,
+                category: p.category || 'OTHER',
+                hazardType: (p.category || p.hazard_type || 'other').toLowerCase().replace(/\s+/g, '_') as ReportHazardType,
+                hazardLabel: p.title || p.hazard || 'Incident Report',
+                title: p.title || p.hazard || 'Incident Report',
+                description: p.description || '',
+                media: p.imageUrl ? [{ id: 'm-1', url: p.imageUrl, mediaReference: p.imageUrl, fileType: 'image/jpeg', fileSize: 1024, fileName: 'evidence.jpg', uploadedAt: 'Recent' }] : [],
+                mediaType: p.imageUrl ? 'PHOTO' : 'NONE',
+                severity: sev,
+                location: {
+                  lat: p.latitude ?? 17.6868,
+                  lng: p.longitude ?? 83.2185,
+                  address: p.location_name || 'Queued Location',
+                  city: (p.location_name || '').split(',')[0] || 'Local Sector',
+                  state: 'India',
+                },
+                timestamp: `Today, ${new Date(q.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} IST`,
+                status: 'submitted',
+                verificationStatus: 'UNVERIFIED',
+                isVerified: false,
+                sourceType: 'COMMUNITY_REPORT',
+                provenanceLabel: 'User Uploaded (Offline Queue)',
+                upvotes: 0,
+                downvotes: 0,
+                reporter: { name: 'Citizen Observer', isAnonymous: true },
+              };
+              reportsMap.set(q.id, norm);
+            }
+          });
+        }
+      }
+    } catch {}
+
+    const result = Array.from(reportsMap.values());
+    return result.length > 0 ? result : INITIAL_DEMO_REPORTS;
   }
 }
