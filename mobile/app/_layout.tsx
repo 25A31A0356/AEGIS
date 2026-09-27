@@ -123,7 +123,13 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="hazards" />
+            <Stack.Screen name="menu" options={{ presentation: 'modal', animation: 'slide_from_left' }} />
+            <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="hazards" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="safety-hub" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="gps-diagnostics" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="map" options={{ animation: 'slide_from_right' }} />
             <Stack.Screen name="oauth/callback" />
           </Stack>
           <GlobalNearbySosListener />

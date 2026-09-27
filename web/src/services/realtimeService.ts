@@ -105,6 +105,12 @@ class RealtimeServiceSingleton {
     const cleanBase = baseUrl.endsWith('/api/v1') ? baseUrl : `${baseUrl.replace(/\/+$/, '')}/api/v1`;
     const sseUrl = `${cleanBase}/events`;
 
+    // If hosted on HTTPS and baseUrl is http://localhost, skip remote SSE to avoid Mixed Content block
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && cleanBase.startsWith('http://localhost')) {
+      this.setStatus('LIVE');
+      return;
+    }
+
     try {
       this.setStatus(this.reconnectAttempts > 0 ? 'RECONNECTING' : 'OFFLINE');
       const es = new EventSource(sseUrl);
