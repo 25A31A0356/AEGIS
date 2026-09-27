@@ -36,7 +36,7 @@ interface CacheEntry<T> {
 }
 
 export class ApiClient {
-  private static defaultTimeoutMs = 8000;
+  private static defaultTimeoutMs = 3000;
   private static defaultCacheTtlMs = 45000; // 45 seconds for GET requests
   private static memoryCache = new Map<string, CacheEntry<unknown>>();
   private static inflightRequests = new Map<string, Promise<ApiResult<any>>>();
@@ -54,10 +54,13 @@ export class ApiClient {
     }
     if (typeof window !== 'undefined' && window.location) {
       const { protocol, hostname, port } = window.location;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return `http://localhost:8000/api/v1`;
+      }
       if (port === '8000') {
         return `${protocol}//${hostname}:8000/api/v1`;
       }
-      return `${protocol}//${hostname}:8000/api/v1`;
+      return `${protocol}//${hostname}/api/v1`;
     }
     return 'http://localhost:8000/api/v1';
   }
