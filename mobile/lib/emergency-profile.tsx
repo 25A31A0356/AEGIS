@@ -53,9 +53,9 @@ export const DEFAULT_EMERGENCY_PROFILE: EmergencyProfile = {
   secondaryContact: undefined,
   customSosMessage: "EMERGENCY SOS: I need immediate help! Please dispatch rescue to my location.",
   customSafeMessage: "I am safe and secure. Sharing my location with family through AEGIS ALERT.",
-  homeCity: "Kakinada",
-  homePoliceStation: "Kakinada Town Police Station",
-  homePoliceNumber: "0884-2365555",
+  homeCity: "",
+  homePoliceStation: "",
+  homePoliceNumber: "",
   avatarUri: "",
 };
 
@@ -191,9 +191,9 @@ export function EmergencyProfileProvider({ children }: { children: ReactNode }) 
           bloodGroup: serverData.bloodGroup || serverData.blood_group || "O+",
           medicalNotes: serverData.medicalNotes || serverData.medical_notes || "",
           peopleCount: serverData.peopleCount || serverData.people_count || 1,
-          homeCity: serverData.homeCity || serverData.home_city || "Kakinada",
-          homePoliceStation: serverData.homePoliceStation || serverData.home_police_station || "Kakinada Town Police Station",
-          homePoliceNumber: serverData.homePoliceNumber || serverData.home_police_number || "0884-2365555",
+          homeCity: serverData.homeCity || serverData.home_city || "",
+          homePoliceStation: serverData.homePoliceStation || serverData.home_police_station || "",
+          homePoliceNumber: serverData.homePoliceNumber || serverData.home_police_number || "",
           avatarUri: serverData.avatarUri || serverData.avatarUrl || serverData.avatar_url || "",
           familyContacts: Array.isArray(serverData.familyContacts) && serverData.familyContacts.length > 0
             ? serverData.familyContacts

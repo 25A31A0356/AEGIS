@@ -39,6 +39,9 @@ class User(Base):
     emergency_profile: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)
     role: Mapped[str] = mapped_column(String(50), default="public", nullable=False)  # admin, official, sdrf_officer, public
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    account_status: Mapped[str] = mapped_column(String(30), default="ACTIVE", nullable=False)  # ACTIVE, DEACTIVATED, SUSPENDED
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    deleted_by: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
@@ -845,3 +848,29 @@ class DeviceLocationTelemetry(Base):
         Index("idx_device_location_geo", "latitude", "longitude"),
         Index("idx_device_location_time", "device_id", "recorded_at"),
     )
+
+
+class UserLocation(Base):
+    __tablename__ = "aegis_user_locations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("aegis_users.id", ondelete="CASCADE"), nullable=False, index=True)
+    location_name: Mapped[str] = mapped_column(String(255), default="Gona", nullable=False)
+    latitude: Mapped[float] = mapped_column(Float, default=17.228, nullable=False)
+    longitude: Mapped[float] = mapped_column(Float, default=82.046, nullable=False)
+    district: Mapped[Optional[str]] = mapped_column(String(100), default="", nullable=True)
+    state: Mapped[Optional[str]] = mapped_column(String(100), default="Andhra Pradesh", nullable=True)
+    is_home: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    last_updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+
+class UserTip(Base):
+    __tablename__ = "aegis_user_tips"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    user_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("aegis_users.id", ondelete="CASCADE"), nullable=True, index=True)
+    tip_text: Mapped[str] = mapped_column(Text, nullable=False)
+    category: Mapped[str] = mapped_column(String(50), default="GENERAL", nullable=False)  # GENERAL, FLOOD, CYCLONE, EARTHQUAKE, FIRST_AID
+    is_saved: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)

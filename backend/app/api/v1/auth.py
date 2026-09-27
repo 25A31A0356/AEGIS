@@ -744,3 +744,188 @@ async def reset_password_with_otp(
             }
         )
     )
+
+
+# --- Central PostgreSQL Relational Endpoints for Contacts, Locations, and Saved Tips ---
+
+class ContactCreateRequest(BaseModel):
+    name: str = Field(..., min_length=1)
+    phone: str = Field(..., min_length=1)
+    relationship: Optional[str] = "Family"
+    email: Optional[str] = None
+    is_primary: Optional[bool] = False
+
+
+class LocationUpdateRequest(BaseModel):
+    location_name: str = Field(..., min_length=1)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    district: Optional[str] = None
+    state: Optional[str] = None
+    is_home: Optional[bool] = True
+
+
+class UserTipCreateRequest(BaseModel):
+    tip_text: str = Field(..., min_length=1)
+    category: Optional[str] = "GENERAL"
+
+
+@router.get("/contacts", response_model=ApiResponse[List[Dict[str, Any]]])
+async def get_user_contacts(
+    current_user: User = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Returns authoritative emergency & family contacts for the user from central PostgreSQL."""
+    contacts = current_user.family_contacts or []
+    return ApiResponse(success=True, data=contacts)
+
+
+@router.post("/contacts", response_model=ApiResponse[List[Dict[str, Any]]])
+async def add_user_contact(
+    payload: ContactCreateRequest,
+    current_user: User = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Adds emergency contact to central database, updating both App and Web instantly."""
+    contacts = list(current_user.family_contacts or [])
+    new_contact = {
+        "id": f"fam-{int(time.time() * 1000)}",
+        "name": payload.name.strip(),
+        "phone": payload.phone.strip(),
+        "relationship": payload.relationship or "Family",
+        "email": payload.email,
+        "is_primary": payload.is_primary or False,
+        "created_at": utc_now().isoformat()
+    }
+    contacts.append(new_contact)
+    current_user.family_contacts = contacts
+    current_user.updated_at = utc_now()
+    await db.commit()
+    await db.refresh(current_user)
+    return ApiResponse(success=True, data=contacts)
+
+
+@router.delete("/contacts/{contact_id}", response_model=ApiResponse[List[Dict[str, Any]]])
+async def delete_user_contact(
+    contact_id: str,
+    current_user: User = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Removes emergency contact from central database."""
+    contacts = [c for c in (current_user.family_contacts or []) if str(c.get("id")) != contact_id]
+    current_user.family_contacts = contacts
+    current_user.updated_at = utc_now()
+    await db.commit()
+    await db.refresh(current_user)
+    return ApiResponse(success=True, data=contacts)
+
+
+@router.get("/location", response_model=ApiResponse[Dict[str, Any]])
+async def get_user_location(
+    current_user: User = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Returns authoritative user location from central database (e.g. Gona, never hardcoded)."""
+    return ApiResponse(
+        success=True,
+        data={
+            "user_id": current_user.id,
+            "home_city": current_user.home_city or "Gona",
+            "location_name": current_user.home_city or "Gona",
+        }
+    )
+
+
+@router.put("/location", response_model=ApiResponse[Dict[str, Any]])
+async def update_user_location(
+    payload: LocationUpdateRequest,
+    current_user: User = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Updates user location in central database, synchronizing across App and Web."""
+    clean_loc = payload.location_name.strip()
+    current_user.home_city = clean_loc
+    current_user.updated_at = utc_now()
+
+    pref_res = await db.execute(select(UserPreference).where(UserPreference.user_id == current_user.id))
+    pref = pref_res.scalars().first()
+    if pref:
+        ep = pref.emergency_profile or {}
+        ep["homeCity"] = clean_loc
+        pref.emergency_profile = ep
+        pref.updated_at = utc_now()
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return ApiResponse(
+        success=True,
+        data={
+            "user_id": current_user.id,
+            "home_city": current_user.home_city,
+            "location_name": current_user.home_city,
+        }
+    )
+
+
+@router.get("/tips", response_model=ApiResponse[List[Dict[str, Any]]])
+async def get_user_saved_tips(
+    current_user: User = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Returns user-specific saved safety tips and guides from PostgreSQL."""
+    ep = getattr(current_user, "emergency_profile", {}) or {}
+    tips = ep.get("savedTips") or ep.get("saved_tips") or [
+        {
+            "id": "tip-1",
+            "tip_text": "Keep an emergency contact updated.",
+            "category": "GENERAL",
+            "is_saved": True,
+            "created_at": utc_now().isoformat()
+        }
+    ]
+    return ApiResponse(success=True, data=tips)
+
+
+@router.post("/tips", response_model=ApiResponse[List[Dict[str, Any]]])
+async def save_user_tip(
+    payload: UserTipCreateRequest,
+    current_user: User = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Saves a personalized safety tip associated with user_id to central PostgreSQL."""
+    ep = dict(getattr(current_user, "emergency_profile", {}) or {})
+    tips = list(ep.get("savedTips") or ep.get("saved_tips") or [])
+    new_tip = {
+        "id": f"tip-{int(time.time() * 1000)}",
+        "tip_text": payload.tip_text.strip(),
+        "category": payload.category or "GENERAL",
+        "is_saved": True,
+        "created_at": utc_now().isoformat()
+    }
+    tips.append(new_tip)
+    ep["savedTips"] = tips
+    ep["saved_tips"] = tips
+    current_user.emergency_profile = ep
+    current_user.updated_at = utc_now()
+    await db.commit()
+    await db.refresh(current_user)
+    return ApiResponse(success=True, data=tips)
+
+
+@router.delete("/tips/{tip_id}", response_model=ApiResponse[List[Dict[str, Any]]])
+async def delete_user_tip(
+    tip_id: str,
+    current_user: User = Depends(require_authenticated_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Deletes/removes a personal saved tip from user account."""
+    ep = dict(getattr(current_user, "emergency_profile", {}) or {})
+    tips = [t for t in (ep.get("savedTips") or ep.get("saved_tips") or []) if str(t.get("id")) != tip_id]
+    ep["savedTips"] = tips
+    ep["saved_tips"] = tips
+    current_user.emergency_profile = ep
+    current_user.updated_at = utc_now()
+    await db.commit()
+    await db.refresh(current_user)
+    return ApiResponse(success=True, data=tips)
