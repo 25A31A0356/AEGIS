@@ -72,6 +72,18 @@ export class SOSService {
   static {
     this.beacons = this.loadFromStorage();
     this.setupRealtimeListeners();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_KEY) {
+          const loaded = this.loadFromStorage();
+          if (loaded.length > 0) {
+            this.beacons = loaded;
+            this.notifyListeners();
+          }
+        }
+      });
+    }
+
     this.startAutoRefreshCycle();
   }
 

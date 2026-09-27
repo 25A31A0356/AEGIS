@@ -58,6 +58,18 @@ class RealtimeServiceSingleton {
       setTimeout(() => {
         this.connect();
       }, 100);
+    // Cross-tab/window BroadcastChannel Listener
+    if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('aegis_emergency_bus');
+        bc.onmessage = (event) => {
+          if (event.data) {
+            this.handleIncomingEvent(event.data);
+          }
+        };
+      } catch {}
+    }
+
 
       // Handle window online/offline events
       window.addEventListener('online', () => {

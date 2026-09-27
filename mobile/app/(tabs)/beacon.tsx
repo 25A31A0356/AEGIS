@@ -245,6 +245,9 @@ export default function BeaconScreen() {
         longitude: userCoord.longitude,
       });
 
+      // 3. Automatically launch native Emergency SMS Dispatch to 112 & Family Contacts
+      sendSmsSos();
+
       // Automatic background SMS and police status feedback
       const modeText = demoMode ? "[DEMO MODE ACTIVE] Family SMS dispatched. Police SMS suppressed." : "[PRODUCTION EMERGENCY] Family & Police Stations dispatched.";
       console.log(`[SOS DISPATCH] Authoritative signal dispatched successfully. ${modeText}`);
@@ -644,6 +647,36 @@ export default function BeaconScreen() {
                     </Text>
                   </View>
                 ) : null}
+
+                {/* Prominent Direct Emergency SMS Dispatch Button */}
+                <Pressable
+                  onPress={() => sendSmsSos()}
+                  style={{
+                    backgroundColor: "#D93025",
+                    borderRadius: 12,
+                    paddingVertical: 14,
+                    paddingHorizontal: 16,
+                    marginVertical: 10,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    shadowColor: "#D93025",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 4,
+                  }}
+                >
+                  <IconSymbol name="message.fill" size={20} color="#FFFFFF" />
+                  <View style={{ marginLeft: 10, flex: 1 }}>
+                    <Text style={{ color: "#FFFFFF", fontWeight: "800", fontSize: 14 }}>
+                      📱 {demoMode ? "Send Family Distress SMS" : "Send Emergency SMS to 112 & Family"}
+                    </Text>
+                    <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 11, marginTop: 2 }}>
+                      Opens SMS app with live GPS coordinates pre-filled
+                    </Text>
+                  </View>
+                </Pressable>
 
                 {/* Family Contact Dispatch Badge */}
                 <View style={styles.familyAlertBadge}>
