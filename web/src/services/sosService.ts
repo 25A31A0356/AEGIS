@@ -521,6 +521,33 @@ export class SOSService {
     return newBeacon;
   }
 
+  public static async adminPurgeAllSOS(
+    adminId: string,
+    adminPass: string,
+    reason: string = 'Master Administrative Emergency Wipe'
+  ): Promise<{ success: boolean; purged_count: number; message: string }> {
+    try {
+      const res = await ApiClient.post<any>('/sos/admin/purge', {
+        admin_id: adminId.trim(),
+        admin_pass: adminPass.trim(),
+        reason,
+      });
+
+      this.beacons = [];
+      this.saveToStorage();
+      this.notifyListeners();
+
+      return {
+        success: true,
+        purged_count: res?.purged_count ?? 0,
+        message: res?.message || 'All SOS distress signals successfully purged from the network.',
+      };
+    } catch (err: any) {
+      console.error('[SOSService] adminPurgeAllSOS error:', err);
+      throw new Error(err?.response?.data?.detail || err?.message || 'Invalid administrative credentials or purge failed.');
+    }
+  }
+
   public static clearAllBeacons(): void {
     this.beacons = [];
     this.saveToStorage();

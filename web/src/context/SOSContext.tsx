@@ -20,6 +20,7 @@ interface SOSContextType {
   createNewSOSBeacon: (data: Partial<SOSBeacon>) => Promise<SOSBeacon>;
   refreshBeacons: () => Promise<void>;
   clearStaleBeacons: () => void;
+  adminPurgeAllSOS: (adminId: string, adminPass: string, reason?: string) => Promise<{ success: boolean; purged_count: number; message: string }>;
 }
 
 const SOSContext = createContext<SOSContextType | undefined>(undefined);
@@ -52,6 +53,14 @@ export const SOSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     SOSService.pruneStaleBeacons();
     refreshBeacons();
   }, [refreshBeacons]);
+
+  const adminPurgeAllSOS = useCallback(async (adminId: string, adminPass: string, reason?: string) => {
+    const res = await SOSService.adminPurgeAllSOS(adminId, adminPass, reason);
+    setBeacons([]);
+    setSelectedBeacon(null);
+    setActiveRoute(null);
+    return res;
+  }, []);
 
   // 1-minute auto-refresh interval with 1-second countdown tick
   useEffect(() => {
@@ -137,11 +146,18 @@ export const SOSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const unsubRealtime1 = RealtimeService.on('SOS_CREATED', handleLiveSosNotification);
     const unsubRealtime2 = RealtimeService.on('SOS_DISPATCHED', handleLiveSosNotification);
+    const unsubRealtimePurge = RealtimeService.on('SOS_PURGED', () => {
+      setBeacons([]);
+      setSelectedBeacon(null);
+      setActiveRoute(null);
+      refreshBeacons();
+    });
 
     return () => {
       unsubscribe();
       unsubRealtime1();
       unsubRealtime2();
+      unsubRealtimePurge();
     };
   }, [selectedBeacon, addNotification]);
 
@@ -224,6 +240,7 @@ export const SOSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createNewSOSBeacon,
         refreshBeacons,
         clearStaleBeacons,
+        adminPurgeAllSOS,
       }}
     >
       {children}

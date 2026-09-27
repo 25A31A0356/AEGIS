@@ -77,8 +77,9 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, Header, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, and_, or_, func
+from sqlalchemy import select, desc, and_, or_, func, delete
 from backend.app.database.session import get_db
+from backend.app.core.security import verify_password
 from backend.app.database.models import (
     SOSSignal, SOSResponderCandidate, SOSAssignment,
     SOSLocationUpdate, User, UserPreference, SafeEvent,
@@ -948,16 +949,24 @@ async def list_active_sos(
 ):
     """
     List active SOS distress incidents.
+    Automatically excludes signals older than 1 hour (60 minutes).
     Operators and Admins receive authorized exact operational telemetry; public clients receive sanitized telemetry.
     """
     is_admin = bool(current_user and current_user.role in ("admin", "official", "sdrf_officer"))
+    now = utc_now()
+    one_hour_ago = now - timedelta(hours=1)
+    
     query = select(SOSSignal).order_by(desc(SOSSignal.created_at)).limit(limit).offset(offset)
 
     if status == "ACTIVE":
-        query = query.where(SOSSignal.status.in_([
-            SOSState.PENDING.value, SOSState.MATCHING.value, SOSState.OFFERED.value,
-            SOSState.ACCEPTED.value, SOSState.RESPONDER_EN_ROUTE.value, SOSState.ON_SITE.value
-        ]))
+        # Strictly enforce 1-hour expiration policy for active distress records
+        query = query.where(
+            SOSSignal.status.in_([
+                SOSState.PENDING.value, SOSState.MATCHING.value, SOSState.OFFERED.value,
+                SOSState.ACCEPTED.value, SOSState.RESPONDER_EN_ROUTE.value, SOSState.ON_SITE.value
+            ]),
+            SOSSignal.created_at >= one_hour_ago
+        )
     elif status and status != "ALL":
         query = query.where(SOSSignal.status == status.upper())
 
@@ -991,11 +1000,13 @@ async def get_sos_offers_list(
     """
     Returns active SOS distress offers for responders within the authoritative 20 KM server-side radius.
     """
-    # 1. Fetch all active/pending SOS signals
+    # 1. Fetch all active/pending SOS signals (strictly within 1 hour lifespan)
+    one_hour_ago = utc_now() - timedelta(hours=1)
     query = select(SOSSignal).where(
         SOSSignal.status.in_([
             SOSState.PENDING.value, SOSState.MATCHING.value, SOSState.OFFERED.value
-        ])
+        ]),
+        SOSSignal.created_at >= one_hour_ago
     ).order_by(desc(SOSSignal.created_at))
 
     res = await db.execute(query)
@@ -2607,4 +2618,92 @@ async def list_safe_events(
         success=True,
         data=[_build_safe_response(r) for r in records],
         freshness=FreshnessMetadata(status="fresh", age_seconds=10)
+    )
+
+
+class SOSAdminPurgeRequest(BaseModel):
+    admin_id: str = Field(..., description="Administrative Username")
+    admin_pass: str = Field(..., description="Administrative Password")
+    reason: Optional[str] = "Master Administrative SOS Clearance"
+
+
+@router.post("/admin/purge", response_model=ApiResponse[Dict[str, Any]])
+@router.delete("/admin/purge-all", response_model=ApiResponse[Dict[str, Any]])
+async def admin_purge_all_sos(
+    payload: SOSAdminPurgeRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Master Administrative Emergency SOS Wipe Perk.
+    Wipes all active and pending SOS signals across server, web, and mobile app network.
+    Protected by BOOYAHBOY administrative authorization.
+    """
+    # Verify admin credentials (BOOYAHBOY / BOOYAHBOY or database Admin)
+    is_valid = False
+    clean_id = payload.admin_id.strip()
+    clean_pass = payload.admin_pass.strip()
+    
+    if clean_id == "BOOYAHBOY" and clean_pass == "BOOYAHBOY":
+        is_valid = True
+    else:
+        # Check against database users
+        u_res = await db.execute(select(User).where(or_(User.email == clean_id, User.id == clean_id)))
+        u = u_res.scalars().first()
+        if u and u.role in ("admin", "official") and verify_password(clean_pass, u.hashed_password):
+            is_valid = True
+
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid administrative credentials. SOS clearance unauthorized."
+        )
+
+    # Find all active SOS signals
+    q = select(SOSSignal).where(
+        SOSSignal.status.in_([
+            SOSState.PENDING.value, SOSState.MATCHING.value, SOSState.OFFERED.value,
+            SOSState.ACCEPTED.value, SOSState.RESPONDER_ASSIGNED.value,
+            SOSState.RESPONDER_EN_ROUTE.value, SOSState.ON_SITE.value
+        ])
+    )
+    res = await db.execute(q)
+    active_sos_list = res.scalars().all()
+    count = len(active_sos_list)
+
+    now = utc_now()
+    for s in active_sos_list:
+        s.status = SOSState.RESOLVED.value
+        s.resolved_at = now
+        s.updated_at = now
+
+    # Also clean active assignments & candidates
+    await db.execute(delete(SOSAssignment))
+    await db.execute(delete(SOSResponderCandidate))
+
+    await db.commit()
+
+    # Broadcast real-time purge event to all connected web and mobile clients
+    try:
+        from backend.app.services.realtime_service import RealtimeService
+        await RealtimeService.broadcast("sos", "SOS_PURGED", {
+            "purged_count": count,
+            "cleared_at": now.isoformat(),
+            "reason": payload.reason
+        })
+        await RealtimeService.broadcast("realtime", "SOS_PURGED", {
+            "purged_count": count,
+            "cleared_at": now.isoformat(),
+            "reason": payload.reason
+        })
+    except Exception as ex:
+        pass
+
+    return ApiResponse(
+        success=True,
+        data={
+            "purged_count": count,
+            "cleared_at": now.isoformat(),
+            "status": "ALL_SOS_CLEARED",
+            "message": f"Successfully cleared {count} active SOS distress signals from the network."
+        }
     )

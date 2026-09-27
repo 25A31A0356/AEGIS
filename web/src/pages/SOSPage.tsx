@@ -5,8 +5,9 @@ import { useTranslation } from '../i18n/useTranslation';
 import { IndiaSafetyMap, MapLayersState } from '../components/map/IndiaSafetyMap';
 import { STATE_VICTIM_BEACONS, StateVictimProfile } from '../data/stateVictimBeacons';
 import { VictimProfileModal } from '../components/sos/VictimProfileModal';
+import { AdminSosPurgeModal } from '../components/sos/AdminSosPurgeModal';
 import { normalizeBeaconState } from '../services/sosService';
-import { ExternalLink, Users, Maximize2, Minimize2, RefreshCw, Trash2, Clock } from 'lucide-react';
+import { ExternalLink, Users, Maximize2, Minimize2, RefreshCw, Trash2, Clock, ShieldAlert } from 'lucide-react';
 
 interface SOSPageProps {
   preSelectedSOSId?: string;
@@ -33,6 +34,7 @@ export const SOSPage: React.FC<SOSPageProps> = ({ preSelectedSOSId }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedStateFilter, setSelectedStateFilter] = useState<string>('all');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isAdminPurgeOpen, setIsAdminPurgeOpen] = useState<boolean>(false);
 
   const [mapLayers, setMapLayers] = useState<MapLayersState>({
     weatherRadar: false,
@@ -168,6 +170,16 @@ export const SOSPage: React.FC<SOSPageProps> = ({ preSelectedSOSId }) => {
               <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isLiveLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
+
+          {/* Administrative Master SOS Wipe Button (Perk) */}
+          <button
+            onClick={() => setIsAdminPurgeOpen(true)}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 bg-red-600/15 hover:bg-red-600/25 text-red-500 border border-red-500/30 shadow-sm"
+            title="Administrative Master Emergency SOS Wipe (Clears App & Web)"
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-red-500" />
+            <span>Master SOS Wipe</span>
+          </button>
 
           {/* Clean Old SOS */}
           <button
