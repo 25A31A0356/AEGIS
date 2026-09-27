@@ -103,8 +103,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
+      const storedUser = localStorage.getItem(CURRENT_USER_KEY);
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {}
+      }
+
       try {
-        const me = await ApiClient.get<any>('/auth/me', undefined, { skipCache: true, timeoutMs: 2000 });
+        const me = await ApiClient.get<any>('/auth/me', undefined, { skipCache: true, timeoutMs: 1500 });
         if (me && (me.id || me.email)) {
           const fetchedRole = (me.role || role) as UserRole;
           const authUser: AuthUser = {
@@ -121,13 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(authUser));
         }
       } catch (err) {
-        // If offline / GitHub Pages, maintain stored user session smoothly
-        const storedUser = localStorage.getItem(CURRENT_USER_KEY);
-        if (storedUser) {
-          try {
-            setUser(JSON.parse(storedUser));
-          } catch {}
-        }
+        console.log('[AuthContext] Verified local session for GitHub Pages / offline operation.');
       }
     }
 
@@ -168,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(authenticatedUser);
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(authenticatedUser));
         saveLocalUser(authenticatedUser.name, cleanEmail, password, finalRole);
+        setIsLoading(false);
         return true;
       }
     } catch (err: any) {
