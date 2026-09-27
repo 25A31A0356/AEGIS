@@ -161,7 +161,7 @@ export default function HomeScreen() {
   // Real-time Dew Point calculation using Magnus-Tetens approximation
   const dewPoint = (temp - ((100 - humidity) / 5)).toFixed(1);
 
-  // Dynamic UV Radiation Index based on solar elevation angle for user's latitude and time
+  // Dynamic {dict.uvIndex || "UV Radiation Index"} based on solar elevation angle for user's latitude and time
   const dynamicUv = useMemo(() => {
     const hour = new Date().getHours();
     if (hour < 6 || hour > 18) return { val: 0, label: "Low", pct: "5%", color: "#10B981" };
@@ -174,7 +174,7 @@ export default function HomeScreen() {
     return { val, label: "Low", pct: "20%", color: "#10B981" };
   }, [rainfallMm]);
 
-  // Dynamic Air Quality Index (AQI) estimation for coordinates
+  // Dynamic {dict.airQuality || "Air Quality Index (AQI)"} estimation for coordinates
   const dynamicAqi = useMemo(() => {
     // Coastal / rural areas have cleaner air than mega-cities
     const isCoastal = location.longitude > 80 || location.longitude < 74;
@@ -370,13 +370,13 @@ export default function HomeScreen() {
         >
           <View style={styles.redDot} />
           <View style={[styles.warningPill, { backgroundColor: nearestHazard.severity === "CRITICAL" ? "#DC2626" : "#EA580C" }]}>
-            <Text style={styles.warningPillText}>{nearestHazard.severity === "CRITICAL" ? "CRITICAL ALERT" : "WARNING ADVISORY"}</Text>
+            <Text style={styles.warningPillText}>{nearestHazard.severity === "CRITICAL" ? (dict.criticalAlert || "CRITICAL ALERT") : (dict.warningAdvisory || "WARNING ADVISORY")}</Text>
           </View>
           <Text style={styles.alertText} numberOfLines={1}>
             [{cleanVillageName}]: {nearestHazard.title}
           </Text>
           <View style={styles.alertAction}>
-            <Text style={styles.alertActionText}>Details</Text>
+            <Text style={styles.alertActionText}>{dict.details || "Details"}</Text>
             <Text style={styles.alertActionText}>➔</Text>
           </View>
         </Pressable>
@@ -390,7 +390,7 @@ export default function HomeScreen() {
               accessibilityLabel="Change location"
             >
               <Text style={styles.greetingTitle}>
-                Hi {userName}!
+                {dict.greeting || "Hi"} {userName}!
               </Text>
               <View style={styles.villageLocationRow}>
                 <Text style={styles.villageNameText}>
@@ -438,14 +438,14 @@ export default function HomeScreen() {
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <Text style={[styles.fullMapTitle, { color: colors.foreground }]}>
-                Fullscreen GIS Map & Safe Radar
+                {dict.safetyMapTitle || "Fullscreen GIS Map & Safe Radar"}
               </Text>
               <View style={styles.liveGisPill}>
                 <Text style={styles.liveGisPillText}>LIVE ⛶</Text>
               </View>
             </View>
             <Text style={[styles.fullMapSub, { color: colors.muted }]}>
-              Explore shelters, flood zones, trauma centers & evacuation routes
+              {dict.safetyMapSub || "Explore shelters, flood zones, trauma centers & evacuation routes"}
             </Text>
           </View>
           <IconSymbol name="chevron.right" size={18} color={colors.muted} />
@@ -454,7 +454,7 @@ export default function HomeScreen() {
         {/* 4. LIVE CONDITIONS HERO WEATHER CARD (MATCHING IMAGE 3) */}
         <View style={[styles.whiteCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeaderRow}>
-            <Text style={[styles.sectionHeadingSmall, { color: colors.muted }]}>LIVE CONDITIONS</Text>
+            <Text style={[styles.sectionHeadingSmall, { color: colors.muted }]}>{dict.liveConditions || "LIVE CONDITIONS"}</Text>
             <View style={[styles.timePill, { backgroundColor: colors.background, borderColor: colors.border }]}>
               <Text style={[styles.timePillText, { color: colors.muted }]}>{currentTimeStr}</Text>
             </View>
@@ -465,7 +465,7 @@ export default function HomeScreen() {
             <Text style={[styles.largeTempNumber, { color: colors.foreground }]}>{temp}°</Text>
             <View style={styles.tempMetaCol}>
               <Text style={[styles.feelsLikeBig, { color: colors.foreground }]}>
-                Feels like <Text style={{ fontWeight: "800" }}>{feelsLike}°C</Text>
+                {dict.feelsLike || "Feels like"} <Text style={{ fontWeight: "800" }}>{feelsLike}°C</Text>
               </Text>
               <Text style={[styles.highLowSmall, { color: colors.muted }]}>
                 H: {tempMax}° &bull; L: {tempMin}°
@@ -491,22 +491,22 @@ export default function HomeScreen() {
           {/* Bottom 4 Sensor Metric Cards (Matching Image 3) */}
           <View style={styles.fourMetricsRow}>
             <View style={[styles.sensorBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <Text style={[styles.sensorLabel, { color: colors.muted }]}>💧 Humidity</Text>
+              <Text style={[styles.sensorLabel, { color: colors.muted }]}>💧 {dict.humidity || "Humidity"}</Text>
               <Text style={[styles.sensorVal, { color: colors.foreground }]}>{humidity}%</Text>
             </View>
 
             <View style={[styles.sensorBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <Text style={[styles.sensorLabel, { color: colors.muted }]}>💨 Wind</Text>
+              <Text style={[styles.sensorLabel, { color: colors.muted }]}>💨 {dict.wind || "Wind"}</Text>
               <Text style={[styles.sensorVal, { color: colors.foreground }]}>{windSpeed} <Text style={styles.sensorUnit}>km/h</Text></Text>
             </View>
 
             <View style={[styles.sensorBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <Text style={[styles.sensorLabel, { color: colors.muted }]}>⏱️ Pressure</Text>
+              <Text style={[styles.sensorLabel, { color: colors.muted }]}>⏱️ {dict.pressure || "Pressure"}</Text>
               <Text style={[styles.sensorVal, { color: colors.foreground }]}>{pressure} <Text style={styles.sensorUnit}>hPa</Text></Text>
             </View>
 
             <View style={[styles.sensorBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
-              <Text style={[styles.sensorLabel, { color: colors.muted }]}>👁️ Visibility</Text>
+              <Text style={[styles.sensorLabel, { color: colors.muted }]}>👁️ {dict.visibility || "Visibility"}</Text>
               <Text style={[styles.sensorVal, { color: colors.foreground }]}>{visibility} <Text style={styles.sensorUnit}>km</Text></Text>
             </View>
           </View>
@@ -517,7 +517,7 @@ export default function HomeScreen() {
           <View style={styles.cardHeaderRow}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <IconSymbol name="shield.fill" size={18} color={riskColor} />
-              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>DISASTER RISK INDEX</Text>
+              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>{dict.riskScore || "DISASTER RISK INDEX"}</Text>
             </View>
             <View style={[styles.moderatePill, { backgroundColor: `${riskColor}22`, borderColor: riskColor, borderWidth: 1 }]}>
               <Text style={[styles.moderatePillText, { color: riskColor }]}>{riskCategory}</Text>
@@ -526,7 +526,7 @@ export default function HomeScreen() {
 
           <View style={styles.riskBigScoreRow}>
             <Text style={[styles.bigRiskNumber, { color: colors.foreground }]}>{calculatedRiskScore}</Text>
-            <Text style={[styles.maxRiskText, { color: colors.muted }]}>/ 100 live risk</Text>
+            <Text style={[styles.maxRiskText, { color: colors.muted }]}>/ 100 {dict.liveRisk || "live risk"}</Text>
           </View>
 
           {/* Dynamic Progress Gauge */}
@@ -540,20 +540,20 @@ export default function HomeScreen() {
 
           {/* Contributing Factors */}
           <View style={[styles.factorsSection, { borderTopColor: colors.border }]}>
-            <Text style={[styles.factorsTitle, { color: colors.muted }]}>CONTRIBUTING FACTORS</Text>
+            <Text style={[styles.factorsTitle, { color: colors.muted }]}>{dict.contributingFactors || "CONTRIBUTING FACTORS"}</Text>
 
             <View style={styles.factorLine}>
-              <Text style={[styles.factorName, { color: colors.muted }]}>• Rainfall Probability</Text>
+              <Text style={[styles.factorName, { color: colors.muted }]}>• {dict.rainProbability || "Rainfall Probability"}</Text>
               <Text style={[styles.factorNumber, { color: colors.foreground }]}>{rainProb}%</Text>
             </View>
 
             <View style={styles.factorLine}>
-              <Text style={[styles.factorName, { color: colors.muted }]}>• Wind Velocity Shear</Text>
+              <Text style={[styles.factorName, { color: colors.muted }]}>• {dict.windVelocity || "Wind Velocity Shear"}</Text>
               <Text style={[styles.factorNumber, { color: colors.foreground }]}>{windSpeed} km/h</Text>
             </View>
 
             <View style={styles.factorLine}>
-              <Text style={[styles.factorName, { color: colors.muted }]}>• Active Critical Alerts</Text>
+              <Text style={[styles.factorName, { color: colors.muted }]}>• {dict.activeCriticalAlerts || "Active Critical Alerts"}</Text>
               <Text style={[styles.factorNumber, { color: activeCriticalAlerts.length > 0 ? "#EF4444" : colors.foreground }]}>
                 {activeCriticalAlerts.length} Active
               </Text>
@@ -561,14 +561,14 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* 6. HOURLY TELEMETRY & FORECAST (MATCHING IMAGE 2) */}
+        {/* 6. {dict.hourlyTelemetry || "HOURLY TELEMETRY & FORECAST"} (MATCHING IMAGE 2) */}
         <View style={[styles.whiteCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeaderRow}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <IconSymbol name="clock.fill" size={17} color={colors.foreground} />
-              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>HOURLY TELEMETRY & FORECAST</Text>
+              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>{dict.hourlyTelemetry || "HOURLY TELEMETRY & FORECAST"}</Text>
             </View>
-            <Text style={[styles.subtleTextRight, { color: colors.muted }]}>Next 12 Hours</Text>
+            <Text style={[styles.subtleTextRight, { color: colors.muted }]}>{dict.next12Hours || "Next 12 Hours"}</Text>
           </View>
 
           {/* Hourly Pills Horizontal Scroll */}
@@ -605,22 +605,22 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* 7. TODAY'S TELEMETRY HIGHLIGHTS (MATCHING IMAGE 2 & 1) */}
+        {/* 7. {dict.telemetryHighlights || "TODAY'S TELEMETRY HIGHLIGHTS"} (MATCHING IMAGE 2 & 1) */}
         <View style={{ gap: 10 }}>
           <View style={styles.cardHeaderRow}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <IconSymbol name="chart.bar.fill" size={17} color={colors.foreground} />
-              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>TODAY'S TELEMETRY HIGHLIGHTS</Text>
+              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>{dict.telemetryHighlights || "TODAY'S TELEMETRY HIGHLIGHTS"}</Text>
             </View>
-            <Text style={[styles.subtleTextRight, { color: colors.muted }]}>Sensors: Real-Time</Text>
+            <Text style={[styles.subtleTextRight, { color: colors.muted }]}>{dict.sensorsRealTime || "Sensors: Real-Time"}</Text>
           </View>
 
           {/* 2x2 Grid of Highlights */}
           <View style={styles.highlightGrid}>
-            {/* Card 1: Precipitation & Rainfall */}
+            {/* Card 1: {dict.precipitationRainfall || "Precipitation & Rainfall"} */}
             <View style={[styles.highlightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.highlightTop}>
-                <Text style={[styles.highlightTitle, { color: colors.muted }]}>Precipitation & Rainfall</Text>
+                <Text style={[styles.highlightTitle, { color: colors.muted }]}>{dict.precipitationRainfall || "Precipitation & Rainfall"}</Text>
                 <IconSymbol name="cloud.rain.fill" size={18} color="#0284C7" />
               </View>
               <Text style={[styles.highlightBigVal, { color: colors.foreground }]}>
@@ -634,10 +634,10 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            {/* Card 2: UV Radiation Index */}
+            {/* Card 2: {dict.uvIndex || "UV Radiation Index"} */}
             <View style={[styles.highlightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.highlightTop}>
-                <Text style={[styles.highlightTitle, { color: colors.muted }]}>UV Radiation Index</Text>
+                <Text style={[styles.highlightTitle, { color: colors.muted }]}>{dict.uvIndex || "UV Radiation Index"}</Text>
                 <IconSymbol name="sun.max.fill" size={18} color="#F59E0B" />
               </View>
               <Text style={[styles.highlightBigVal, { color: colors.foreground }]}>
@@ -651,10 +651,10 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            {/* Card 3: Wind Status & Gusts */}
+            {/* Card 3: {dict.windStatus || "Wind Status & Gusts"} */}
             <View style={[styles.highlightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.highlightTop}>
-                <Text style={[styles.highlightTitle, { color: colors.muted }]}>Wind Status & Gusts</Text>
+                <Text style={[styles.highlightTitle, { color: colors.muted }]}>{dict.windStatus || "Wind Status & Gusts"}</Text>
                 <IconSymbol name="wind" size={18} color="#0284C7" />
               </View>
               <Text style={[styles.highlightBigVal, { color: colors.foreground }]}>
@@ -666,10 +666,10 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* Card 4: Humidity & Dew Point */}
+            {/* Card 4: {dict.humidityDewPoint || "Humidity & Dew Point"} */}
             <View style={[styles.highlightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.highlightTop}>
-                <Text style={[styles.highlightTitle, { color: colors.muted }]}>Humidity & Dew Point</Text>
+                <Text style={[styles.highlightTitle, { color: colors.muted }]}>{dict.humidityDewPoint || "Humidity & Dew Point"}</Text>
                 <IconSymbol name="drop.fill" size={18} color="#0284C7" />
               </View>
               <Text style={[styles.highlightBigVal, { color: colors.foreground }]}>
@@ -680,10 +680,10 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            {/* Card 5: Solar Cycle (Sunrise/Sunset) */}
+            {/* Card 5: {dict.solarCycle || "Solar Cycle (Sunrise/Sunset)"} */}
             <View style={[styles.highlightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.highlightTop}>
-                <Text style={[styles.highlightTitle, { color: colors.muted }]}>Solar Cycle (Sunrise/Sunset)</Text>
+                <Text style={[styles.highlightTitle, { color: colors.muted }]}>{dict.solarCycle || "Solar Cycle (Sunrise/Sunset)"}</Text>
                 <IconSymbol name="sun.max.fill" size={18} color="#F59E0B" />
               </View>
               <View style={styles.solarRow}>
@@ -695,10 +695,10 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            {/* Card 6: Air Quality Index (AQI) */}
+            {/* Card 6: {dict.airQuality || "Air Quality Index (AQI)"} */}
             <View style={[styles.highlightCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.highlightTop}>
-                <Text style={[styles.highlightTitle, { color: colors.muted }]}>Air Quality Index (AQI)</Text>
+                <Text style={[styles.highlightTitle, { color: colors.muted }]}>{dict.airQuality || "Air Quality Index (AQI)"}</Text>
                 <IconSymbol name="leaf.fill" size={18} color={dynamicAqi.color} />
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 2 }}>
@@ -714,12 +714,12 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* 8. ACTIVE HAZARDS NEAR YOU (MATCHING IMAGE 1) */}
+        {/* 8. {dict.activeHazardsNearYou || "ACTIVE HAZARDS NEAR YOU"} (MATCHING IMAGE 1) */}
         <View style={[styles.whiteCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeaderRow}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <Text style={{ fontSize: 16 }}>⚠️</Text>
-              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>ACTIVE HAZARDS NEAR YOU</Text>
+              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>{dict.activeHazardsNearYou || "ACTIVE HAZARDS NEAR YOU"}</Text>
             </View>
             <View style={styles.monitoredPill}>
               <Text style={styles.monitoredPillText}>1 Monitored</Text>
@@ -752,14 +752,14 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* 9. 3-DAY SYNOPTIC FORECAST (MATCHING IMAGE 1) */}
+        {/* 9. {dict.synopticForecast || "3-DAY SYNOPTIC FORECAST"} (MATCHING IMAGE 1) */}
         <View style={[styles.whiteCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeaderRow}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <IconSymbol name="calendar" size={17} color={colors.foreground} />
-              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>3-DAY SYNOPTIC FORECAST</Text>
+              <Text style={[styles.sectionHeadingSmall, { color: colors.foreground }]}>{dict.synopticForecast || "3-DAY SYNOPTIC FORECAST"}</Text>
             </View>
-            <Text style={[styles.subtleTextRight, { color: colors.muted }]}>IMD Numerical Prediction</Text>
+            <Text style={[styles.subtleTextRight, { color: colors.muted }]}>{dict.imdNumerical || "IMD Numerical Prediction"}</Text>
           </View>
 
           {/* 3 Columns */}

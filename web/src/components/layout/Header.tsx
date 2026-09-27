@@ -18,6 +18,7 @@ import { useLocation } from '../../context/LocationContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { useSOS } from '../../context/SOSContext';
 import { useProfile } from '../../context/ProfileContext';
+import { useTranslation } from '../../i18n/useTranslation';
 
 interface HeaderProps {
   activeTab: string;
@@ -37,16 +38,17 @@ export const Header: React.FC<HeaderProps> = ({
   const { unreadCount, setIsDrawerOpen } = useNotifications();
   const { beacons } = useSOS();
   const { profile } = useProfile();
+  const { dict } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const activeSOSCount = beacons.filter((b) => b.triageStatus !== 'resolved' && b.triageStatus !== 'cancelled').length;
 
   const navItems: Array<{ id: string; label: string; icon: any; badge?: string; badgeColor?: string }> = [
-    { id: 'dashboard', label: 'Dashboard', icon: Compass },
-    { id: 'live-map', label: 'Live Map', icon: Radio, badge: 'GIS' },
-    { id: 'forecasts', label: 'Analysis', icon: CloudRain },
-    { id: 'hazards', label: 'Hazards & Intel', icon: AlertTriangle, badge: '08' },
-    { id: 'activity', label: 'Activity Stream', icon: Activity },
+    { id: 'dashboard', label: dict.home || 'Dashboard', icon: Compass },
+    { id: 'live-map', label: dict.safe || 'Live Map', icon: Radio, badge: 'GIS' },
+    { id: 'forecasts', label: dict.forecast || 'Analysis', icon: CloudRain },
+    { id: 'hazards', label: dict.hazards || 'Hazards & Intel', icon: AlertTriangle, badge: '08' },
+    { id: 'activity', label: dict.activity || 'Activity Stream', icon: Activity },
   ];
 
   return (

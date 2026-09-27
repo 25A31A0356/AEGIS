@@ -14,6 +14,7 @@ export const LANGUAGES = [
 export type LanguageCode = (typeof LANGUAGES)[number]["code"];
 
 export interface TranslationDictionary {
+
   [key: string]: string | undefined;
   pressure?: string;
   tomorrow?: string;
@@ -251,11 +252,32 @@ export interface TranslationDictionary {
   changePhoto: string;
   removePhoto: string;
   uploadPhoto: string;
+  criticalAlert: string;
+  warningAdvisory: string;
+  liveConditions: string;
+  liveRisk: string;
+  rainProbability: string;
+  windVelocity: string;
+  activeCriticalAlerts: string;
+  next12Hours: string;
+  telemetryHighlights: string;
+  sensorsRealTime: string;
+  precipitationRainfall: string;
+  uvIndex: string;
+  windStatus: string;
+  humidityDewPoint: string;
+  solarCycle: string;
+  imdNumerical: string;
+  safetyMapTitle: string;
+  safetyMapSub: string;
+  demoMode: string;
+  demoModeDesc: string;
 }
 
 export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
   // 1. ENGLISH
   en: {
+
     home: "Home",
     safe: "Safe Plan",
     beacon: "Beacon",
@@ -475,10 +497,31 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "Change Photo",
     removePhoto: "Remove Photo",
     uploadPhoto: "Upload Photo",
-  },
+      criticalAlert: "CRITICAL ALERT",
+    warningAdvisory: "WARNING ADVISORY",
+    liveConditions: "LIVE CONDITIONS",
+    liveRisk: "live risk",
+    rainProbability: "Rainfall Probability",
+    windVelocity: "Wind Velocity Shear",
+    activeCriticalAlerts: "Active Critical Alerts",
+    next12Hours: "Next 12 Hours",
+    telemetryHighlights: "TODAY'S TELEMETRY HIGHLIGHTS",
+    sensorsRealTime: "Sensors: Real-Time",
+    precipitationRainfall: "Precipitation & Rainfall",
+    uvIndex: "UV Radiation Index",
+    windStatus: "Wind Status & Gusts",
+    humidityDewPoint: "Humidity & Dew Point",
+    solarCycle: "Solar Cycle (Sunrise/Sunset)",
+    imdNumerical: "IMD Numerical Prediction",
+    safetyMapTitle: "Fullscreen GIS Map & Safe Radar",
+    safetyMapSub: "Explore shelters, flood zones, trauma centers & evacuation routes",
+    demoMode: "Demo Mode",
+    demoModeDesc: "20km SOS beacon broadcast with Police SMS suppression for drills",
+},
 
   // 2. HINDI (हिन्दी)
   hi: {
+
     home: "होम",
     safe: "सुरक्षित योजना",
     beacon: "बीकन",
@@ -698,10 +741,31 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "फ़ोटो बदलें",
     removePhoto: "फ़ोटो हटाएं",
     uploadPhoto: "फ़ोटो अपलोड करें",
-  },
+      criticalAlert: "गंभीर चेतावनी",
+    warningAdvisory: "चेतावनी परामर्श",
+    liveConditions: "लाइव मौसम स्थिति",
+    liveRisk: "लाइव जोखिम",
+    rainProbability: "वर्षा की संभावना",
+    windVelocity: "हवा की गति और तीव्रता",
+    activeCriticalAlerts: "सक्रिय गंभीर अलर्ट",
+    next12Hours: "अगले 12 घंटे",
+    telemetryHighlights: "आज के प्रमुख मौसम सूचकांक",
+    sensorsRealTime: "सेंसर: रियल-टाइम लाइव",
+    precipitationRainfall: "वर्षा और वृष्टि",
+    uvIndex: "यूवी विकिरण सूचकांक",
+    windStatus: "हवा की स्थिति और झोंके",
+    humidityDewPoint: "आर्द्रता और ओस बिंदु",
+    solarCycle: "सौर चक्र (सूर्योदय/सूर्यास्त)",
+    imdNumerical: "IMD मौसम विज्ञान मॉडलिंग",
+    safetyMapTitle: "फुलस्क्रीन जीआईएस मैप और सुरक्षित रडार",
+    safetyMapSub: "आश्रय स्थल, बाढ़ क्षेत्र, ट्रॉमा सेंटर और सुरक्षित निकासी मार्ग देखें",
+    demoMode: "डेमो मोड (अभ्यास)",
+    demoModeDesc: "अभ्यास के लिए 20 किमी एसओएस प्रसारण और पुलिस एसएमएस रोकथाम",
+},
 
   // 3. TELUGU (తెలుగు)
   te: {
+
     home: "హోమ్",
     safe: "సురక్షిత ప్రణాళిక",
     beacon: "బీకన్",
@@ -921,10 +985,31 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "ఫోటో మార్చండి",
     removePhoto: "ఫోటో తొలగించండి",
     uploadPhoto: "ఫోటో అప్‌లోడ్ చేయండి",
-  },
+      criticalAlert: "తీవ్ర హెచ్చరిక",
+    warningAdvisory: "హెచ్చరిక సూచన",
+    liveConditions: "లైవ్ వాతావరణ పరిస్థితులు",
+    liveRisk: "లైవ్ రిస్క్",
+    rainProbability: "వర్షపాత సంభావ్యత",
+    windVelocity: "గాలి వేగం & తీవ్రత",
+    activeCriticalAlerts: "క్రియాశీల తీవ్ర హెచ్చరికలు",
+    next12Hours: "రాబోయే 12 గంటలు",
+    telemetryHighlights: "నేటి వాతావరణ ముఖ్యాంశాలు",
+    sensorsRealTime: "సెన్సార్లు: రియల్-టైమ్",
+    precipitationRainfall: "వర్షపాతం & చినుకులు",
+    uvIndex: "UV రేడియేషన్ ఇండెక్స్",
+    windStatus: "గాలి స్థితి & తీవ్ర గాలులు",
+    humidityDewPoint: "తేమ & డ్యూ పాయింట్",
+    solarCycle: "సౌర చక్రం (సూర్యోదయం/సూర్యాస్తమయం)",
+    imdNumerical: "IMD న్యూమరికల్ అంచనా",
+    safetyMapTitle: "పూర్తి స్క్రీన్ GIS మ్యాప్ & సేఫ్ రాడార్",
+    safetyMapSub: "పునరావాస కేంద్రాలు, వరద ప్రాంతాలు, ఆసుపత్రులు & తరలింపు మార్గాలను చూడండి",
+    demoMode: "డెమో మోడ్ (ప్రాక్టీస్)",
+    demoModeDesc: "డ్రిల్ కోసం 20 కిమీ SOS ప్రసారం మరియు పోలీస్ SMS నిలిపివేత",
+},
 
   // 4. TAMIL (தமிழ்)
   ta: {
+
     home: "முகப்பு",
     safe: "பாதுகாப்புத் திட்டம்",
     beacon: "பீக்கன்",
@@ -1144,10 +1229,31 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "படத்தை மாற்றவும்",
     removePhoto: "படத்தை நீக்கவும்",
     uploadPhoto: "படத்தைப் பதிவேற்றவும்",
-  },
+      criticalAlert: "முக்கிய எச்சரிக்கை",
+    warningAdvisory: "எச்சரிக்கை அறிவுரை",
+    liveConditions: "நேரடி காலநிலை நிலவரம்",
+    liveRisk: "நேரடி ஆபத்து",
+    rainProbability: "மழை வாய்ப்பு",
+    windVelocity: "காற்று வேகம் & தீவிரம்",
+    activeCriticalAlerts: "செயலில் உள்ள தீவிர எச்சரிக்கைகள்",
+    next12Hours: "அடுத்த 12 மணிநேரம்",
+    telemetryHighlights: "இன்றைய காலநிலை சிறப்பம்சங்கள்",
+    sensorsRealTime: "சென்சார்கள்: நேரடி",
+    precipitationRainfall: "மழைப்பொழிவு & நீர்வீழ்ச்சி",
+    uvIndex: "புறஊதா கதிர்வீச்சு குறியீடு",
+    windStatus: "காற்று நிலை & வேகக்காற்று",
+    humidityDewPoint: "ஈரப்பதம் & பனிப்புள்ளி",
+    solarCycle: "சூரிய சுழற்சி (சூரியோதயம்/சூரிய அஸ்தமனம்)",
+    imdNumerical: "IMD வானிலை கணிப்பு",
+    safetyMapTitle: "முழுத்திரை ஜிஐஎஸ் வரைபடம் & பாதுகாப்பு ரேடார்",
+    safetyMapSub: "தங்குமிடங்கள், வெள்ள மண்டலங்கள் மற்றும் வெளியேற்ற வழிகளை ஆராயுங்கள்",
+    demoMode: "டெமோ பயன்முறை",
+    demoModeDesc: "பயிற்சிக்காக 20 கிமீ SOS ஒளிபரப்பு மற்றும் காவல்துறை SMS நிறுத்தம்",
+},
 
   // 5. BENGALI (বাংলা)
   bn: {
+
     home: "হোম",
     safe: "নিরাপত্তা পরিকল্পনা",
     beacon: "বীকন",
@@ -1367,10 +1473,31 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "ছবি পরিবর্তন করুন",
     removePhoto: "ছবি মুছুন",
     uploadPhoto: "ছবি আপলোড করুন",
-  },
+      criticalAlert: "জরুরি সতর্কতা",
+    warningAdvisory: "সতর্কতামূলক বার্তা",
+    liveConditions: "লাইভ আবহাওয়া পরিস্থিতি",
+    liveRisk: "লাইভ ঝুঁকি",
+    rainProbability: "বৃষ্টির সম্ভাবনা",
+    windVelocity: "বাতাসের গতিবেগ",
+    activeCriticalAlerts: "সক্রিয় জরুরি সতর্কতা",
+    next12Hours: "পরবর্তী ১২ ঘণ্টা",
+    telemetryHighlights: "আজকের আবহাওয়া হাইলাইটস",
+    sensorsRealTime: "সেন্সর: রিয়েল-টাইম",
+    precipitationRainfall: "বৃষ্টিপাত ও আর্দ্রতা",
+    uvIndex: "ইউভি সূচক",
+    windStatus: "বাতাস ও ঝোড়ো হাওয়া",
+    humidityDewPoint: "আর্দ্রতা ও শিশিরাংক",
+    solarCycle: "সূর্য চক্র (সূর্যোদয়/সূর্যাস্ত)",
+    imdNumerical: "আইএমডি আবহাওয়া পূর্বাভাস",
+    safetyMapTitle: "পূর্ণপর্দা জিআইএস মানচিত্র ও নিরাপদ রাডার",
+    safetyMapSub: "আশ্রয়কেন্দ্র, প্লাবিত এলাকা ও স্থানান্তর রুট দেখুন",
+    demoMode: "ডেমো মোড",
+    demoModeDesc: "অনুশীলনের জন্য ২০ কিমি এসওএস ও পুলিশ বার্তা স্থগিত",
+},
 
   // 6. MARATHI (मराठी)
   mr: {
+
     home: "होम",
     safe: "सुरक्षा योजना",
     beacon: "बीकन",
@@ -1590,10 +1717,31 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "फोटो बदला",
     removePhoto: "फोटो काढा",
     uploadPhoto: "फोटो अपलोड करा",
-  },
+      criticalAlert: "गंभीर इशारा",
+    warningAdvisory: "इशारा सूचना",
+    liveConditions: "थेट हवामान स्थिती",
+    liveRisk: "थेट धोका",
+    rainProbability: "पावसाची शक्यता",
+    windVelocity: "वाऱ्याचा वेग",
+    activeCriticalAlerts: "सक्रिय गंभीर इशारे",
+    next12Hours: "पुढील १२ तास",
+    telemetryHighlights: "आजचे हवामान ठळक मुद्दे",
+    sensorsRealTime: "सेन्सर्स: थेट रिअल-टाइम",
+    precipitationRainfall: "पर्जन्यवृष्टी व पाऊस",
+    uvIndex: "अतिनील किरण निर्देशांक",
+    windStatus: "वाऱ्याची स्थिती व झोके",
+    humidityDewPoint: "आर्द्रता आणि दवबिंदू",
+    solarCycle: "सौर चक्र (सूर्योदय/सूर्यास्त)",
+    imdNumerical: "हवामान विभाग अंदाज मॉडेल",
+    safetyMapTitle: "पूर्ण स्क्रीन जीआयएस नकाशा व रडार",
+    safetyMapSub: "निवारे, पूर प्रवण क्षेत्रे व सुरक्षित मार्ग तपासा",
+    demoMode: "डेमो मोड",
+    demoModeDesc: "सरावासाठी २० किमी एसओएस व पोलीस संदेश प्रतिबंध",
+},
 
   // 7. GUJARATI (ગુજરાતી)
   gu: {
+
     home: "હોમ",
     safe: "સુરક્ષા યોજના",
     beacon: "બીકન",
@@ -1813,10 +1961,31 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "ફોટો બદલો",
     removePhoto: "ફોટો દૂર કરો",
     uploadPhoto: "ફોટો અપલોડ કરો",
-  },
+      criticalAlert: "ગંભીર ચેતવણી",
+    warningAdvisory: "ચેતવણી સલાહ",
+    liveConditions: "લાઈવ હવામાન પરિસ્થિતિ",
+    liveRisk: "લાઈવ જોખમ",
+    rainProbability: "વરસાદની સંભાવના",
+    windVelocity: "પવનની ગતિ",
+    activeCriticalAlerts: "સક્રિય ગંભીર ચેતવણીઓ",
+    next12Hours: "આગામી 12 કલાક",
+    telemetryHighlights: "આજના હવામાન હાઇલાઇટ્સ",
+    sensorsRealTime: "સેન્સર્સ: રીઅલ-ટાઇમ",
+    precipitationRainfall: "વરસાદ અને વૃષ્ટિ",
+    uvIndex: "યુવી કિરણોત્સર્ગ ઇન્ડેક્સ",
+    windStatus: "પવનની સ્થિતિ અને ઝાપટા",
+    humidityDewPoint: "ભેજ અને ઝાકળ બિંદુ",
+    solarCycle: "સૂર્ય ચક્ર (સૂર્યોદય/સૂર્યાસ્ત)",
+    imdNumerical: "IMD હવામાન આગાહી મોડલ",
+    safetyMapTitle: "ફુલસ્ક્રીન જીઆઈએસ નકશો અને સેફ રડાર",
+    safetyMapSub: "આશ્રયસ્થાનો, પૂર ઝોન અને સલામત સ્થળાંતર માર્ગો જુઓ",
+    demoMode: "ડેમો મોડ",
+    demoModeDesc: "તાલીમ માટે 20 કિમી એસઓએસ અને પોલીસ એસએમએસ રોકથામ",
+},
 
   // 8. KANNADA (ಕನ್ನಡ)
   kn: {
+
     home: "ಮುಖಪುಟ",
     safe: "ಸುರಕ್ಷತಾ ಯೋಜನೆ",
     beacon: "ಬೀಕನ್",
@@ -2036,10 +2205,31 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "ಫೋಟೋ ಬದಲಾಯಿಸಿ",
     removePhoto: "ಫೋಟೋ ತೆಗೆದುಹಾಕಿ",
     uploadPhoto: "ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
-  },
+      criticalAlert: "ತುರ್ತು ಎಚ್ಚರಿಕೆ",
+    warningAdvisory: "ಎಚ್ಚರಿಕೆ ಸಲಹೆ",
+    liveConditions: "ನೇರ ಹವಾಮಾನ ಸ್ಥಿತಿ",
+    liveRisk: "ನೇರ ಅಪಾಯ",
+    rainProbability: "ಮಳೆಯ ಸಂಭವನೀಯತೆ",
+    windVelocity: "ಗಾಳಿಯ ವೇಗ",
+    activeCriticalAlerts: "ಸಕ್ರಿಯ ತುರ್ತು ಎಚ್ಚರಿಕೆಗಳು",
+    next12Hours: "ಮುಂದಿನ 12 ಗಂಟೆಗಳು",
+    telemetryHighlights: "ಇಂದಿನ ಹವಾಮಾನ ಮುಖ್ಯಾಂಶಗಳು",
+    sensorsRealTime: "ಸೆನ್ಸಾರ್: ರಿಯಲ್-ಟೈಮ್",
+    precipitationRainfall: "ಮಳೆ ಮತ್ತು ವರ್ಷಾಪಾತ",
+    uvIndex: "ಯುವಿ ಕಿರಣಗಳ ಸೂಚ್ಯಂಕ",
+    windStatus: "ಗಾಳಿಯ ಸ್ಥಿತಿ ಮತ್ತು ಬಿರುಗಾಳಿ",
+    humidityDewPoint: "ತೇವಾಂಶ ಮತ್ತು ಇಬ್ಬನಿ ಬಿಂದು",
+    solarCycle: "ಸೂರ್ಯ ಚಕ್ರ (ಸೂರ್ಯೋದಯ/ಸೂರ್ಯಾಸ್ತ)",
+    imdNumerical: "ಐಎಂಡಿ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ",
+    safetyMapTitle: "ಪೂರ್ಣ ಪರದೆಯ ಜಿಐಎಸ್ ನಕ್ಷೆ ಮತ್ತು ರಾಡಾರ್",
+    safetyMapSub: "ಆಶ್ರಯ ತಾಣಗಳು, ಪ್ರವಾಹ ವಲಯಗಳು ಮತ್ತು ಸ್ಥಳಾಂತರ ಮಾರ್ಗಗಳನ್ನು ನೋಡಿ",
+    demoMode: "ಡೆಮೊ ಮೋಡ್",
+    demoModeDesc: "ಅಭ್ಯಾಸಕ್ಕಾಗಿ 20 ಕಿಮೀ ಎಸ್ಒಎಸ್ ಪ್ರಸಾರ ಮತ್ತು ಪೊಲೀಸ್ ಎಸ್‌ಎಂಎಸ್ ತಡೆ",
+},
 
   // 9. MALAYALAM (മലയാളം)
   ml: {
+
     home: "ഹോം",
     safe: "സുരക്ഷാ പദ്ധതി",
     beacon: "ബീക്കൺ",
@@ -2259,10 +2449,31 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "ഫോട്ടോ മാറ്റുക",
     removePhoto: "ഫോട്ടോ നീക്കം ചെയ്യുക",
     uploadPhoto: "ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യുക",
-  },
+      criticalAlert: "തീവ്ര ജാഗ്രതാ നിർദ്ദേശം",
+    warningAdvisory: "മുന്നറിയിപ്പ് നിർദ്ദേശം",
+    liveConditions: "തത്സമയ കാലാവസ്ഥ",
+    liveRisk: "തത്സമയ അപായം",
+    rainProbability: "മഴയ്ക്കുള്ള സാധ്യത",
+    windVelocity: "കാറ്റിന്റെ വേഗത",
+    activeCriticalAlerts: "സജീവമായ മുന്നറിയിപ്പുകൾ",
+    next12Hours: "അടുത്ത 12 മണിക്കൂർ",
+    telemetryHighlights: "ഇന്നത്തെ കാലാവസ്ഥാ വിവരങ്ങൾ",
+    sensorsRealTime: "തത്സമയ സെൻസർ വിവരങ്ങൾ",
+    precipitationRainfall: "മഴയും വർഷപാതവും",
+    uvIndex: "യുവി സൂചിക",
+    windStatus: "കാറ്റും കാറ്റടിച്ചുവീശലും",
+    humidityDewPoint: "ഈർപ്പവും മഞ്ഞുതുള്ളി നിലയും",
+    solarCycle: "സൂര്യ ചക്രം (സൂര്യോദയം/സൂര്യാസ്തമയം)",
+    imdNumerical: "ഐഎംഡി കാലാവസ്ഥാ പ്രവചനം",
+    safetyMapTitle: "ഫുൾസ്ക്രീൻ ജിഐഎസ് മാപ്പും സേഫ് റഡാറും",
+    safetyMapSub: "ഷെൽട്ടറുകൾ, വെള്ളപ്പൊക്ക മേഖലകൾ, ഒഴിപ്പിക്കൽ വഴികൾ കണ്ടെത്തുക",
+    demoMode: "ഡെമോ മോഡ്",
+    demoModeDesc: "പരിശീലനത്തിനായി 20 കി.മീ എസ്ഒഎസ് ബ്രോഡ്കാസ്റ്റും പോലീസ് എസ്എംഎസ് തടയലും",
+},
 
   // 10. PUNJABI (ਪੰਜਾਬੀ)
   pa: {
+
     home: "ਹੋਮ",
     safe: "ਸੁਰੱਖਿਆ ਯੋਜਨਾ",
     beacon: "ਬੀਕਨ",
@@ -2482,5 +2693,25 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationDictionary> = {
     changePhoto: "ਫੋਟੋ ਬਦਲੋ",
     removePhoto: "ਫੋਟੋ ਹਟਾਓ",
     uploadPhoto: "ਫੋਟੋ ਅੱਪਲੋਡ ਕਰੋ",
-  },
+      criticalAlert: "ਨਾਜ਼ੁਕ ਚੇਤਾਵਨੀ",
+    warningAdvisory: "ਚੇਤਾਵਨੀ ਸਲਾਹ",
+    liveConditions: "ਲਾਈਵ ਮੌਸਮ ਦੀ ਸਥਿਤੀ",
+    liveRisk: "ਲਾਈਵ ਖਤਰਾ",
+    rainProbability: "ਮੀਂਹ ਦੀ ਸੰਭਾਵਨਾ",
+    windVelocity: "ਹਵਾ ਦੀ ਰਫ਼ਤਾਰ",
+    activeCriticalAlerts: "ਸਰਗਰਮ ਗੰਭੀਰ ਚੇਤਾਵਨੀਆਂ",
+    next12Hours: "ਅਗਲੇ 12 ਘੰਟੇ",
+    telemetryHighlights: "ਅੱਜ ਦੇ ਮੌਸਮ ਦੇ ਮੁੱਖ ਅੰਸ਼",
+    sensorsRealTime: "ਸੈਂਸਰ: ਰੀਅਲ-ਟਾਈਮ",
+    precipitationRainfall: "ਮੀਂਹ ਅਤੇ ਵਰਖਾ",
+    uvIndex: "ਯੂਵੀ ਰੇਡੀਏਸ਼ਨ ਸੂਚਕਾਂਕ",
+    windStatus: "ਹਵਾ ਦੀ ਸਥਿਤੀ ਅਤੇ ਝੱਖੜ",
+    humidityDewPoint: "ਨਮੀ ਅਤੇ ਤ੍ਰੇਲ ਬਿੰਦੂ",
+    solarCycle: "ਸੂਰਜੀ ਚੱਕਰ (ਸੂਰਜ ਚੜ੍ਹਨਾ/ਡੁੱਬਣਾ)",
+    imdNumerical: "ਮੌਸਮ ਵਿਭਾਗ ਮਾਡਲਿੰਗ",
+    safetyMapTitle: "ਫੁੱਲਸਕ੍ਰੀਨ ਜੀਆਈਐਸ ਨਕਸ਼ਾ ਅਤੇ ਸੁਰੱਖਿਅਤ ਰਾਡਾਰ",
+    safetyMapSub: "ਆਸਰਾ ਸਥਾਨ, ਹੜ੍ਹ ਖੇਤਰ ਅਤੇ ਨਿਕਾਸੀ ਰਸਤੇ ਵੇਖੋ",
+    demoMode: "ਡੈਮੋ ਮੋਡ",
+    demoModeDesc: "ਅਭਿਆਸ ਲਈ 20 ਕਿਮੀ ਐਸਓਐਸ ਅਤੇ ਪੁਲਿਸ ਐਸਐਮਐਸ ਰੋਕ",
+},
 };

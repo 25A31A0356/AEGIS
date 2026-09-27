@@ -26,7 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems: Array<{ id: string; label: string; icon: string; desc: string; badge?: string }> = [
     { id: 'home', label: dict.home || 'Home', icon: 'home', desc: dict.conditions || 'Weather & Risk Telemetry' },
     { id: 'analysis', label: dict.forecast || 'Analysis', icon: 'monitoring', desc: dict.outlook || 'Trends & Outlook' },
-    { id: 'maps', label: 'SOS Maps', icon: 'emergency', desc: 'Citizen Distress Beacons', badge: activeSOSCount > 0 ? `${activeSOSCount}` : undefined },
+    { id: 'maps', label: dict.safe || dict.sosMaps || 'SOS Maps', icon: 'emergency', desc: dict.sos || 'Citizen Distress Beacons', badge: activeSOSCount > 0 ? `${activeSOSCount}` : undefined },
     { id: 'reports', label: dict.reports || 'Community Reports', icon: 'campaign', desc: dict.reportHazardShort || 'Incident Reporting' },
     { id: 'research-maps', label: dict.readiness || 'Research Maps', icon: 'science', desc: dict.climate || 'Environmental Layers' },
     { id: 'safety', label: dict.safetyHub || 'Safety Hub', icon: 'medical_services', desc: dict.offlineGuidance || '72h Go-Bag & Help' },
@@ -105,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-[#18181b] border border-slate-100 dark:border-[#27272a]">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-slate-800 dark:text-white truncate">NDMA SACHET Active</p>
+            <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{dict.live || 'LIVE'} NDMA SACHET</p>
             <p className="text-[10px] text-slate-500 dark:text-[#71717a] font-mono">2h Synoptic Met Engine</p>
           </div>
         </div>
