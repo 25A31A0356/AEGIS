@@ -32,9 +32,9 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
 
   // Edit form state
   const [editName, setEditName] = useState(profile.fullName || '');
-  const [editPhone, setEditPhone] = useState(profile.phoneNumber || '+91 XXXXXXXXXX');
+  const [editPhone, setEditPhone] = useState(profile.phoneNumber || '');
   const [editBlood, setEditBlood] = useState(profile.bloodGroup || 'O+');
-  const [editMedical, setEditMedical] = useState(profile.medicalNotes || 'No known allergies. Asthmatic inhaler carrier.');
+  const [editMedical, setEditMedical] = useState(profile.medicalNotes || '');
   const [editPeople, setEditPeople] = useState(profile.peopleCount || 2);
   const [editAvatar, setEditAvatar] = useState(profile.avatarUrl || '');
   const [saveToast, setSaveToast] = useState(false);
@@ -63,7 +63,7 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
 
   const handleOpenEdit = () => {
     setEditName(profile.fullName || '');
-    setEditPhone(profile.phoneNumber || '+91 XXXXXXXXXX');
+    setEditPhone(profile.phoneNumber || '');
     setEditBlood(profile.bloodGroup || 'O+');
     setEditMedical(profile.medicalNotes || '');
     setEditPeople(profile.peopleCount || 2);
@@ -160,7 +160,7 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
                     {profile.fullName || ''}
                   </h3>
                   <p className="text-[11px] text-slate-500 dark:text-[#a1a1aa] font-medium mt-0.5">
-                    {profile.bloodGroup ? ('Blood: ' + profile.bloodGroup) : 'Blood: O+'} &bull; {profile.phoneNumber || '+91 XXXXXXXXXX'}
+                    {profile.bloodGroup ? ('Blood: ' + profile.bloodGroup) : 'Blood: Not specified'} &bull; {profile.phoneNumber || 'No phone registered'}
                   </p>
                 </div>
               </div>
@@ -406,25 +406,46 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
                 <span className="material-symbols-outlined text-slate-400 text-base">chevron_right</span>
               </a>
 
-              {/* AGIES ALERT Web Link */}
+              {/* Running Mobile App Link */}
               <a
                 href="http://localhost:8081"
                 target="_blank"
                 rel="noreferrer"
-                className="w-full p-3.5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-[#18181b]/50 transition-colors cursor-pointer"
+                className="w-full p-3.5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-[#18181b]/50 transition-colors cursor-pointer border-t border-slate-100 dark:border-[#1e1e24]"
               >
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[#0d5c75] dark:text-teal-400 text-xl">
-                    smartphone
-                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+                    <span className="material-symbols-outlined text-lg">smartphone</span>
+                  </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">{dict.agiesWeb || 'AEGIS ALERT app'}</h4>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">Open Mobile App (Expo Live)</h4>
                     <p className="text-[11px] text-slate-500 dark:text-[#a1a1aa]">
-                      {dict.openCompanionWeb || 'Open the companion app link'}
+                      Launch mobile app on http://localhost:8081
                     </p>
                   </div>
                 </div>
-                <span className="material-symbols-outlined text-slate-400 text-base">chevron_right</span>
+                <span className="material-symbols-outlined text-slate-400 text-base">open_in_new</span>
+              </a>
+
+              {/* GitHub Official Codebase Link */}
+              <a
+                href="https://github.com/25A31A0356/AEGIS"
+                target="_blank"
+                rel="noreferrer"
+                className="w-full p-3.5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-[#18181b]/50 transition-colors cursor-pointer border-t border-slate-100 dark:border-[#1e1e24]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                    <span className="material-symbols-outlined text-lg">code</span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">GitHub Repository</h4>
+                    <p className="text-[11px] text-slate-500 dark:text-[#a1a1aa]">
+                      github.com/25A31A0356/AEGIS
+                    </p>
+                  </div>
+                </div>
+                <span className="material-symbols-outlined text-slate-400 text-base">open_in_new</span>
               </a>
             </div>
           </div>

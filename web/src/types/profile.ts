@@ -48,7 +48,7 @@ export const DEFAULT_FAMILY_CONTACTS: FamilyContact[] = [];
 export const DEFAULT_EMERGENCY_PROFILE: EmergencyProfile = {
   fullName: '',
   phoneNumber: '',
-  bloodGroup: 'O+',
+  bloodGroup: '',
   medicalNotes: '',
   peopleCount: 1,
   familyContacts: [],
@@ -56,7 +56,7 @@ export const DEFAULT_EMERGENCY_PROFILE: EmergencyProfile = {
   customSafeMessage: 'I am safe and secure. Sharing my location with family through AEGIS ALERT.',
   avatarUrl: '',
   avatarUri: '',
-  homeCity: 'Kakinada',
-  homePoliceStation: 'Kakinada Town Police Station',
-  homePoliceNumber: '0884-2365555',
+  homeCity: '',
+  homePoliceStation: '',
+  homePoliceNumber: '',
 };

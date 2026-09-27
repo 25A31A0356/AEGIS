@@ -40,7 +40,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return {
           ...DEFAULT_EMERGENCY_PROFILE,
           ...parsed,
-          familyContacts: parsed.familyContacts || DEFAULT_FAMILY_CONTACTS,
+          familyContacts: Array.isArray(parsed.familyContacts) ? parsed.familyContacts : DEFAULT_FAMILY_CONTACTS,
         };
       }
     } catch {}
@@ -66,45 +66,43 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     try {
       const res = await ApiClient.get<any>('/auth/me', undefined, { skipCache: true, timeoutMs: 3500 });
-      if (res) {
-        const serverProfile: Partial<EmergencyProfile> = {
-          fullName: res.full_name || res.name || profile.fullName,
-          phoneNumber: res.phoneNumber || res.phone || profile.phoneNumber,
-          avatarUrl: res.avatarUrl || res.avatar_url || res.avatarUri || profile.avatarUrl,
-          avatarUri: res.avatarUri || res.avatarUrl || res.avatar_url || profile.avatarUri,
-          bloodGroup: res.bloodGroup || res.blood_group || profile.bloodGroup || 'O+',
-          medicalNotes: res.medicalNotes || res.medical_notes || profile.medicalNotes || '',
-          peopleCount: res.peopleCount || res.people_count || profile.peopleCount || 1,
-          homeCity: res.homeCity || res.home_city || profile.homeCity || 'Kakinada',
-          homePoliceStation: res.homePoliceStation || res.home_police_station || profile.homePoliceStation || 'Kakinada Town Police Station',
-          homePoliceNumber: res.homePoliceNumber || res.home_police_number || profile.homePoliceNumber || '0884-2365555',
-          familyContacts: Array.isArray(res.familyContacts) && res.familyContacts.length > 0
-            ? res.familyContacts
-            : (Array.isArray(res.family_contacts) && res.family_contacts.length > 0 ? res.family_contacts : profile.familyContacts),
-          customSosMessage: res.customSosMessage || res.custom_sos_message || profile.customSosMessage,
-          customSafeMessage: res.customSafeMessage || res.custom_safe_message || profile.customSafeMessage,
+      const rawUser = (res && typeof res === 'object' && 'data' in res) ? res.data : res;
+      if (rawUser) {
+        const serverProfile: EmergencyProfile = {
+          fullName: rawUser.full_name || rawUser.name || '',
+          phoneNumber: rawUser.phoneNumber || rawUser.phone || '',
+          avatarUrl: rawUser.avatarUrl || rawUser.avatar_url || rawUser.avatarUri || '',
+          avatarUri: rawUser.avatarUri || rawUser.avatarUrl || rawUser.avatar_url || '',
+          bloodGroup: rawUser.bloodGroup || rawUser.blood_group || '',
+          medicalNotes: rawUser.medicalNotes || rawUser.medical_notes || '',
+          peopleCount: rawUser.peopleCount || rawUser.people_count || 1,
+          homeCity: rawUser.homeCity || rawUser.home_city || '',
+          homePoliceStation: rawUser.homePoliceStation || rawUser.home_police_station || '',
+          homePoliceNumber: rawUser.homePoliceNumber || rawUser.home_police_number || '',
+          familyContacts: Array.isArray(rawUser.familyContacts)
+            ? rawUser.familyContacts
+            : (Array.isArray(rawUser.family_contacts) ? rawUser.family_contacts : []),
+          customSosMessage: rawUser.customSosMessage || rawUser.custom_sos_message || DEFAULT_EMERGENCY_PROFILE.customSosMessage,
+          customSafeMessage: rawUser.customSafeMessage || rawUser.custom_safe_message || DEFAULT_EMERGENCY_PROFILE.customSafeMessage,
         };
 
-        setProfile((prev) => {
-          const merged = { ...prev, ...serverProfile };
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-          } catch {}
-          return merged;
-        });
+        setProfile(serverProfile);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(serverProfile));
+        } catch {}
 
-        if (res.language) {
-          setLanguageState(res.language);
+        if (rawUser.language) {
+          setLanguageState(rawUser.language);
         }
       }
     } catch (e) {
       console.warn('[ProfileContext] Server sync error:', e);
     }
-  }, [profile]);
+  }, []);
 
   useEffect(() => {
     void refreshProfileFromServer();
-  }, []);
+  }, [refreshProfileFromServer]);
 
   // Save to localStorage when profile changes
   useEffect(() => {
@@ -165,8 +163,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         full_name: updated.fullName,
         phone: updated.phoneNumber,
         phoneNumber: updated.phoneNumber,
-        avatar_url: updated.avatarUrl || updated.avatarUri,
-        avatarUrl: updated.avatarUrl || updated.avatarUri,
+        avatar_url: updated.avatarUrl || updated.avatarUri || '',
+        avatarUrl: updated.avatarUrl || updated.avatarUri || '',
         blood_group: updated.bloodGroup,
         bloodGroup: updated.bloodGroup,
         medical_notes: updated.medicalNotes,
@@ -203,44 +201,34 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addFamilyContact = async (contact: Omit<FamilyContact, 'id'>) => {
     const newContact: FamilyContact = {
       ...contact,
-      id: 'fam-' + Date.now(),
+      id: `fam-${Date.now()}`,
     };
-    const nextProfile: EmergencyProfile = {
-      ...profile,
-      familyContacts: [...profile.familyContacts, newContact],
-    };
+    const nextContacts = [...profile.familyContacts, newContact];
+    const nextProfile = { ...profile, familyContacts: nextContacts };
     setProfile(nextProfile);
     await pushProfileToServer(nextProfile);
   };
 
   const updateFamilyContact = async (id: string, updates: Partial<FamilyContact>) => {
-    const nextProfile: EmergencyProfile = {
-      ...profile,
-      familyContacts: profile.familyContacts.map((c) => (c.id === id ? { ...c, ...updates } : c)),
-    };
+    const nextContacts = profile.familyContacts.map((c) =>
+      c.id === id ? { ...c, ...updates } : c
+    );
+    const nextProfile = { ...profile, familyContacts: nextContacts };
     setProfile(nextProfile);
     await pushProfileToServer(nextProfile);
   };
 
   const removeFamilyContact = async (id: string) => {
-    const nextProfile: EmergencyProfile = {
-      ...profile,
-      familyContacts: profile.familyContacts.filter((c) => c.id !== id),
-    };
+    const nextContacts = profile.familyContacts.filter((c) => c.id !== id);
+    const nextProfile = { ...profile, familyContacts: nextContacts };
     setProfile(nextProfile);
     await pushProfileToServer(nextProfile);
   };
 
   const resetToDefaults = () => {
     setProfile(DEFAULT_EMERGENCY_PROFILE);
-    setLanguageState('en');
-    setColorSchemeState('dark');
-    setNotificationsEnabledState(true);
-    setLiveLocationEnabledState(true);
     try {
       localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(LANG_KEY);
-      localStorage.setItem(THEME_KEY, 'dark');
     } catch {}
   };
 
@@ -269,7 +257,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 };
 
-export const useProfile = (): ProfileContextType => {
+export const useProfile = () => {
   const context = useContext(ProfileContext);
   if (!context) {
     throw new Error('useProfile must be used within a ProfileProvider');

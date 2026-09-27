@@ -298,6 +298,7 @@ export function EmergencyProfileProvider({ children }: { children: ReactNode }) 
       };
       const normalized = normalizeProfile(nextProfile);
       void writeSecureProfile(JSON.stringify(normalized));
+      syncBackend(normalized);
       return normalized;
     });
   }, []);
@@ -310,6 +311,7 @@ export function EmergencyProfileProvider({ children }: { children: ReactNode }) 
       };
       const normalized = normalizeProfile(nextProfile);
       void writeSecureProfile(JSON.stringify(normalized));
+      syncBackend(normalized);
       return normalized;
     });
   }, []);
