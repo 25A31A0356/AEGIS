@@ -217,7 +217,9 @@ class RealtimeServiceSingleton {
   /**
    * Dispatches parsed event to type-specific and global listeners
    */
-  private handleIncomingEvent(event: RealtimeEvent): void {
+    private handleIncomingEvent(event: RealtimeEvent): void {
+    if (!event || typeof event !== 'object' || !event.type) return;
+
     this.lastEventTime = Date.now();
     const evtId = event.id || (event as any).event_id;
     if (evtId) {
