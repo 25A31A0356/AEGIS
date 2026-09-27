@@ -99,9 +99,9 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfile({
+    await updateProfile({
       fullName: editName.trim() || '',
       phoneNumber: editPhone.trim(),
       bloodGroup: editBlood,
@@ -113,7 +113,7 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ isOpen, onClose, onOpenA
     setTimeout(() => {
       setSaveToast(false);
       setIsEditModalOpen(false);
-    }, 800);
+    }, 600);
   };
 
   const isDarkMode = colorScheme === 'dark';

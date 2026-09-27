@@ -452,23 +452,24 @@ class UserProfileUpdateRequest(BaseModel):
 def _format_user_profile_data(user: User, pref: Optional[UserPreference]) -> Dict[str, Any]:
     ep = (getattr(user, "emergency_profile", None) or (pref.emergency_profile if pref else None) or {})
     
+    full_name = user.full_name or ep.get("fullName") or ep.get("full_name") or ep.get("name") or ""
     phone = user.phone or ep.get("phoneNumber") or ep.get("phone") or ""
-    avatar = user.avatar_url or ep.get("avatarUrl") or ep.get("avatarUri") or ""
+    avatar = user.avatar_url or ep.get("avatarUrl") or ep.get("avatarUri") or ep.get("avatar_url") or ""
     blood = user.blood_group or ep.get("bloodGroup") or ep.get("blood_group") or "O+"
     med = user.medical_notes or ep.get("medicalNotes") or ep.get("medical_notes") or ""
-    people = user.people_count or ep.get("peopleCount") or ep.get("people_count") or 1
-    h_city = user.home_city or ep.get("homeCity") or ep.get("home_city") or "Kakinada"
-    h_ps = user.home_police_station or ep.get("homePoliceStation") or ep.get("home_police_station") or "Kakinada Town Police Station"
-    h_pn = user.home_police_number or ep.get("homePoliceNumber") or ep.get("home_police_number") or "0884-2365555"
-    fams = user.family_contacts or ep.get("familyContacts") or ep.get("family_contacts") or (pref.emergency_contacts if pref else []) or []
+    people = user.people_count if user.people_count is not None else (ep.get("peopleCount") or ep.get("people_count") or 1)
+    h_city = user.home_city or ep.get("homeCity") or ep.get("home_city") or ""
+    h_ps = user.home_police_station or ep.get("homePoliceStation") or ep.get("home_police_station") or ""
+    h_pn = user.home_police_number or ep.get("homePoliceNumber") or ep.get("home_police_number") or ""
+    fams = user.family_contacts if user.family_contacts is not None else (ep.get("familyContacts") or ep.get("family_contacts") or [])
     c_sos = ep.get("customSosMessage") or ep.get("custom_sos_message") or "EMERGENCY SOS: I need immediate help! Please dispatch rescue to my location."
     c_safe = ep.get("customSafeMessage") or ep.get("custom_safe_message") or "I am safe and secure. Sharing my location with family through AEGIS ALERT."
 
     return {
         "id": user.id,
         "email": user.email,
-        "full_name": user.full_name or "Citizen in Distress",
-        "name": user.full_name or "Citizen in Distress",
+        "full_name": full_name,
+        "name": full_name,
         "phone": phone,
         "phoneNumber": phone,
         "avatar_url": avatar,

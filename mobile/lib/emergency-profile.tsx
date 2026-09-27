@@ -231,47 +231,50 @@ export function EmergencyProfileProvider({ children }: { children: ReactNode }) 
     })();
   }, [refreshFromServer]);
 
-  const syncBackend = (p: EmergencyProfile) => {
-    AegisApiService.updateProfile({
-      full_name: p.fullName,
-      name: p.fullName,
-      phone: p.phoneNumber,
-      phoneNumber: p.phoneNumber,
-      avatar_url: p.avatarUri,
-      avatarUri: p.avatarUri,
-      blood_group: p.bloodGroup,
-      bloodGroup: p.bloodGroup,
-      medical_notes: p.medicalNotes,
-      medicalNotes: p.medicalNotes,
-      people_count: p.peopleCount,
-      peopleCount: p.peopleCount,
-      home_city: p.homeCity,
-      homeCity: p.homeCity,
-      home_police_station: p.homePoliceStation,
-      homePoliceStation: p.homePoliceStation,
-      home_police_number: p.homePoliceNumber,
-      homePoliceNumber: p.homePoliceNumber,
-      family_contacts: p.familyContacts,
-      familyContacts: p.familyContacts,
-      custom_sos_message: p.customSosMessage,
-      customSosMessage: p.customSosMessage,
-      custom_safe_message: p.customSafeMessage,
-      customSafeMessage: p.customSafeMessage,
-    }).catch((e) => console.warn("[Profile] Backend sync failed:", e));
+  const syncBackend = async (p: EmergencyProfile) => {
+    try {
+      await AegisApiService.updateProfile({
+        full_name: p.fullName,
+        name: p.fullName,
+        phone: p.phoneNumber,
+        phoneNumber: p.phoneNumber,
+        avatar_url: p.avatarUri || "",
+        avatarUri: p.avatarUri || "",
+        blood_group: p.bloodGroup,
+        bloodGroup: p.bloodGroup,
+        medical_notes: p.medicalNotes,
+        medicalNotes: p.medicalNotes,
+        people_count: p.peopleCount,
+        peopleCount: p.peopleCount,
+        home_city: p.homeCity || "",
+        homeCity: p.homeCity || "",
+        home_police_station: p.homePoliceStation || "",
+        homePoliceStation: p.homePoliceStation || "",
+        home_police_number: p.homePoliceNumber || "",
+        homePoliceNumber: p.homePoliceNumber || "",
+        family_contacts: p.familyContacts || [],
+        familyContacts: p.familyContacts || [],
+        custom_sos_message: p.customSosMessage,
+        customSosMessage: p.customSosMessage,
+        custom_safe_message: p.customSafeMessage,
+        customSafeMessage: p.customSafeMessage,
+      });
+      console.log("[Profile] Successfully synchronized profile to backend database!");
+    } catch (e) {
+      console.warn("[Profile] Backend sync failed:", e);
+    }
   };
 
   const updateProfile = useCallback(async (updates: Partial<EmergencyProfile>) => {
-    setProfile((prev) => {
-      const nextProfile: EmergencyProfile = {
-        ...prev,
-        ...updates,
-      };
-      const normalized = normalizeProfile(nextProfile);
-      void writeSecureProfile(JSON.stringify(normalized));
-      syncBackend(normalized);
-      return normalized;
-    });
-  }, []);
+    const nextProfile: EmergencyProfile = {
+      ...profile,
+      ...updates,
+    };
+    const normalized = normalizeProfile(nextProfile);
+    setProfile(normalized);
+    await writeSecureProfile(JSON.stringify(normalized));
+    await syncBackend(normalized);
+  }, [profile]);
 
   const updateFamilyContacts = useCallback(async (contacts: FamilyContact[]) => {
     setProfile((prev) => {

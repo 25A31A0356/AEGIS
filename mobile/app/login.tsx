@@ -59,11 +59,14 @@ export default function LoginScreen() {
         window.localStorage.setItem("aegis_auth_token", token);
         window.localStorage.setItem("app_session_token", token);
       }
-      await updateProfile({
-        fullName: userName,
-        phoneNumber: userPhone || "+91 XXXXXXXXXX",
-      });
-      setStatusMsg({ type: "success", text: `Welcome, ${userName}! Connecting to AEGIS...` });
+      // If user had existing profile on backend, keep backend authoritative
+      if (userName && userName !== userEmail.split("@")[0]) {
+        await updateProfile({
+          fullName: userName,
+          ...(userPhone ? { phoneNumber: userPhone } : {}),
+        });
+      }
+      setStatusMsg({ type: "success", text: `Welcome, ${userName || 'Citizen'}! Connecting to AEGIS...` });
       setTimeout(() => {
         router.replace("/(tabs)");
       }, 300);
